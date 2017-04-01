@@ -1,0 +1,4 @@
+C:\champions\applications\HeroTabletopRefactored\hero-tabletop-refactored\obj\Debug\hero-tabletop-refactored.csprojResolveAssemblyReference.cache
+C:\champions\applications\HeroTabletopRefactored\hero-tabletop-refactored\obj\Debug\Common\HeroVirtualTabletopMainView.g.cs
+C:\champions\applications\HeroTabletopRefactored\hero-tabletop-refactored\obj\Debug\hero-tabletop-refactored_MarkupCompile.cache
+C:\champions\applications\HeroTabletopRefactored\hero-tabletop-refactored\obj\Debug\hero-tabletop-refactored_MarkupCompile.lref

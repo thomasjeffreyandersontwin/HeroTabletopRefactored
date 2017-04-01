@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{13CC2950-5A39-4E13-866C-8ACAFED0BBCD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>hero_tabletop_refactored</RootNamespace>
+    <AssemblyName>hero-tabletop-refactored</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Caliburn.Micro, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
+      <HintPath>packages\Caliburn.Micro.Core.3.0.3\lib\net45\Caliburn.Micro.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Caliburn.Micro.Platform, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
+      <HintPath>packages\Caliburn.Micro.3.0.3\lib\net45\Caliburn.Micro.Platform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Caliburn.Micro.Platform.Core, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
+      <HintPath>packages\Caliburn.Micro.3.0.3\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>packages\Castle.Core.4.0.0\lib\net45\Castle.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Framework.WPF">
+      <HintPath>lib\Framework.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="irrKlang.NET4">
+      <HintPath>lib\irrKlang.NET4.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ApplicationInsights.Interfaces, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.ApplicationInsights.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Windows\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Module.Shared">
+      <HintPath>lib\Module.Shared.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq, Version=4.7.8.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>packages\Moq.4.7.8\lib\net45\Moq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture, Version=3.50.2.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
+      <HintPath>packages\AutoFixture.3.50.2\lib\net40\Ploeh.AutoFixture.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ploeh.AutoFixture.AutoMoq, Version=3.50.2.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
+      <HintPath>packages\AutoFixture.AutoMoq.3.50.2\lib\net40\Ploeh.AutoFixture.AutoMoq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Caliburn.Micro.3.0.3\lib\net45\System.Windows.Interactivity.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\..\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\packages\Extended.Wpf.Toolkit.2.8\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnimatedAbility\AnimatedAbility.cs" />
+    <Compile Include="AnimatedAbility\AnimatedAbilityElement.cs" />
+    <Compile Include="AnimatedAbility\AnimatedAbilityInterface.cs" />
+    <Compile Include="AnimatedAbility\AnimatedAbilityTestSuite.cs" />
+    <Compile Include="AnimatedAbility\AnimatedCharacter.cs" />
+    <Compile Include="AnimatedAbility\AnimatedCharacterRepository.cs" />
+    <Compile Include="Attack\AnimatedAttack.cs" />
+    <Compile Include="Attack\AttackDistanceDelayManager.cs" />
+    <Compile Include="Attack\AttackIntefaces.cs" />
+    <Compile Include="Attack\AttackTestsuite.cs" />
+    <Compile Include="ManagedCharacter\Camera.cs" />
+    <Compile Include="ManagedCharacter\CharacterActionList.cs" />
+    <Compile Include="ManagedCharacter\Class1.cs" />
+    <Compile Include="Common\CommonInterfaces.cs" />
+    <Compile Include="Common\Events.cs" />
+    <Compile Include="Common\HeroVirtualTabletop.cs" />
+    <Compile Include="Common\HeroVirtualTabletopMainView.xaml.cs">
+      <DependentUpon>HeroVirtualTabletopMainView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Common\OrderedCollection.cs" />
+    <Compile Include="Common\Utility.cs" />
+    <Compile Include="Crowd\Crowd.cs" />
+    <Compile Include="Crowd\CrowdInterfaces.cs" />
+    <Compile Include="Crowd\CrowdMemberExplorerView.xaml.cs" />
+    <Compile Include="Crowd\CrowdTestSuite.cs" />
+    <Compile Include="Desktop\DesktopCharacterMemoryInstance.cs" />
+    <Compile Include="Desktop\DesktopCharacterNavigator.cs" />
+    <Compile Include="Desktop\DesktopInterfaces.cs" />
+    <Compile Include="Desktop\DesktopTestSuite.cs" />
+    <Compile Include="Desktop\DllInjector.cs" />
+    <Compile Include="Desktop\IconInteractionUtility.cs" />
+    <Compile Include="Desktop\KeyBindCommandGenerator.cs" />
+    <Compile Include="Desktop\Position.cs" />
+    <Compile Include="Desktop\WindowsUtilities.cs" />
+    <Compile Include="ManagedCharacter\Identity.cs" />
+    <Compile Include="ManagedCharacter\ManagedCharacter.cs" />
+    <Compile Include="ManagedCharacter\ManagedCharacterInterfaces.cs" />
+    <Compile Include="ManagedCharacter\ManagedCharacterTestSuite.cs" />
+    <Compile Include="Movement\MovableCharacter.cs" />
+    <Compile Include="Movement\MovableCharacterInterfaces.cs" />
+    <Compile Include="Movement\MovableCharacterTestSuite.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Roster\Roster.cs" />
+    <Compile Include="Roster\RosterInterfaces.cs" />
+    <Compile Include="Roster\RosterTestSuite.cs" />
+    <Compile Include="Settings\Settings1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Common\HeroVirtualTabletopMainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="Settings\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings1.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
