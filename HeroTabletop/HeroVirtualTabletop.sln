@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeroVirtualTabletop", "Hero
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeroUI", "..\HeroUI\HeroUI.csproj", "{4C2A566B-9AAA-4EBA-AD37-8FFF48532C24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeroSystemsEngine", "..\HeroSystemsEngine\HeroSystemsEngine.csproj", "{B01E2CDA-3A69-4E29-A67A-7C9DA162BBAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4C2A566B-9AAA-4EBA-AD37-8FFF48532C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C2A566B-9AAA-4EBA-AD37-8FFF48532C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C2A566B-9AAA-4EBA-AD37-8FFF48532C24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B01E2CDA-3A69-4E29-A67A-7C9DA162BBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B01E2CDA-3A69-4E29-A67A-7C9DA162BBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B01E2CDA-3A69-4E29-A67A-7C9DA162BBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B01E2CDA-3A69-4E29-A67A-7C9DA162BBAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

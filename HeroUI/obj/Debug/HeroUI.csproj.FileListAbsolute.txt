@@ -65,6 +65,3 @@ C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI\bin\Debug\Ploeh.AutoFixture.NUnit2.Addins.xml
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI\bin\Debug\Struik.AutoFixture.AutoMoq.AutoSetup.pdb
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI\bin\Debug\Struik.AutoFixture.AutoMoq.AutoSetup.xml
-C:\champions\applications\HeroTabletopRefactored\HeroUI\bin\Debug\HeroUI.exe.config
-C:\champions\applications\HeroTabletopRefactored\HeroUI\obj\Debug\HeroUI.exe
-C:\champions\applications\HeroTabletopRefactored\HeroUI\obj\Debug\HeroUI.pdb
