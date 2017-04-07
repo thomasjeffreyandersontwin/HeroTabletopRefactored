@@ -4,7 +4,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     public class WindowsUtilities
     {

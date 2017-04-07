@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     public class KeyBindCommandGeneratorImpl : KeyBindCommandGenerator
     {

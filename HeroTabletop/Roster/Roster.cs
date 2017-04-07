@@ -8,15 +8,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Castle.Core.Internal;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Attack;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.Common;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.ManagedCharacter;
 using Ploeh.AutoFixture;
 
-namespace HeroVirtualTableTop.Roster
+namespace HeroVirtualTabletop.Roster
 {
     public class RosterImpl : Roster
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.Common;
-namespace HeroVirtualTableTop.ManagedCharacter
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.Common;
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class CharacterActionListImpl<T> : OrderedCollectionImpl<T> , CharacterActionList<T> where T : CharacterAction
     {

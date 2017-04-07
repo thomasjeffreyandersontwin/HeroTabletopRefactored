@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HeroVirtualTableTop.Crowd;
+using HeroVirtualTabletop.Crowd;
 
-namespace HeroVirtualTableTop.AnimatedAbility
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedCharacterRepositoryImpl :  AnimatedCharacterRepository
     {

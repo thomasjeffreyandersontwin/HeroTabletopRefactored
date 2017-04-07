@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using HeroVirtualTableTop.Movement;
+using HeroVirtualTabletop.Movement;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     public enum DesktopCommand
     {

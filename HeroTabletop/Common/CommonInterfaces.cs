@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroVirtualTableTop.Common
+namespace HeroVirtualTabletop.Common
 {
     public interface HeroVirtualTabletopMainViewModel
     {
-
+        event EventHandler ViewLoaded;
+        void LoadCharacterExplorer();
     }
 }

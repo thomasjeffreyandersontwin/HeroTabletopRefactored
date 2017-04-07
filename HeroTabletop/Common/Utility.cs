@@ -12,7 +12,7 @@ using Module.Shared;
 using Microsoft.Xna.Framework;
 using System.Text.RegularExpressions;
 
-namespace HeroVirtualTableTop.Common
+namespace HeroVirtualTabletop.Common
 {
     public class CommonLibrary
     {

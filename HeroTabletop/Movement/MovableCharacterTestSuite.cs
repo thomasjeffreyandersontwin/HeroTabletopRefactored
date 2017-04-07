@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xna.Framework;
 using Moq;
@@ -12,7 +12,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 
-namespace HeroVirtualTableTop.Movement
+namespace HeroVirtualTabletop.Movement
 {
     [TestClass]
     public class MovableCharacterTestSuite

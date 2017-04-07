@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Caliburn.Micro;
+using System.Reflection;
+using HeroVirtualTabletop.Common;
 
 namespace HeroUI.HeroSystemsEngine
 {
@@ -41,11 +43,15 @@ namespace HeroUI.HeroSystemsEngine
             _container = new SimpleContainer();
             _container.Singleton<IWindowManager, WindowManager>();
             _container.Singleton<IEventAggregator, EventAggregator>();
-            _container.PerRequest<IShell, HeroSystemsShellViewModel>();
-            _container.PerRequest<CombatSequence.CombatSequenceViewModel, CombatSequence.CombatSequenceViewModel>();
-            _container.PerRequest<CombatSequence.CombatSequence, CombatSequence.CombatSequenceImpl>();
+            _container.PerRequest<IShell, HeroSystemsShellViewModelImpl>();
+            _container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
+
+            ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }
 
-
+        protected override IEnumerable<Assembly> SelectAssemblies()
+        {
+            return new[] { Assembly.GetExecutingAssembly(), Assembly.Load("HeroVirtualTabletop"), };
+        }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Common;
-using HeroVirtualTableTop.Roster;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Roster;
 
-namespace HeroVirtualTableTop.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     public static class CROWD_CONSTANTS
     {

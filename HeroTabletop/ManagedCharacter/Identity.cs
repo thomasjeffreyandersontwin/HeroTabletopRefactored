@@ -1,6 +1,6 @@
-﻿using HeroVirtualTableTop.Desktop;
+﻿using HeroVirtualTabletop.Desktop;
 
-namespace HeroVirtualTableTop.ManagedCharacter
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class IdentityImpl : CharacterActionImpl, Identity
     {

@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Framework.WPF.Library;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Attack;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Common;
-namespace HeroVirtualTableTop.Roster
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Common;
+namespace HeroVirtualTabletop.Roster
 {
     public enum RosterCommandMode { Standard, CycleCharacter, OnRosterClick }
     public interface Roster 

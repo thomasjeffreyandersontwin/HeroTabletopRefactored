@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
 
-namespace HeroVirtualTableTop.Attack
+namespace HeroVirtualTabletop.Attack
 {
     public class AnimatedAttackImpl : AnimatedAbilityImpl, AnimatedAttack
     {

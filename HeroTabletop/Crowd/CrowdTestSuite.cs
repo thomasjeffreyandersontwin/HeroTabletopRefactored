@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Framework.WPF.Library;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Attack;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Roster;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Roster;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 
-namespace HeroVirtualTableTop.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     [TestClass]
     public class CrowdRepositoryTestSuite

@@ -18,7 +18,7 @@ namespace HeroUI.HeroSystemsEngine
     /// <summary>
     /// Interaction logic for HeroSystemsShellView.xaml
     /// </summary>
-    public partial class HeroSystemsShellView : UserControl
+    public partial class HeroSystemsShellView : Window
     {
         public HeroSystemsShellView()
         {

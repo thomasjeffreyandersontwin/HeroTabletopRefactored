@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.Common;
-namespace HeroVirtualTableTop.ManagedCharacter
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.Common;
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     public interface ManagedCharacterCommands
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
 
-namespace HeroVirtualTableTop.Attack
+namespace HeroVirtualTabletop.Attack
 {
     public interface AttackInstructions
     {

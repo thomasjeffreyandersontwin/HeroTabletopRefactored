@@ -1,4 +1,4 @@
-﻿namespace HeroVirtualTableTop.Desktop
+﻿namespace HeroVirtualTabletop.Desktop
 {
     internal class DesktopMemoryCharacterImpl : DesktopMemoryCharacter
     {

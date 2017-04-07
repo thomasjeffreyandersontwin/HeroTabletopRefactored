@@ -1,5 +1,5 @@
 ﻿using System;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.ManagedCharacter;
 using Microsoft.VisualStudio.ApplicationInsights.Extensibility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xna.Framework;
@@ -9,7 +9,7 @@ using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using Xceed.Wpf.Toolkit;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     [TestClass]
     public class KeybindGeneratorTestSuite

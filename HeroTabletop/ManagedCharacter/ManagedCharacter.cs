@@ -2,9 +2,9 @@
 using System.Linq;
 using Castle.Core.Internal;
 using Framework.WPF.Library;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.Common;
-namespace HeroVirtualTableTop.ManagedCharacter
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.Common;
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class ManagedCharacterImpl : NotifyPropertyChanged, ManagedCharacter, CharacterActionContainer
     {

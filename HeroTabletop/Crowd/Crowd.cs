@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Framework.WPF.Library;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Roster;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Roster;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
-namespace HeroVirtualTableTop.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     public enum ClipboardAction
     {

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.Desktop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 
-namespace HeroVirtualTableTop.ManagedCharacter
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     [TestClass]
     public class ManagedCharacterTestSuite

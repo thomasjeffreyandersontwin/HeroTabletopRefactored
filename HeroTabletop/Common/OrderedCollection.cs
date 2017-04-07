@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroVirtualTableTop.Common
+namespace HeroVirtualTabletop.Common
 {
     public interface OrderedCollection<T> : IDictionary<string, T> where T : OrderedElement
     {

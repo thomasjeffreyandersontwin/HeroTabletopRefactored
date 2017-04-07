@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HeroVirtualTableTop {
+namespace HeroVirtualTabletop.Settings {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

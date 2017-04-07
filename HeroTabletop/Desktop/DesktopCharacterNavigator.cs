@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Ink;
-using HeroVirtualTableTop.Movement;
+using HeroVirtualTabletop.Movement;
 using Microsoft.Xna.Framework;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     class DesktopNavigatorImpl : DesktopNavigator
     {

@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using HeroVirtualTabletop.Common;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -9,22 +10,12 @@ using System.Windows;
 
 namespace HeroUI.HeroSystemsEngine
 {
-    public class HeroSystemsShellViewModel : Conductor<object>, IShell
+    public class HeroSystemsShellViewModelImpl : Conductor<object>, IShell
     {
-        private CombatSequence.CombatSequenceViewModel _sequenceView;
-        public HeroSystemsShellViewModel(CombatSequence.CombatSequenceViewModel sequenceView) {
-            _sequenceView = sequenceView;
-        }
-
-        public void ActivateCombatSequence()
+        public HeroSystemsShellViewModelImpl()
         {
-           
-
-            ActivateItem(_sequenceView);
-
+            var heroVirtualTabletopMainViewModel = IoC.Get<HeroVirtualTabletopMainViewModel>();
+            ActivateItem(heroVirtualTabletopMainViewModel);
         }
-
-       
-        
     }
 }

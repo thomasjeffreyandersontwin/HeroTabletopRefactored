@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Media;
-using HeroVirtualTableTop.Common;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Attack;
-namespace HeroVirtualTableTop.AnimatedAbility
+using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Attack;
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public interface AnimatedCharacterCommands
     {

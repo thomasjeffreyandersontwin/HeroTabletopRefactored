@@ -5,15 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using HeroVirtualTableTop.Crowd;
+using HeroVirtualTabletop.Crowd;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ploeh.AutoFixture;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Attack;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.ManagedCharacter;
 using Moq;
 
-namespace HeroVirtualTableTop.Roster
+namespace HeroVirtualTabletop.Roster
 {
     [TestClass]
     public class RosterTestSuite

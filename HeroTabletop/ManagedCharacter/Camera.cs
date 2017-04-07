@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Threading;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.Desktop;
 
-namespace HeroVirtualTableTop.ManagedCharacter
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     internal class CameraImpl : Camera
     {

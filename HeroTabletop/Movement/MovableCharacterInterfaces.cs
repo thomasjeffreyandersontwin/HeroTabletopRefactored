@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
 using Microsoft.Xna.Framework;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.ManagedCharacter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HeroVirtualTableTop.Movement
+namespace HeroVirtualTabletop.Movement
 {
     
 

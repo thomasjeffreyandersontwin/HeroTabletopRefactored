@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
 
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HeroVirtualTableTop.AnimatedAbility
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     [TestClass]
     public class AnimatedElementTestSuite

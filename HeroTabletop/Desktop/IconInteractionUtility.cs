@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Xna.Framework;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 {
     public class IconInteractionUtilityImpl : IconInteractionUtility
     {

@@ -6,12 +6,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using HeroVirtualTableTop.Desktop;
+using HeroVirtualTabletop.Desktop;
 using IrrKlang;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using HeroVirtualTableTop.Common;
+using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Settings;
 
-namespace HeroVirtualTableTop.AnimatedAbility
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public abstract class AnimationElementImpl : AnimationElement
     {
@@ -166,7 +167,7 @@ namespace HeroVirtualTableTop.AnimatedAbility
             get { return FX.Name; }
             set { }
         }
-        public static string COSTUME_DIR = Path.Combine(Settings.Default.CityOfHeroesGameDirectory, "costumes");
+        public static string COSTUME_DIR = Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, "costumes");
 
         public FXElementImpl(AnimatedCharacter owner, FXResource resource) : base(owner)
         {
@@ -406,7 +407,7 @@ namespace HeroVirtualTableTop.AnimatedAbility
             get { return Sound.Name; }
             set { }
         }
-        public static string SOUND_DIR = Path.Combine(Settings.Default.CityOfHeroesGameDirectory, "sound");
+        public static string SOUND_DIR = Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, "sound");
 
         private bool _active;
         private Timer UpdateSoundPlayingPositionTimer;
@@ -444,7 +445,7 @@ namespace HeroVirtualTableTop.AnimatedAbility
             set { }
         }
 
-        public string SoundFileName => Path.Combine(Settings.Default.CityOfHeroesGameDirectory, SOUND_DIR) + Sound.FullResourcePath;
+        public string SoundFileName => Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, SOUND_DIR) + Sound.FullResourcePath;
 
         public SoundEngineWrapper SoundEngine { get; set; }
 

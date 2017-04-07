@@ -5,11 +5,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
 
-namespace HeroVirtualTableTop.Movement
+namespace HeroVirtualTabletop.Movement
 {
     class MovableCharacterImpl : AnimatedCharacterImpl, MovableCharacter
     {

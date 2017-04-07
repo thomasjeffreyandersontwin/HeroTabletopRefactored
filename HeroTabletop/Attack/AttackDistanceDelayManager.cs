@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace HeroVirtualTableTop.AnimatedAbility
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class PauseBasedOnDistanceManagerImpl : PauseBasedOnDistanceManager
     {

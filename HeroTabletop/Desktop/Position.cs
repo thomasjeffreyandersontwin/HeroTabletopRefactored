@@ -4,7 +4,7 @@ using System.Threading;
 //using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.Xna.Framework;
 
-namespace HeroVirtualTableTop.Desktop
+namespace HeroVirtualTabletop.Desktop
 
 {
     public class PositionImpl : Position

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Common;
-namespace HeroVirtualTableTop.AnimatedAbility
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Common;
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedAbilityImpl : CharacterActionImpl, AnimatedAbility
     {

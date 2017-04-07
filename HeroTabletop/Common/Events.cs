@@ -1,4 +1,4 @@
-﻿using HeroVirtualTableTop.Crowd;
+﻿using HeroVirtualTabletop.Crowd;
 //using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroVirtualTableTop.Common
+namespace HeroVirtualTabletop.Common
 {
     public class AddToRosterEvent { }
     public class SaveCrowdEvent { }

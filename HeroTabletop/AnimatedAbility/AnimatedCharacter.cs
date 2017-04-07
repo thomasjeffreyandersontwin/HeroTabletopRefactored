@@ -5,11 +5,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using Castle.Core.Internal;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.Desktop;
-using HeroVirtualTableTop.ManagedCharacter;
-using HeroVirtualTableTop.Attack;
-namespace HeroVirtualTableTop.AnimatedAbility
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Attack;
+namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedCharacterImpl : ManagedCharacterImpl, AnimatedCharacter, INotifyPropertyChanged
     {
