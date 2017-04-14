@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HeroUI.HeroSystemsEngine"
              mc:Ignorable="d" 
-             Height="350" Width="525" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowState="Maximized" AllowsTransparency="True">
+             Height="350" Width="525" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowState="Normal" WindowStartupLocation="CenterScreen" AllowsTransparency="True">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
