@@ -55,11 +55,19 @@
       <HintPath>..\packages\Castle.Core.4.0.0\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Framework.WPF, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\HeroTabletop\lib\Framework.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Windows.Shell, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\HeroTabletop\packages\Microsoft.Windows.Shell.3.0.1.0\lib\net40\Microsoft.Windows.Shell.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Moq, Version=4.7.1.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.7.1\lib\net45\Moq.dll</HintPath>
       <Private>True</Private>
@@ -144,6 +152,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="HeroSystemsEngine\Common\HeroVirtualTabletopMainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="HeroSystemsEngine\Common\HeroResourceDictionary.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="HeroSystemsEngine\HeroSystemsShellView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -159,6 +179,20 @@
       <DependentUpon>CombatSequenceView.xaml</DependentUpon>
     </Compile>
     <Compile Include="HeroSystemsEngine\CombatSequence\CombatSequenceViewModel.cs" />
+    <Compile Include="HeroSystemsEngine\Common\HeroVirtualTabletopMainViewModel.cs" />
+    <Compile Include="HeroSystemsEngine\Common\Constants.cs" />
+    <Compile Include="HeroSystemsEngine\Common\Converters.cs" />
+    <Compile Include="HeroSystemsEngine\Common\Events.cs" />
+    <Compile Include="HeroSystemsEngine\Common\Helper.cs" />
+    <Compile Include="HeroSystemsEngine\Common\HeroVirtualTabletopMainViewModelImpl.cs" />
+    <Compile Include="HeroSystemsEngine\Common\HeroVirtualTabletopMainView.xaml.cs">
+      <DependentUpon>HeroVirtualTabletopMainView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerViewModel.cs" />
+    <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerView.xaml.cs">
+      <DependentUpon>CrowdMemberExplorerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerViewModelImpl.cs" />
     <Compile Include="HeroSystemsEngine\HeroSystemsBootstrapper.cs" />
     <Compile Include="HeroSystemsEngine\HeroSystemsEngineApp.cs" />
     <Compile Include="HeroSystemsEngine\HeroSystemsShellView.xaml.cs">
@@ -186,6 +220,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Resource Include="HeroSystemsEngine\Common\Fonts\FontAwesome.otf" />
+    <Resource Include="HeroSystemsEngine\Common\Fonts\Montreal-DemiBold.TTF" />
+    <Resource Include="HeroSystemsEngine\Common\Fonts\Paragon City Italic.ttf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -201,6 +238,10 @@
       <Project>{13cc2950-5a39-4e13-866c-8acafed0bbcd}</Project>
       <Name>HeroVirtualTabletop</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="HeroSystemsEngine\Common\Images\Search.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

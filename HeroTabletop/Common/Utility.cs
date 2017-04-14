@@ -8,7 +8,6 @@ using System.Windows.Media;
 using System.Windows.Input;
 using System.IO;
 using Newtonsoft.Json;
-using Module.Shared;
 using Microsoft.Xna.Framework;
 using System.Text.RegularExpressions;
 
@@ -16,23 +15,6 @@ namespace HeroVirtualTabletop.Common
 {
     public class CommonLibrary
     {
-        #region Resource Dictionary and Style related
-        public static System.Windows.Style GetCustomStyle(string styleName)
-        {
-            System.Windows.ResourceDictionary resource = new System.Windows.ResourceDictionary
-            {
-                Source = new Uri(Constants.RESOURCE_DICTIONARY_PATH, UriKind.RelativeOrAbsolute)
-            };
-            return (System.Windows.Style)resource[styleName];
-        }
-
-        public static System.Windows.Style GetCustomWindowStyle()
-        {
-            return GetCustomStyle(Constants.CUSTOM_MODELESS_TRANSPARENT_WINDOW_STYLENAME);
-        }
-
-        #endregion
-
         #region JSON Serialize/Deserialize
         public static T GetDeserializedJSONFromFile<T>(string fileName)
         {
@@ -90,89 +72,6 @@ namespace HeroVirtualTabletop.Common
 
         #endregion
 
-        #region General Control
-
-        public static Visual GetAncestorByType(DependencyObject element, Type type)
-        {
-            while (element != null && !(element.GetType() == type))
-                element = VisualTreeHelper.GetParent(element);
-
-            return element as Visual;
-        }
-
-        public static Visual GetTemplateAncestorByType(DependencyObject element, Type type)
-        {
-            while (element != null && !(element.GetType() == type))
-                element = (element as FrameworkElement).TemplatedParent;
-
-            return element as Visual;
-        }
-
-        public static Visual GetDescendantByType(Visual element, Type type)
-        {
-            if (element == null) return null;
-            if (element.GetType() == type) return element;
-            Visual foundElement = null;
-            if (element is FrameworkElement)
-                (element as FrameworkElement).ApplyTemplate();
-            for (int i = 0;
-                i < VisualTreeHelper.GetChildrenCount(element); i++)
-            {
-                Visual visual = VisualTreeHelper.GetChild(element, i) as Visual;
-                foundElement = GetDescendantByType(visual, type);
-                if (foundElement != null)
-                    break;
-            }
-            return foundElement;
-        }
-
-        public static string GetContainerWindowName(object element)
-        {
-            Window win = null;
-            string winName = "";
-
-            if (element is Window)
-            {
-                win = element as Window;
-                winName = win.Name;
-            }
-            else
-            {
-                DependencyObject dObj = element as DependencyObject;
-                while (win == null)
-                {
-                    FrameworkElement elem = dObj as FrameworkElement;
-                    dObj = elem.Parent;
-                    if (dObj is Window)
-                    {
-                        win = dObj as Window;
-                        winName = win.Name;
-                        break;
-                    }
-                }
-            }
-
-            return winName;
-        }
-
-        // Helper to search up the VisualTree
-        public static T FindAncestor<T>(DependencyObject current)
-            where T : DependencyObject
-        {
-            do
-            {
-                if (current is T)
-                {
-                    return (T)current;
-                }
-                current = VisualTreeHelper.GetParent(current);
-            }
-            while (current != null);
-            return null;
-        }
-
-        #endregion
-
         #region Collision Info
         //X:[126.30] Y:[-0.50] Z:[-60.09] D:[0.00]
         public static Vector3 GetCollisionVector(string collisionInfo)
@@ -219,26 +118,6 @@ namespace HeroVirtualTabletop.Common
         {
             return (Math.PI / 180) * angle;
         }
-
-        #endregion
-
-        #region UI Settings
-
-        //public static void SaveUISettings(string settingsName, object value)
-        //{
-        //    if (GlobalVariables_UISettings.ContainsKey(settingsName))
-        //        GlobalVariables_UISettings[settingsName] = value;
-        //    else
-        //        GlobalVariables_UISettings.Add(settingsName, value);
-        //}
-
-        //public static object GetUISettings(string settingsName)
-        //{
-        //    if (GlobalVariables_UISettings.ContainsKey(settingsName))
-        //        return GlobalVariables_UISettings[settingsName];
-        //    else
-        //        return null;
-        //}
 
         #endregion
 

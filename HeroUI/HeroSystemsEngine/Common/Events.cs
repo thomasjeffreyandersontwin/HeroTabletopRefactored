@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroVirtualTabletop.Common
+namespace HeroUI.HeroSystemsEngine.Events
 {
     public class AddToRosterEvent { }
     public class SaveCrowdEvent { }
     public class SaveCrowdCompletedEvent { }
     public class CreateCrowdFromModelsEvent { };
+    public class CrowdMemberExplorerLoadedEvent { };
 }

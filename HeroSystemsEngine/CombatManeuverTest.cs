@@ -4,8 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using HeroSystemEngine.Character;
 using HeroSystemEngine.Dice;
 using Moq;
-using HeroVirtualTableTop;
-using HeroVirtualTableTop.AnimatedAbility;
+using HeroVirtualTabletop;
+using HeroVirtualTabletop.AnimatedAbility;
 
 namespace HeroSystemEngine.Manuevers
 {

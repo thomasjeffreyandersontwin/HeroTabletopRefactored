@@ -48,7 +48,8 @@ namespace HeroVirtualTabletop.Crowd
         new string Name { get; set; }
         new int Order { get; set; }
     }
-    public interface CrowdMember : CrowdMemberCommands, INotifyPropertyChanged    {
+    public interface CrowdMember : CrowdMemberCommands, INotifyPropertyChanged
+    {
         int Order { get; set; }
         bool MatchesFilter { get; set; }
         string OldName { get; set; }
@@ -63,11 +64,8 @@ namespace HeroVirtualTabletop.Crowd
        
         bool CheckIfNameIsDuplicate(string updatedName, List<CrowdMember> members);
 
-        void RemoveParent(CrowdMember crowdMember);
-
-        
-
-}
+        void RemoveParent(CrowdMember crowdMember);  
+    }
     public interface CrowdMemberShip
     {
         int Order { get; set; }
@@ -89,25 +87,5 @@ namespace HeroVirtualTabletop.Crowd
         void CutToClipboard(CrowdMember member);
         void PasteFromClipboard(CrowdMember member);
     }
-
-    public interface CharacterExplorerViewModel
-    {
-        CrowdRepository CrowdRepository { get; set; }
-        CrowdMember SelectedCrowdMember { get; set; }
-        CrowdClipboard CrowdClipboard { get; set; }
-        //KeyBoardHook keyBoardHook { get; set; } // To do under desktops
-        void AddCrowd();
-        void AddCharacterCrowd();
-        void DeleteCrowdMember();
-        void RenameCrowdMember(CrowdMember member, string newName);
-        void MoveCrowdMember(CrowdMember movingCrowdMember, Crowd destinationCrowd);
-        void CloneCrowdMember(CrowdMember member);
-        void CutCrowdMember(CrowdMember member);
-        void LinkCrowdMember(CrowdMember member);
-        void PasteCrowdMember(CrowdMember member);
-        void AddCrowdMemberToRoster(CrowdMember member);
-        void AddCrowdFromModels();
-        void ApplyFilter();
-        void SortCrowds();
-    }
+   
 }

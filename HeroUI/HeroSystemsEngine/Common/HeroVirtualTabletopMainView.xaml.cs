@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HeroVirtualTabletop.Common
+namespace HeroUI.HeroSystemsEngine
 {
     /// <summary>
     /// Interaction logic for HeroVirtualTabletopMainView.xaml

@@ -1,4 +1,4 @@
-﻿    <Application x:Class="CaliburnMicroExample.App"
+﻿<Application x:Class="HeroUI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:HeroUI.HeroSystemsEngine">
@@ -6,7 +6,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <local:HeroSystemsBootstrapper x:Key="bootstrapper" />
+                    <local:HeroSystemsBootstrapper x:Key="bootstrapper"/>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

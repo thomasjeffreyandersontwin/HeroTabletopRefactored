@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using HeroSystemEngine.Manuevers;
 using HeroSystemEngine.Dice;
 
-using HeroVirtualTableTop;
-using HeroVirtualTableTop.Movement;
-using HeroVirtualTableTop.Crowd;
-using HeroVirtualTableTop.AnimatedAbility;
+using HeroVirtualTabletop;
+using HeroVirtualTabletop.Movement;
+using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.AnimatedAbility;
 
 namespace HeroSystemEngine.Character
 {

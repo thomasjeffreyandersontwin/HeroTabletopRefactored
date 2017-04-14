@@ -1,17 +1,19 @@
 ﻿using Caliburn.Micro;
+using HeroUI.HeroSystemsEngine.Crowd;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroVirtualTabletop.Common
+namespace HeroUI.HeroSystemsEngine
 {
 
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel
     {
         #region Private Members
         private IEventAggregator eventAggregator;
+        CrowdMemberExplorerViewModel crowdMemberExplorerViewModel;
 
         #endregion
 
@@ -127,9 +129,10 @@ namespace HeroVirtualTabletop.Common
         #endregion
 
         #region Constructor
-        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator)
+        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel)
         {
             this.eventAggregator = eventAggregator;
+            this.crowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
             //this.eventAggregator.GetEvent<AddToRosterEvent>().Subscribe((IEnumerable<CrowdMemberModel> models) => { this.IsRosterExplorerExpanded = true; });
             //this.eventAggregator.GetEvent<EditCharacterEvent>().Subscribe((Tuple<ICrowdMemberModel, IEnumerable<ICrowdMemberModel>> tuple) => { this.IsCharacterEditorExpanded = true; });
             //this.eventAggregator.GetEvent<EditIdentityEvent>().Subscribe((Tuple<Identity, Character> tuple) => { this.IsIdentityEditorExpanded = true; });

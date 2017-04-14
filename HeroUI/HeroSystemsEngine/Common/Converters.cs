@@ -11,7 +11,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace HeroVirtualTabletop.Common.Converters
+namespace HeroUI.HeroSystemsEngine.Converters
 {
     /// <summary>   Boolean to visibility converter. </summary>
     public class BooleanToVisibilityConverter : IValueConverter

@@ -1,18 +1,18 @@
-﻿<UserControl x:Class="HeroVirtualTabletop.Common.HeroVirtualTabletopMainView"
+﻿<UserControl x:Class="HeroUI.HeroSystemsEngine.HeroVirtualTabletopMainView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"            
-             xmlns:crowd="clr-namespace:HeroVirtualTabletop.Crowd"
-             xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter"
-             xmlns:converters="clr-namespace:Module.Shared.Converters;assembly=Module.Shared"
+             xmlns:crowd="clr-namespace:HeroVirtualTabletop.Crowd;assembly=HeroVirtualTabletop"
+             xmlns:crowdUI="clr-namespace:HeroUI.HeroSystemsEngine.Crowd"
+             xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
+             xmlns:converters="clr-namespace:HeroUI.HeroSystemsEngine.Converters"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Loaded="HeroVirtualTabletopMainView_Loaded">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/HeroVirtualTabletop;Component/Common/ResourceDictionary.xaml" />
+                <ResourceDictionary Source="/HeroSystemsEngine/Common/HeroResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="characterCrowdMainLayoutGrid">
@@ -43,7 +43,9 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterExplorerExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="CharacterExplorer">
                     </ToggleButton>
-                    <Grid x:Name="charExplorerPanel" Grid.Row="1"/>
+                    <Grid x:Name="charExplorerPanel" Grid.Row="1">
+                        <crowdUI:CrowdMemberExplorerView/>
+                    </Grid>
                 </Grid>
             </GroupBox>
         </Expander>

@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using HeroSystemEngine.Dice;
 using HeroSystemEngine.Character;
-using HeroVirtualTableTop.AnimatedAbility;
-using HeroVirtualTableTop.Attack;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
 
 namespace HeroSystemEngine.Manuevers
 {

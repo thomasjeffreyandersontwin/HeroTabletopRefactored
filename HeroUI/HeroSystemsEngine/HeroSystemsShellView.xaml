@@ -9,7 +9,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/HeroVirtualTabletop;Component/Common/ResourceDictionary.xaml" />
+                <ResourceDictionary Source="/HeroSystemsEngine/Common/HeroResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
