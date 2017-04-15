@@ -18,7 +18,7 @@ namespace HeroVirtualTabletop.Crowd
     {
         Dictionary<string, Crowd> CrowdsByName { get; }
         List<Crowd> Crowds { get; set; }
-
+        string CrowdRepositoryPath { get; set; }
         Crowd AllMembersCrowd { get; }
         Crowd NewCrowd(Crowd parent = null, string name = "Character");
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");

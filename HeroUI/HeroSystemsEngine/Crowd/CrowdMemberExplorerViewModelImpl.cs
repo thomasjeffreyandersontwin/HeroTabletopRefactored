@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using HeroVirtualTabletop.Crowd;
 using System.Collections.ObjectModel;
 using Caliburn.Micro;
+using System.IO;
 
 namespace HeroUI.HeroSystemsEngine.Crowd
 {
-    class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel
+    public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
         private ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> crowdCollection;
         public ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> CrowdCollection
@@ -25,48 +26,60 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             }
         }
 
+        private CrowdClipboard crowdClipboard;
         public CrowdClipboard CrowdClipboard
         {
             get
             {
-                throw new NotImplementedException();
+                return crowdClipboard;
             }
 
             set
             {
-                throw new NotImplementedException();
+                crowdClipboard = value;
             }
         }
 
+        private CrowdRepository crowdRepository;
         public CrowdRepository CrowdRepository
         {
             get
             {
-                throw new NotImplementedException();
+                return crowdRepository;
             }
 
             set
             {
-                throw new NotImplementedException();
+                crowdRepository = value;
             }
         }
 
+        private CrowdMember selectedCrowdMember;
         public CrowdMember SelectedCrowdMember
         {
             get
             {
-                throw new NotImplementedException();
+                return selectedCrowdMember;
             }
 
             set
             {
-                throw new NotImplementedException();
+                selectedCrowdMember = value;
+                NotifyOfPropertyChange(() => SelectedCrowdMember);
             }
+        }
+        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard)
+        {
+            this.CrowdRepository = repository;
+            this.CrowdClipboard = clipboard;
+            this.CrowdRepository.CrowdRepositoryPath = Path.Combine(Properties.Settings.Default.GameDirectory, Constants.GAME_DATA_FOLDERNAME, Constants.GAME_CROWD_REPOSITORY_FILENAME);
+            this.CrowdRepository.LoadCrowds();
+            this.CrowdCollection = new ObservableCollection<HeroVirtualTabletop.Crowd.Crowd>(this.CrowdRepository.Crowds);
         }
 
         public void AddCharacterCrowd()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void AddCrowd()

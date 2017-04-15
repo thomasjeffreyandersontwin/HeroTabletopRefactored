@@ -4,9 +4,11 @@ using Castle.Core.Internal;
 using Framework.WPF.Library;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Common;
+using Caliburn.Micro;
+
 namespace HeroVirtualTabletop.ManagedCharacter
 {
-    public class ManagedCharacterImpl : NotifyPropertyChanged, ManagedCharacter, CharacterActionContainer
+    public class ManagedCharacterImpl : PropertyChangedBase, ManagedCharacter, CharacterActionContainer
     {
         private bool _maneuveringWithCamera;
         public ManagedCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera,
@@ -32,7 +34,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public Camera Camera { get; set; }
 
         public Position Position => MemoryInstance.Position;
-        public virtual string Name { get; set; }
+        private string name;
+        public virtual string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+                NotifyOfPropertyChange(() => Name);
+            }
+        }
         public virtual string DesktopLabel
         {
             get

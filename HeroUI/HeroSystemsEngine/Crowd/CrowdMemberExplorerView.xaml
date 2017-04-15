@@ -10,8 +10,7 @@
              xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
              xmlns:converters="clr-namespace:HeroUI.HeroSystemsEngine.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" behaviors:CommandBehavior.Event="Loaded" behaviors:CommandBehavior.Command="{Binding LoadCrowdCollectionCommand}" behaviors:CommandBehavior.CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
-             >
+             mc:Ignorable="d" behaviors:CommandBehavior.Event="Loaded" behaviors:CommandBehavior.Command="{Binding LoadCrowdCollectionCommand}" behaviors:CommandBehavior.CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -43,7 +42,7 @@
                 <Button x:Name="btCut" Content="&#xf0c4;" ToolTip="Cut (Ctrl+X)" Command="{Binding CutCharacterCrowdCommand}"/>
                 <Button x:Name="btLink" Content="&#xf0c1;" ToolTip="Link (Ctrl+L)" Command="{Binding LinkCharacterCrowdCommand}"/>
                 <Button x:Name="btPaste" Content="&#xf0ea;" ToolTip="Paste (Ctrl+V)" Command="{Binding PasteCharacterCrowdCommand}"/>
-                <Button x:Name="btAddCharacter" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)" Command="{Binding AddCharacterCommand}"/>
+                <Button x:Name="AddCharacterCrowd" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <Button x:Name="btAddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)" Command="{Binding AddCrowdCommand}"/>
@@ -139,14 +138,14 @@
                     </Grid>
                 </DataTemplate>
             </TreeView.Resources>
-            <TreeView.ItemContainerStyle>
+            <!--<TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem" BasedOn="{StaticResource searchableTreeViewItem}">
                     <Style.Resources>
                         <converters:BooleanToVisibilityConverter x:Key="boolToVisibility"></converters:BooleanToVisibilityConverter>
                     </Style.Resources>
                     <Setter Property="Visibility" Value="{Binding Path=IsMatched, Mode=OneWay, Converter={StaticResource ResourceKey=boolToVisibility}}"/>
                 </Style>
-            </TreeView.ItemContainerStyle>
+            </TreeView.ItemContainerStyle>-->
             <behaviors:CommandBehaviorCollection.Behaviors>
                 <behaviors:BehaviorBinding Event="SelectedItemChanged" Command="{Binding UpdateSelectedCrowdMemberCommand}" CommandParameter="{Binding ElementName=treeViewCrowd}"/>
             </behaviors:CommandBehaviorCollection.Behaviors>

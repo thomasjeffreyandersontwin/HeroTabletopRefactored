@@ -10,7 +10,6 @@ using HeroVirtualTabletop.Desktop;
 using IrrKlang;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using HeroVirtualTabletop.Common;
-using HeroVirtualTabletop.Settings;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -167,11 +166,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
             get { return FX.Name; }
             set { }
         }
-        public static string COSTUME_DIR = Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, "costumes");
+        public static string COSTUME_DIR = "";
 
-        public FXElementImpl(AnimatedCharacter owner, FXResource resource) : base(owner)
+        public FXElementImpl(AnimatedCharacter owner, FXResource resource, string gameDirectory = "") : base(owner)
         {
             FX = resource;
+            COSTUME_DIR = Path.Combine(gameDirectory, "costumes");
         }
 
         public FXElementImpl()
@@ -407,14 +407,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
             get { return Sound.Name; }
             set { }
         }
-        public static string SOUND_DIR = Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, "sound");
+        public static string SOUND_DIR = "";
 
         private bool _active;
         private Timer UpdateSoundPlayingPositionTimer;
 
-        public SoundElementImpl(AnimatedCharacter owner, SoundResource resource) : base(owner)
+        public SoundElementImpl(AnimatedCharacter owner, SoundResource resource, string gameDirectory = "") : base(owner)
         {
             Sound = resource;
+            SOUND_DIR = Path.Combine(gameDirectory, "sound");
         }
 
         public SoundElementImpl()
@@ -445,7 +446,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set { }
         }
 
-        public string SoundFileName => Path.Combine(Settings.Settings.Default.CityOfHeroesGameDirectory, SOUND_DIR) + Sound.FullResourcePath;
+        public string SoundFileName => SOUND_DIR + Sound.FullResourcePath;
 
         public SoundEngineWrapper SoundEngine { get; set; }
 

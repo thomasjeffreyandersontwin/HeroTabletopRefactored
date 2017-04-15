@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='iso-8859-1'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="hero_tabletop_refactored.Settings" GeneratedClassName="Settings">
-  <Profiles />
-  <Settings>
-    <Setting Name="CityOfHeroesGameDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\champions\applications\COH</Value>
-    </Setting>
-  </Settings>
-</SettingsFile>

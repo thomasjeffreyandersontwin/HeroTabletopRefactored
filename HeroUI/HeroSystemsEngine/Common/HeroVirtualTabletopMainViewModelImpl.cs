@@ -2,18 +2,18 @@
 using HeroUI.HeroSystemsEngine.Crowd;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HeroUI.HeroSystemsEngine
 {
-
-    public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel
+    public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell
     {
         #region Private Members
         private IEventAggregator eventAggregator;
-        CrowdMemberExplorerViewModel crowdMemberExplorerViewModel;
+        
 
         #endregion
 
@@ -126,13 +126,27 @@ namespace HeroUI.HeroSystemsEngine
             }
         }
 
+        private CrowdMemberExplorerViewModel crowdMemberExplorerViewModel;
+        public CrowdMemberExplorerViewModel CrowdMemberExplorerView
+        {
+            get
+            {
+                return crowdMemberExplorerViewModel;
+            }
+            set
+            {
+                crowdMemberExplorerViewModel = value;
+                NotifyOfPropertyChange(() => CrowdMemberExplorerView);
+            }
+        }
+
         #endregion
 
         #region Constructor
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel)
         {
             this.eventAggregator = eventAggregator;
-            this.crowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
+            this.CrowdMemberExplorerView = crowdMemberExplorerViewModel;
             //this.eventAggregator.GetEvent<AddToRosterEvent>().Subscribe((IEnumerable<CrowdMemberModel> models) => { this.IsRosterExplorerExpanded = true; });
             //this.eventAggregator.GetEvent<EditCharacterEvent>().Subscribe((Tuple<ICrowdMemberModel, IEnumerable<ICrowdMemberModel>> tuple) => { this.IsCharacterEditorExpanded = true; });
             //this.eventAggregator.GetEvent<EditIdentityEvent>().Subscribe((Tuple<Identity, Character> tuple) => { this.IsIdentityEditorExpanded = true; });

@@ -8,6 +8,9 @@ using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Roster;
+using HeroVirtualTabletop.Common;
+using System.IO;
+using Caliburn.Micro;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
 namespace HeroVirtualTabletop.Crowd
@@ -32,6 +35,7 @@ namespace HeroVirtualTabletop.Crowd
         public CharacterCrowdMember NewCharacterCrowdMemberInstance { get; set; } //for DI to insert
         public bool UsingDependencyInjection { get; set; }
 
+        public string CrowdRepositoryPath { get; set; }
 
         public Crowd AllMembersCrowd
         {
@@ -153,16 +157,19 @@ namespace HeroVirtualTabletop.Crowd
 
         public void LoadCrowds()
         {
-            throw new NotImplementedException();
+            if(File.Exists(this.CrowdRepositoryPath))
+                this.Crowds = CommonLibrary.GetDeserializedJSONFromFile<List<Crowd>>(this.CrowdRepositoryPath);
+            if (this.Crowds == null)
+                this.Crowds = new List<Crowd>();
         }
 
         public void SaveCrowds()
         {
-            throw new NotImplementedException();
+            CommonLibrary.SerializeObjectAsJSONToFile(this.CrowdRepositoryPath, this.Crowds);
         }
     }
 
-    public class CrowdImpl : NotifyPropertyChanged, Crowd
+    public class CrowdImpl : PropertyChangedBase, Crowd
     {
         private CrowdMemberShip _loadedParentMembership;
 
@@ -191,7 +198,7 @@ namespace HeroVirtualTabletop.Crowd
                         throw new DuplicateKeyException(value);
                 OldName = value;
                 _name = value;
-                OnPropertyChanged("Name");
+                NotifyOfPropertyChange(() => Name);
             }
         }
 
@@ -303,7 +310,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 if (_loadedParentMembership != null)
                     _loadedParentMembership.Order = value;
-                OnPropertyChanged("Order");
+                
             }
         }
 
@@ -396,7 +403,7 @@ namespace HeroVirtualTabletop.Crowd
             set
             {
                 _matchedFilter = value;
-                OnPropertyChanged("IsMatched");
+                NotifyOfPropertyChange(() => MatchesFilter);
             }
         }
 
@@ -479,7 +486,7 @@ namespace HeroVirtualTabletop.Crowd
         }
     }
 
-    public class CrowdMemberShipImpl : NotifyPropertyChanged, CrowdMemberShip
+    public class CrowdMemberShipImpl : PropertyChangedBase, CrowdMemberShip
     {
         private Position _savedPosition;
 
@@ -503,7 +510,7 @@ namespace HeroVirtualTabletop.Crowd
             set
             {
                 _savedPosition = value;
-                OnPropertyChanged("SavedPosition");
+                NotifyOfPropertyChange(() => SavedPosition);
             }
         }
 
@@ -712,7 +719,7 @@ namespace HeroVirtualTabletop.Crowd
             set
             {
                 isExpanded = value;
-                OnPropertyChanged("IsExpanded");
+                NotifyOfPropertyChange(() => IsExpanded);
             }
         }
 
@@ -768,7 +775,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 if (_loadedParentMembership != null)
                     _loadedParentMembership.Order = value;
-                OnPropertyChanged("Order");
+                NotifyOfPropertyChange(() => Order);
             }
         }
 
@@ -786,7 +793,7 @@ namespace HeroVirtualTabletop.Crowd
                     throw new DuplicateKeyException(value);
                 OldName = _name;
                 _name = value;
-                OnPropertyChanged("Name");
+                NotifyOfPropertyChange(() => Name);
             }
         }
 
@@ -823,7 +830,7 @@ namespace HeroVirtualTabletop.Crowd
             set
             {
                 _matchedFilter = value;
-                OnPropertyChanged("IsMatched");
+                NotifyOfPropertyChange(() => MatchesFilter);
             }
         }
 
