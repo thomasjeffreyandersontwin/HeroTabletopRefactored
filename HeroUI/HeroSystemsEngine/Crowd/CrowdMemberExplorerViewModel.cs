@@ -26,7 +26,6 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         void PasteCrowdMember(CrowdMember member);
         void AddCrowdMemberToRoster(CrowdMember member);
         void CreateCrowdFromModels();
-        void AddCrowdFromModels();
         void ApplyFilter(string filter);
         void SortCrowds();
     }

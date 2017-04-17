@@ -90,11 +90,6 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             
         }
 
-        public void AddCrowdFromModels()
-        {
-            throw new NotImplementedException();
-        }
-
         public void AddCrowdMemberToRoster(CrowdMember member)
         {
             throw new NotImplementedException();
