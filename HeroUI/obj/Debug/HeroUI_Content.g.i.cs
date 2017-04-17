@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("module.herovirtualtabletop.dll")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("herosystemsengine/common/images/search.png")]
 
 

@@ -4,17 +4,17 @@
 library
 C#
 .cs
-C:\champions\applications\HeroTabletopRefactored\HeroTabletop\obj\Debug\
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroTabletop\obj\Debug\
 hero_tabletop_refactored
 none
 false
 DEBUG;TRACE
 
-11782375232
+26379950
 
-481211359889
-83295872290
-Common\HeroVirtualTabletopMainView.xaml;
+491808574454
+831698961893
+Common\HeroVirtualTabletopMainView.xaml;Common\ResourceDictionary.xaml;
 
 False
 

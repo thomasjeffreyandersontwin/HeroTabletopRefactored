@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI\obj\Debug\
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroUI\obj\Debug\
 HeroUI
 none
 false
 DEBUG;TRACE
-C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroUI\App.xaml
-2-1724522032
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroUI\App.xaml
+5-52925638
 
-15-420778138
-851157204318
-HeroSystemsEngine\CombatSequence\CombatSequenceView.xaml;HeroSystemsEngine\HeroSystemsShellView.xaml;
+26626404307
+90-2119087395
+HeroSystemsEngine\CombatSequence\CombatSequenceView.xaml;HeroSystemsEngine\Common\HeroVirtualTabletopMainView.xaml;HeroSystemsEngine\Common\HeroResourceDictionary.xaml;HeroSystemsEngine\Crowd\CrowdMemberExplorerView.xaml;HeroSystemsEngine\HeroSystemsShellView.xaml;
 
 False
 

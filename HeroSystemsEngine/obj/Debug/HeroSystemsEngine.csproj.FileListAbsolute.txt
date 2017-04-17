@@ -45,3 +45,6 @@ C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroSy
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.csprojResolveAssemblyReference.cache
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.dll
 C:\champions\applications\COH\HeroVirtualTableTop\HeroVirtualTabletop.WPF\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.pdb
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.csprojResolveAssemblyReference.cache
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.dll
+D:\Work\Freelancing\Hero Virtual Table Top - Refactored\HeroSystemsEngine\obj\Debug\HeroSystemsEngine.pdb
