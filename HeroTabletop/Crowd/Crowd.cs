@@ -310,7 +310,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 if (_loadedParentMembership != null)
                     _loadedParentMembership.Order = value;
-                
+                NotifyOfPropertyChange(() => Order);
             }
         }
 

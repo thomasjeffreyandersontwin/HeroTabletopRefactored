@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Caliburn.Micro;
 using System.Reflection;
 using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Crowd;
+using HeroUI.HeroSystemsEngine.Crowd;
 
 namespace HeroUI.HeroSystemsEngine
 {
@@ -13,7 +15,7 @@ namespace HeroUI.HeroSystemsEngine
 
    public class HeroSystemsBootstrapper : BootstrapperBase
     {
-       private SimpleContainer _container = new SimpleContainer();
+       private SimpleContainer container = new SimpleContainer();
         public HeroSystemsBootstrapper()
         {
             Initialize();
@@ -25,26 +27,29 @@ namespace HeroUI.HeroSystemsEngine
         }
         protected override object GetInstance(Type serviceType, string key)
         {
-            return _container.GetInstance(serviceType, key);
+            return container.GetInstance(serviceType, key);
         }
 
         protected override IEnumerable<object> GetAllInstances(Type serviceType)
         {
-            return _container.GetAllInstances(serviceType);
+            return container.GetAllInstances(serviceType);
         }
 
         protected override void BuildUp(object instance)
         {
-            _container.BuildUp(instance);
+            container.BuildUp(instance);
         }
 
         protected override void Configure()
         {
-            _container = new SimpleContainer();
-            _container.Singleton<IWindowManager, WindowManager>();
-            _container.Singleton<IEventAggregator, EventAggregator>();
-            _container.PerRequest<IShell, HeroSystemsShellViewModelImpl>();
-            _container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
+            container = new SimpleContainer();
+            container.Singleton<IWindowManager, WindowManager>();
+            container.Singleton<IEventAggregator, EventAggregator>();
+            container.PerRequest<IShell, HeroSystemsShellViewModelImpl>();
+            container.Singleton<CrowdRepository, CrowdRepositoryImpl>();
+            container.Singleton<CrowdClipboard, CrowdClipboardImpl>();
+            container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
+            container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }
