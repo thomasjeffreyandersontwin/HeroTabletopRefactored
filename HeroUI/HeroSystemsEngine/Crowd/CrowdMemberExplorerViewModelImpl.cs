@@ -12,6 +12,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 {
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
+        public IEventAggregator EventAggregator { get; set; }
+
         private ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> crowdCollection;
         public ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> CrowdCollection
         {
@@ -68,10 +70,11 @@ namespace HeroUI.HeroSystemsEngine.Crowd
                 NotifyOfPropertyChange(() => SelectedCrowdMember);
             }
         }
-        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard)
+        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = repository;
             this.CrowdClipboard = clipboard;
+            this.EventAggregator = eventAggregator;
             this.CrowdRepository.CrowdRepositoryPath = Path.Combine(Properties.Settings.Default.GameDirectory, Constants.GAME_DATA_FOLDERNAME, Constants.GAME_CROWD_REPOSITORY_FILENAME);
             this.CrowdRepository.LoadCrowds();
             this.CrowdCollection = new ObservableCollection<HeroVirtualTabletop.Crowd.Crowd>(this.CrowdRepository.Crowds);
@@ -84,7 +87,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
         public void AddCrowd()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void AddCrowdFromModels()
@@ -138,6 +141,21 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         }
 
         public void SortCrowds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateCrowdFromModels()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ApplyFilter(string filter)
         {
             throw new NotImplementedException();
         }

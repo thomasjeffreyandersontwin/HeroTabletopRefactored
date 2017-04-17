@@ -27,7 +27,7 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdRepositoryImpl()
         {
             Crowds = new List<Crowd>();
-            createAllmembersCrowd();
+            //createAllmembersCrowd();
         }
 
         public Crowd NewCrowdInstance { get; set; } //for DI to insert
@@ -484,6 +484,12 @@ namespace HeroVirtualTabletop.Crowd
                 //to do MemberShips.Sort(ListSortDirection.Ascending, new CrowdMemberComparer());
             }
         }
+
+        public void Rename(string newName)
+        {
+            this.OldName = this.Name;
+            this.Name = newName;
+        }
     }
 
     public class CrowdMemberShipImpl : PropertyChangedBase, CrowdMemberShip
@@ -872,6 +878,12 @@ namespace HeroVirtualTabletop.Crowd
             return clone;
         }
 
+        public void Rename(string newName)
+        {
+            this.OldName = this.Name;
+            this.Name = newName;
+        }
+
         public RosterGroup RosterParent { get; set; }
     }
 
@@ -880,7 +892,7 @@ namespace HeroVirtualTabletop.Crowd
         private object clipboardObject;
         public ClipboardAction CurrentClipboardAction
         {
-            get;set;
+            get; set;
         }
 
         public void CopyToClipboard(CrowdMember member)
@@ -889,10 +901,10 @@ namespace HeroVirtualTabletop.Crowd
             clipboardObject = member;
         }
 
-        public void CutToClipboard(CrowdMember member)
+        public void CutToClipboard(CrowdMember member, Crowd parent)
         {
-            CurrentClipboardAction = ClipboardAction.Cut;
-            clipboardObject = member;
+            this.CurrentClipboardAction = ClipboardAction.Cut;
+            this.clipboardObject = new object[] { member, parent };
         }
 
         public void LinkToClipboard(CrowdMember member)
@@ -901,18 +913,18 @@ namespace HeroVirtualTabletop.Crowd
             clipboardObject = member;
         }
 
-        public void PasteFromClipboard(CrowdMember member)
+        public void PasteFromClipboard(CrowdMember destinationMember)
         {
-            switch(CurrentClipboardAction)
+            switch (this.CurrentClipboardAction)
             {
                 case ClipboardAction.Clone:
-                    cloneAndPaste(member);
+                    cloneAndPaste(destinationMember);
                     break;
                 case ClipboardAction.Cut:
-                    cutAndPaste(member);
+                    cutAndPaste(destinationMember);
                     break;
                 case ClipboardAction.Link:
-                    linkAndPaste(member);
+                    linkAndPaste(destinationMember);
                     break;
             }
         }
@@ -928,10 +940,13 @@ namespace HeroVirtualTabletop.Crowd
         private void cutAndPaste(CrowdMember member)
         {
             var destCrowd = getDestinationCrowdForPaste(member);
-            var cuttingMember = clipboardObject as CrowdMember;
-            if (destCrowd != cuttingMember?.Parent)
+            var objs = this.clipboardObject as object[];
+            var cuttingMember = objs[0] as CrowdMember;
+            var cuttingMemberParent = objs[1] as Crowd;
+            var parent = cuttingMemberParent ?? cuttingMember.Parent;
+            if (parent != null && destCrowd != parent)
             {
-                cuttingMember?.Parent.RemoveMember(cuttingMember);
+                parent.RemoveMember(cuttingMember);
                 destCrowd.AddCrowdMember(cuttingMember);
             }
         }

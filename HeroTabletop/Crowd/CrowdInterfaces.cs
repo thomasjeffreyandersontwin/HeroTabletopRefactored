@@ -53,7 +53,7 @@ namespace HeroVirtualTabletop.Crowd
         int Order { get; set; }
         bool MatchesFilter { get; set; }
         string OldName { get; set; }
-
+        void Rename(string newName);
         string Name { get; set; }
         List<CrowdMemberShip> AllCrowdMembershipParents { get; }
         Crowd Parent { get; set; }
@@ -84,7 +84,7 @@ namespace HeroVirtualTabletop.Crowd
         ClipboardAction CurrentClipboardAction { get; set; }
         void CopyToClipboard(CrowdMember member);
         void LinkToClipboard(CrowdMember member);
-        void CutToClipboard(CrowdMember member);
+        void CutToClipboard(CrowdMember member, Crowd sourceParent = null);
         void PasteFromClipboard(CrowdMember member);
     }
    

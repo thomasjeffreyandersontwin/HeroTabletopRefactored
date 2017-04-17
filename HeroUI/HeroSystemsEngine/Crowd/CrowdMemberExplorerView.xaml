@@ -45,7 +45,7 @@
                 <Button x:Name="AddCharacterCrowd" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="btAddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)" Command="{Binding AddCrowdCommand}"/>
+                <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)"/>
                 <Button x:Name="btRemove" Content="&#xf235;" ToolTip="Remove (Ctrl+Minus/Del)" Command="{Binding DeleteCharacterCrowdCommand}" />
                 <Button x:Name="btEdit" Content="&#xf044;" ToolTip="Edit (Ctrl+E)" Command="{Binding EditCharacterCommand}"/>
                 <Button x:Name="btAddToRoster" Content="&#xf090;" ToolTip="Add to Roster (Ctrl+R)" Command="{Binding AddToRosterCommand}" />

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
+using Caliburn.Micro;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -723,100 +724,14 @@ namespace HeroVirtualTabletop.Crowd
         }
     }
 
-    public class CharacterExplorerViewModelTestSuite
-    {
-        public void AddCrowd_AddsCrowdToRepository()
-        {
-
-        }
-        public void AddCrowd_AddsCrowdUnderSelectedCrowd()
-        {
-
-        }
-        public void AddCrowd_AddsCrowdToCrowdCollectionIfNoSelectedCrowd()
-        {
-
-        }
-        public void AddCharacterCrowd_AddsCharacterCrowdToRepository()
-        {
-
-        }
-        public void AddCharacterCrowd_AddsCharacterCrowdUnderSelectedCrowd()
-        {
-
-        }
-        public void AddCharacterCrowd_AddsCharacterCrowdUnderAllCharactersIfNoSelectedCrowd()
-        {
-
-        }
-        public void DeleteCrowdMember_DeletesCrowdMemberFromRepository()
-        {
-
-        }
-        public void DeleteCrowdMember_DeletesCrowdMemberFromSelectedCrowd()
-        {
-
-        }
-        public void DeleteCrowdMember_DeletesAllOccurencesOfCharacterCrowdMemberIfDeletedFromAllCharacters()
-        {
-
-        }
-        public void RenameCrowdMember_UpdatesNameForCrowdMember()
-        {
-
-        }
-        public void MoveCrowdMember_MovesCrowdMemberToDestinationCrowd()
-        {
-
-        }
-        public void CloneCrowdMember_SetsCloneClipboardAction()
-        {
-
-        }
-        public void CutCrowdMember_SetsCutClipboardAction()
-        {
-
-        }
-        public void LinkCrowdMember_SetsLinkClipboardAction()
-        {
-
-        }
-        public void PasteCrowdMember_ClonesSelectedCrowdMemberWhenCloneActionChosen()
-        {
-
-        }
-        public void PasteCrowdMember_CutsSelectedCrowdMemberWhenCutActionChosen()
-        {
-
-        }
-        public void PasteCrowdMember_LinksSelectedCrowdMemberWhenLinkActionChosen()
-        {
-
-        }
-        public void AddCrowdMemberToRoster_AddsCrowdMemberToRoster()
-        {
-
-        }
-        public void AddCrowdFromModels_CreatesCrowdFromModels()
-        {
-
-        }
-        public void ApplyFilter_FiltersCrowdCollectionWithProvidedFilter()
-        {
-
-        }
-        public void SortCrowds_SortsCrowdCollectionAlphaNumerically()
-        {
-
-        }
-    }
-
     public class CrowdTestObjectsFactory : AttackTestObjectsFactory
     {
         public CrowdTestObjectsFactory()
         {
             setupStandardFixture();
         }
+
+        public IEventAggregator MockEventAggregator => CustomizedMockFixture.Create<EventAggregator>();
 
         public CrowdRepository RepositoryUnderTest => StandardizedFixture.Create<CrowdRepository>();
 
@@ -839,6 +754,17 @@ namespace HeroVirtualTabletop.Crowd
             {
                 var repo = StandardizedFixture.Create<CrowdRepository>();
                 repo.Crowds.AddRange(ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder);
+                return repo;
+            }
+        }
+
+        public CrowdRepository RepositoryWithMockCrowdMembers
+        {
+            get
+            {
+                var repo = StandardizedFixture.Create<CrowdRepository>();
+                repo.Crowds.Add(CrowdUnderTestWithMockCrowdMembers);
+                repo.Crowds.Add(CrowdUnderTestWithMockCrowdMembers);
                 return repo;
             }
         }
@@ -885,6 +811,7 @@ namespace HeroVirtualTabletop.Crowd
         public Crowd CrowdUnderTest => StandardizedFixture.Create<CrowdImpl>();
 
         public CrowdClipboard CrowdClipboardUnderTest => StandardizedFixture.Create<CrowdClipboardImpl>();
+        public CrowdClipboard MockCrowdClipboard => CustomizedMockFixture.Create<CrowdClipboard>();
 
         public List<Crowd> ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder
         {
@@ -921,6 +848,17 @@ namespace HeroVirtualTabletop.Crowd
         }
         public CrowdMemberShip MockCrowdMembership => MockFixture.Create<CrowdMemberShip>();
         public CrowdMemberShip MemberShipWithCharacterUnderTest => new CrowdMemberShipImpl(CrowdUnderTest, CharacterCrowdMemberUnderTest);
+
+        public Crowd CrowdUnderTestWithMockCrowdMembers
+        {
+            get
+            {
+                var crowd = CrowdUnderTest;
+                foreach (var member in MockFixture.CreateMany<CrowdMember>())
+                    crowd.AddCrowdMember(member);
+                return crowd;
+            }
+        }
 
         private void setupStandardFixture()
         {

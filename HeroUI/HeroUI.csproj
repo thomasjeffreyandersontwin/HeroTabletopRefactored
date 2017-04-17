@@ -189,6 +189,7 @@
     <Compile Include="HeroSystemsEngine\Common\HeroVirtualTabletopMainView.xaml.cs">
       <DependentUpon>HeroVirtualTabletopMainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerTestSuite.cs" />
     <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerViewModel.cs" />
     <Compile Include="HeroSystemsEngine\Crowd\CrowdMemberExplorerView.xaml.cs">
       <DependentUpon>CrowdMemberExplorerView.xaml</DependentUpon>
