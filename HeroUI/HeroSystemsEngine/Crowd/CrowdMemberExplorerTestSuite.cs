@@ -25,12 +25,18 @@ namespace HeroUI.HeroSystemsEngine.Crowd
                 return charExpVM;
             }
         }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            TestObjectsFactory = new CrowdTestObjectsFactory();
+        }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
 
             charExpVM.AddCrowd();
@@ -42,7 +48,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCrowd_InvokesRepositoryAddCrowdWithSelectedCrowdAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             charExpVM.SelectedCrowdMember = crowd0;
@@ -56,7 +62,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCrowd_InvokesRepositoryAddCrowdWithParentOfSelectedCrowdMemberAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
@@ -72,7 +78,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
 
             charExpVM.AddCharacterCrowd();
@@ -84,7 +90,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithSelectedCrowdAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             charExpVM.SelectedCrowdMember = crowd0;
@@ -98,7 +104,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithParentOfSelectedCrowdMemberAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
@@ -114,7 +120,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void DeleteCrowdMember_InvokesRemoveCrowdMemberForParentOfSelectedCrowdMember()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;

@@ -92,67 +92,67 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
         public void AddCrowdMemberToRoster(CrowdMember member)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void ApplyFilter()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void CloneCrowdMember(CrowdMember member)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void CutCrowdMember(CrowdMember member)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void DeleteCrowdMember()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void LinkCrowdMember(CrowdMember member)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void PasteCrowdMember(CrowdMember member)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void RenameCrowdMember(CrowdMember member, string newName)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void SortCrowds()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void CreateCrowdFromModels()
         {
-            throw new NotImplementedException();
+            
         }
 
         public void ApplyFilter(string filter)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

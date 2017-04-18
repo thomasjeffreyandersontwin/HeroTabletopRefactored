@@ -24,11 +24,5 @@ namespace HeroUI.HeroSystemsEngine
         {
             InitializeComponent();
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            //System.Windows.Style style = HelperLibrary.GetCustomWindowStyle();
-            //this.Style = style;
-        }
     }
 }

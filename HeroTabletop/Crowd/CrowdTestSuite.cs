@@ -731,9 +731,11 @@ namespace HeroVirtualTabletop.Crowd
             setupStandardFixture();
         }
 
-        public IEventAggregator MockEventAggregator => CustomizedMockFixture.Create<EventAggregator>();
+        public IEventAggregator MockEventAggregator => CustomizedMockFixture.Create<IEventAggregator>();
 
         public CrowdRepository RepositoryUnderTest => StandardizedFixture.Create<CrowdRepository>();
+
+        public CrowdRepository MockRepository => CustomizedMockFixture.Create<CrowdRepository>();
 
         public CrowdRepository MockRepositoryWithCrowdsOnlyUnderTest
         {
@@ -895,6 +897,10 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(CrowdClipboard),
                     typeof(CrowdClipboardImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(IEventAggregator),
+                    typeof(EventAggregator)));
             setupFixtureToBuildCrowdRepositories();
         }
         private void setupFixtureToBuildCrowdRepositories()
