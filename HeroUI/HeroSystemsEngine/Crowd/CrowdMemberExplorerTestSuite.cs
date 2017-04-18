@@ -8,9 +8,11 @@ using Ploeh.AutoFixture;
 using Moq;
 using Caliburn.Micro;
 using HeroUI.HeroSystemsEngine.Events;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HeroUI.HeroSystemsEngine.Crowd
 {
+    [TestClass]
     public class CrowdMemberExplorerTestSuite
     {
         public CrowdTestObjectsFactory TestObjectsFactory;
@@ -23,6 +25,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
                 return charExpVM;
             }
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -33,6 +37,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(null, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowdWithSelectedCrowdAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -45,6 +51,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(crowd0, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowdWithParentOfSelectedCrowdMemberAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -59,6 +67,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(crowd0, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -69,6 +79,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCharacterCrowdMember(null, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithSelectedCrowdAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -81,6 +93,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCharacterCrowdMember(crowd0, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithParentOfSelectedCrowdMemberAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -95,6 +109,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCharacterCrowdMember(crowd0, "Character"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void DeleteCrowdMember_InvokesRemoveCrowdMemberForParentOfSelectedCrowdMember()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -109,6 +125,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.RemoveMember(charCrowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void RenameCrowdMember_InvokesCrowdMemberRename()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -121,6 +139,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.Rename("newNameCrowd"));
             Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.Rename("newNameCharacter"));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void RenameCrowdMember_ChecksDuplicateNameForCrowdMember()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -133,6 +153,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.CheckIfNameIsDuplicate("newNameCrowd", null));
             Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.CheckIfNameIsDuplicate("newNameCharacter", null));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void MoveCrowdMember_InvokesMoveCrowdMemberForDestinationCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -147,6 +169,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd1).Verify(c => c.MoveCrowdMemberAfter(charCrowd1, charCrowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void CloneCrowdMember_InvokesClipboardCopy()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -164,6 +188,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.CopyToClipboard(charCrowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void CutCrowdMember_InvokesClipboardCut()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -181,6 +207,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.CutToClipboard(charCrowd0, crowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void LinkCrowdMember_InvokesClipboardLink()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -198,6 +226,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.LinkToClipboard(charCrowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void PasteCrowdMember_InvokesClipboardPaste()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -216,6 +246,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.PasteFromClipboard(charCrowd1));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowdMemberToRoster_FiresRosterAddCrowdMemberEvent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -228,6 +260,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<AddToRosterEvent>(), null));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowdFromModels_FiresCreateCrowdFromModelsEvent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -236,6 +270,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<CreateCrowdFromModelsEvent>(), null));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void ApplyFilter_InvokesApplyFilterForAllCrowdMembers()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -251,9 +287,11 @@ namespace HeroUI.HeroSystemsEngine.Crowd
                 }
             }
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
         public void SortCrowds_SortsCrowdCollectionAlphaNumerically()
         {
-            // not sure how to test at the moment
+            Assert.Fail();
         }
     }
 }

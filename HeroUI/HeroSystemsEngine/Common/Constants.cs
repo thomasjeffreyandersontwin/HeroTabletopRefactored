@@ -33,7 +33,7 @@ namespace HeroUI.HeroSystemsEngine
         #endregion
 
         #region Resource Dictionary and Styles
-        public const string RESOURCE_DICTIONARY_PATH = "/Module.Shared;Component/Resources/ResourceDictionary/GeneralResources.xaml";
+        public const string RESOURCE_DICTIONARY_PATH = "/HeroSystemsEngine/Common/HeroResourceDictionary.xaml";
         public const string CUSTOM_MODELESS_TRANSPARENT_WINDOW_STYLENAME = "CustomModelessTransparentWindow";
         #endregion
 

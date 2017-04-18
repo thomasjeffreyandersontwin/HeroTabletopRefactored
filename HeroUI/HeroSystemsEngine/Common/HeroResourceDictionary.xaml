@@ -209,7 +209,8 @@
         </GradientBrush.GradientStops>
     </LinearGradientBrush>
 
-    <Style x:Key="CustomModelessTransparentWindow" TargetType="{x:Type Window}">
+    <!--<Style x:Key="CustomModelessTransparentWindow" TargetType="{x:Type Window}">-->
+    <Style x:Key="{x:Type Window}" TargetType="{x:Type Window}">
         <Setter Property="Topmost" Value="True"></Setter>
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="TextElement.FontFamily" Value="{DynamicResource MontDemiBold}"/>

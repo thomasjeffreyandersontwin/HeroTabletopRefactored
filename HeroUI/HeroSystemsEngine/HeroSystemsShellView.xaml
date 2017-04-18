@@ -4,8 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HeroUI.HeroSystemsEngine"
-             mc:Ignorable="d" 
-             Height="350" Width="525" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowState="Normal" WindowStartupLocation="CenterScreen" AllowsTransparency="True">
+        xmlns:shell="http://schemas.microsoft.com/winfx/2006/xaml/presentation/shell"
+             mc:Ignorable="d" MinHeight="400" MinWidth="80" Background="Transparent" WindowStartupLocation="CenterScreen"
+             >
+    <!--<Height="350" Width="525" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowState="Normal"  AllowsTransparency="True">-->
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -13,10 +15,57 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Window.Background>
-        <SolidColorBrush Color="Transparent" Opacity="0"/>
-    </Window.Background>
     <DockPanel>
         <ContentControl x:Name="ActiveItem" />
     </DockPanel>
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="Topmost" Value="True"></Setter>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="TextElement.FontFamily" Value="{DynamicResource MontDemiBold}"/>
+            <Setter Property="TextElement.FontSize" Value="{DynamicResource FontSize_Normal}"/>
+            <Setter Property="TextElement.Foreground" Value="White"/>
+            <Setter Property="AllowsTransparency" Value="True"/>
+            <Setter Property="WindowStyle" Value="None"/>
+            <Setter Property="WindowState" Value="Normal"/>
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip"/>
+            <Setter Property="SizeToContent" Value="WidthAndHeight"/>
+            <Setter Property="shell:WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <shell:WindowChrome GlassFrameThickness="-1" 
+                            ResizeBorderThickness="0, 2"
+                            CaptionHeight="36"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Grid>
+                            <Border Margin="0,20,0,0">
+                                <ContentPresenter Content="{TemplateBinding Content}"/>
+                            </Border>
+                            <Border Margin="0,20,0,0" BorderBrush="{StaticResource MainBlueThemeColorBrush}" BorderThickness="2" CornerRadius="10"
+                                    Grid.ZIndex="-1" Background="#99000000">
+
+                            </Border>
+                            <Border Height="30" CornerRadius="30,30,0,0" VerticalAlignment="Top">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderThickness" Value="0,20,0,0"/>
+                                        <Setter Property="BorderBrush" Value="#771144AA"></Setter>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <!--Window Title-->
+                            <!--<TextBlock VerticalAlignment="Top" Margin="4" TextAlignment="Center" x:Name="TitleTextBlock" FontFamily="{DynamicResource ParagonCity}"
+                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Title}"/>-->
+
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+    </Window.Style>
 </Window>
