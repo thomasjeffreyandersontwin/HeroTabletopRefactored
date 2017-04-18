@@ -70,6 +70,16 @@ namespace HeroUI.HeroSystemsEngine.Crowd
                 NotifyOfPropertyChange(() => SelectedCrowdMember);
             }
         }
+
+        public HeroVirtualTabletop.Crowd.Crowd SelectedCrowdMemberParent
+        {
+            get
+            {
+                if (SelectedCrowdMember is HeroVirtualTabletop.Crowd.Crowd)
+                    return SelectedCrowdMember as HeroVirtualTabletop.Crowd.Crowd;
+                else return SelectedCrowdMember.Parent;
+            }
+        }
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = repository;
@@ -82,12 +92,16 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
         public void AddCharacterCrowd()
         {
-            
+            var charCrowd = this.CrowdRepository.NewCharacterCrowdMember();
+            this.SelectedCrowdMemberParent.AddCrowdMember(charCrowd);
+            this.CrowdRepository.SaveCrowds();
         }
 
         public void AddCrowd()
         {
-            
+            var crowd = this.CrowdRepository.NewCrowd();
+            this.SelectedCrowdMemberParent.AddCrowdMember(crowd);
+            this.CrowdRepository.SaveCrowds();
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)
@@ -95,44 +109,51 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             
         }
 
-        public void ApplyFilter()
+        public void ApplyFilter(string filter)
         {
-            
+            foreach (var crowd in this.CrowdRepository.Crowds)
+            {
+                foreach (var mem in crowd.Members)
+                {
+                    mem.ApplyFilter(filter);
+                }
+            }
         }
 
         public void CloneCrowdMember(CrowdMember member)
         {
-            
+            this.CrowdClipboard.CopyToClipboard(this.SelectedCrowdMember);
         }
 
         public void CutCrowdMember(CrowdMember member)
         {
-            
+            this.CrowdClipboard.CutToClipboard(this.SelectedCrowdMember);
         }
 
         public void DeleteCrowdMember()
         {
-            
+            this.SelectedCrowdMemberParent.RemoveMember(this.SelectedCrowdMember);
+            this.CrowdRepository.SaveCrowds();
         }
 
         public void LinkCrowdMember(CrowdMember member)
         {
-            
-        }
-
-        public void MoveCrowdMember(CrowdMember movingCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
-        {
-            
+            this.CrowdClipboard.LinkToClipboard(this.SelectedCrowdMember);
         }
 
         public void PasteCrowdMember(CrowdMember member)
         {
-            
+            this.CrowdClipboard.PasteFromClipboard(this.SelectedCrowdMember);
         }
 
         public void RenameCrowdMember(CrowdMember member, string newName)
         {
-            
+            IEnumerable<CrowdMember> allMembers = this.CrowdRepository.Crowds;
+            var isDuplicate = member.CheckIfNameIsDuplicate(newName, allMembers.ToList());
+            if (!isDuplicate)
+            {
+                member.Rename(newName);
+            }
         }
 
         public void SortCrowds()
@@ -142,15 +163,10 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
         {
-            
+            destinationCrowd.MoveCrowdMemberAfter(targetCrowdMember, movingCrowdMember);
         }
 
         public void CreateCrowdFromModels()
-        {
-            
-        }
-
-        public void ApplyFilter(string filter)
         {
             
         }
