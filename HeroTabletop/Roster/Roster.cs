@@ -18,6 +18,7 @@ using Ploeh.AutoFixture;
 
 namespace HeroVirtualTabletop.Roster
 {
+    public class AddToRosterEvent { }
     public class RosterImpl : Roster
     {
         

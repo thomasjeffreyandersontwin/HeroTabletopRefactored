@@ -1,17 +1,17 @@
-﻿<UserControl x:Class="HeroUI.HeroSystemsEngine.HeroVirtualTabletopMainView"
+﻿<UserControl x:Class="HeroUI.HeroVirtualTabletopMainView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"            
              xmlns:crowd="clr-namespace:HeroVirtualTabletop.Crowd;assembly=HeroVirtualTabletop"
-             xmlns:crowdUI="clr-namespace:HeroUI.HeroSystemsEngine.Crowd"
+             xmlns:crowdUI="clr-namespace:HeroVirtualTabletop.Crowd;assembly=HeroUI"
              xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
-             xmlns:converters="clr-namespace:HeroUI.HeroSystemsEngine.Converters"
+             xmlns:local="clr-namespace:HeroUI"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Loaded="HeroVirtualTabletopMainView_Loaded">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/HeroSystemsEngine/Common/HeroResourceDictionary.xaml" />
+                <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>

@@ -1,4 +1,4 @@
-﻿namespace HeroUI.HeroSystemsEngine
+﻿namespace HeroUI
 {
     internal interface IShell
     {

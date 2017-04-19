@@ -22,6 +22,8 @@ namespace HeroVirtualTabletop.Crowd
         Link,
         CloneLink
     }
+
+    public class CreateCrowdFromModelsEvent { }
     public class CrowdRepositoryImpl : AnimatedCharacterRepositoryImpl, CrowdRepository
     {
         public CrowdRepositoryImpl()

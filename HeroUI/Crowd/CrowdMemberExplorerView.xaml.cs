@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HeroUI.HeroSystemsEngine.CombatSequence
+namespace HeroVirtualTabletop.Crowd
 {
     /// <summary>
-    /// Interaction logic for CombatSequenceView.xaml
+    /// Interaction logic for CrowdMemberExplorerView.xaml
     /// </summary>
-    public partial class CombatSequenceView : UserControl
+    public partial class CrowdMemberExplorerView : UserControl
     {
-        public CombatSequenceView()
+        public CrowdMemberExplorerView()
         {
             InitializeComponent();
         }

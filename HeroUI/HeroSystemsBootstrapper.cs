@@ -7,12 +7,9 @@ using Caliburn.Micro;
 using System.Reflection;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
-using HeroUI.HeroSystemsEngine.Crowd;
 
-namespace HeroUI.HeroSystemsEngine
+namespace HeroUI
 {
-
-
    public class HeroSystemsBootstrapper : BootstrapperBase
     {
        private SimpleContainer container = new SimpleContainer();

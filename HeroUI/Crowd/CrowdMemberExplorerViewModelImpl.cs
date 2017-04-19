@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using HeroVirtualTabletop.Crowd;
 using System.Collections.ObjectModel;
 using Caliburn.Micro;
 using System.IO;
+using HeroUI;
 
-namespace HeroUI.HeroSystemsEngine.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
+        private const string GAME_DATA_FOLDERNAME = "data";
+        private const string GAME_CROWD_REPOSITORY_FILENAME = "CrowdRepo.data";
         public IEventAggregator EventAggregator { get; set; }
 
         private ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> crowdCollection;
@@ -19,6 +20,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         {
             get
             {
+                crowdCollection = new ObservableCollection<HeroVirtualTabletop.Crowd.Crowd>(this.CrowdRepository.Crowds);
                 return crowdCollection;
             }
             set
@@ -75,9 +77,13 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         {
             get
             {
-                if (SelectedCrowdMember is HeroVirtualTabletop.Crowd.Crowd)
-                    return SelectedCrowdMember as HeroVirtualTabletop.Crowd.Crowd;
-                else return SelectedCrowdMember.Parent;
+                if (SelectedCrowdMember != null)
+                {
+                    if (SelectedCrowdMember is HeroVirtualTabletop.Crowd.Crowd)
+                        return SelectedCrowdMember as HeroVirtualTabletop.Crowd.Crowd;
+                    else return SelectedCrowdMember.Parent; 
+                }
+                return null;
             }
         }
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
@@ -85,9 +91,9 @@ namespace HeroUI.HeroSystemsEngine.Crowd
             this.CrowdRepository = repository;
             this.CrowdClipboard = clipboard;
             this.EventAggregator = eventAggregator;
-            this.CrowdRepository.CrowdRepositoryPath = Path.Combine(Properties.Settings.Default.GameDirectory, Constants.GAME_DATA_FOLDERNAME, Constants.GAME_CROWD_REPOSITORY_FILENAME);
+            this.CrowdRepository.CrowdRepositoryPath = Path.Combine(HeroUI.Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_CROWD_REPOSITORY_FILENAME);
             this.CrowdRepository.LoadCrowds();
-            this.CrowdCollection = new ObservableCollection<HeroVirtualTabletop.Crowd.Crowd>(this.CrowdRepository.Crowds);
+            
         }
 
         public void AddCharacterCrowd()
@@ -100,8 +106,10 @@ namespace HeroUI.HeroSystemsEngine.Crowd
         public void AddCrowd()
         {
             var crowd = this.CrowdRepository.NewCrowd();
-            this.SelectedCrowdMemberParent.AddCrowdMember(crowd);
-            this.CrowdRepository.SaveCrowds();
+            this.SelectedCrowdMemberParent?.AddCrowdMember(crowd);
+            //this.CrowdRepository.SaveCrowds();
+            NotifyOfPropertyChange(() => CrowdCollection);
+            
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)

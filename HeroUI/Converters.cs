@@ -11,7 +11,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace HeroUI.HeroSystemsEngine.Converters
+namespace HeroUI
 {
     /// <summary>   Boolean to visibility converter. </summary>
     public class BooleanToVisibilityConverter : IValueConverter
@@ -367,24 +367,6 @@ namespace HeroUI.HeroSystemsEngine.Converters
           {
             Binding.DoNothing
           };
-        }
-    }
-
-    public class CharacterOptionComparerConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType,
-               object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (values.Length != 2)
-            {
-                return false;
-            }
-            return values[0] == values[1];
-        }
-        public object[] ConvertBack(object value, Type[] targetTypes,
-               object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotSupportedException("Cannot convert back");
         }
     }
 }

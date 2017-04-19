@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroUI.HeroSystemsEngine.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     public interface CrowdMemberExplorerViewModel
     {

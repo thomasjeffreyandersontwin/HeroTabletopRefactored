@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace HeroUI.HeroSystemsEngine
+namespace HeroUI
 {
     public class HeroSystemsShellViewModelImpl : Conductor<object>, IShell
     {

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Ploeh.AutoFixture;
 using Moq;
 using Caliburn.Micro;
-using HeroUI.HeroSystemsEngine.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using HeroVirtualTabletop.Roster;
 
-namespace HeroUI.HeroSystemsEngine.Crowd
+namespace HeroVirtualTabletop.Crowd
 {
     [TestClass]
     public class CrowdMemberExplorerTestSuite
@@ -55,7 +55,8 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             charExpVM.AddCrowd();
 
-            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(crowd0, "Character"));
+            //Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(crowd0, "Character"));
+            Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.AddCrowdMember(It.IsAny<CrowdMember>()));
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
@@ -71,7 +72,7 @@ namespace HeroUI.HeroSystemsEngine.Crowd
 
             charExpVM.AddCrowd();
 
-            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(crowd0, "Character"));
+            Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.AddCrowdMember(It.IsAny<CrowdMember>()));
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
