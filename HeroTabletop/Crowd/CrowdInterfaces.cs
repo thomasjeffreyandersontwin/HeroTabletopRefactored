@@ -6,6 +6,7 @@ using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Roster;
+using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -17,15 +18,16 @@ namespace HeroVirtualTabletop.Crowd
     public interface CrowdRepository : AnimatedCharacterRepository
     {
         Dictionary<string, Crowd> CrowdsByName { get; }
-        List<Crowd> Crowds { get; set; }
+        ObservableCollection<Crowd> Crowds { get; set; }
         string CrowdRepositoryPath { get; set; }
         Crowd AllMembersCrowd { get; }
         Crowd NewCrowd(Crowd parent = null, string name = "Character");
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");
-        string CreateUniqueName(string name, List<CrowdMember> context);
+        string CreateUniqueName(string name, IEnumerable<CrowdMember> context);
         void AddDefaultCharacters();
         void LoadCrowds();
         void SaveCrowds();
+        void RemoveCrowd(Crowd crowd);
     }
     public interface Crowd : CrowdMember
     {
@@ -39,7 +41,7 @@ namespace HeroVirtualTabletop.Crowd
 
         void MoveCrowdMemberAfter(CrowdMember destination, CrowdMember crowdToMove);
         void AddManyCrowdMembers(List<CrowdMember> member);
-
+        List<CharacterCrowdMember> GetCharactersSpecificToThisCrowd();
         void AddCrowdMember(CrowdMember member);
         void RemoveMember(CrowdMember member);
     }
@@ -62,7 +64,7 @@ namespace HeroVirtualTabletop.Crowd
         CrowdMember Clone();
         void ApplyFilter(string filter);
        
-        bool CheckIfNameIsDuplicate(string updatedName, List<CrowdMember> members);
+        bool CheckIfNameIsDuplicate(string updatedName, IEnumerable<CrowdMember> members);
 
         void RemoveParent(CrowdMember crowdMember);  
     }

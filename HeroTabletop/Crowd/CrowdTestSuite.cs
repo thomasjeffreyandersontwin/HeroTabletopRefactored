@@ -10,6 +10,7 @@ using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using Caliburn.Micro;
+using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -755,7 +756,7 @@ namespace HeroVirtualTabletop.Crowd
             get
             {
                 var repo = StandardizedFixture.Create<CrowdRepository>();
-                repo.Crowds.AddRange(ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder);
+                repo.Crowds = ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder;
                 return repo;
             }
         }
@@ -815,7 +816,7 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdClipboard CrowdClipboardUnderTest => StandardizedFixture.Create<CrowdClipboardImpl>();
         public CrowdClipboard MockCrowdClipboard => CustomizedMockFixture.Create<CrowdClipboard>();
 
-        public List<Crowd> ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder
+        public ObservableCollection<Crowd> ThreeCrowdsWithThreeCrowdChildrenInTheFirstTwoCrowdsAllLabeledByOrder
         {
             get
             {
@@ -922,7 +923,7 @@ namespace HeroVirtualTabletop.Crowd
                 .With(x => x.NewCrowdInstance, StandardizedFixture.Create<Crowd>())
                 .With(x => x.NewCharacterCrowdMemberInstance, StandardizedFixture.Create<CharacterCrowdMember>())
                 //also add the crowds previously created
-                .Do(x => x.Crowds.AddRange(crowds))
+                .Do(x => crowds.ForEach(t => x.Crowds.Add(t)))
             );
 
             //create a repo based on above config ie the dependencies with circular ref removed
@@ -967,7 +968,7 @@ namespace HeroVirtualTabletop.Crowd
         }
         private void addChildCrowdsLabeledByOrder(CrowdRepository repo)
         {
-            repo.Crowds.AddRange(StandardizedFixture.CreateMany<Crowd>().ToList());
+            repo.Crowds = new ObservableCollection<Crowd>((StandardizedFixture.CreateMany<Crowd>()));
             var counter = "0";
             var count = 0;
             foreach (var c in repo.Crowds)

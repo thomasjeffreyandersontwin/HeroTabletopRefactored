@@ -11,7 +11,7 @@ using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.Movement
 {
-    class MovableCharacterImpl : AnimatedCharacterImpl, MovableCharacter
+    public class MovableCharacterImpl : AnimatedCharacterImpl, MovableCharacter
     {
         public MovableCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities, AnimatedCharacterRepository repo) : base(targeter, generator, camera, identities, repo)
         {

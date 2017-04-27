@@ -9,18 +9,70 @@ using HeroUI;
 
 namespace HeroVirtualTabletop.Crowd
 {
+    public enum ExpansionUpdateEvent
+    {
+        Filter,
+        Delete,
+        Paste,
+        DragDrop
+    }
+
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
         private const string GAME_DATA_FOLDERNAME = "data";
         private const string GAME_CROWD_REPOSITORY_FILENAME = "CrowdRepo.data";
+        private const string DEFAULT_CHARACTER_NAME = "DEFAULT";
+        private const string COMBAT_EFFECTS_CHARACTER_NAME = "COMBAT EFFECTS";
+        private const string DELETE_CONTAINING_CHARACTERS_FROM_CROWD_PROMPT_MESSAGE = "Do you want to delete every character specific to this crowd from the system as well?";
+        private const string DELETE_CROWD_CAPTION = "Delete Crowd";
+        private const string DELETE_CHARACTER_FROM_ALL_CHARACTERS_CONFIRMATION_MESSAGE = "This will remove this character from the system. Are you sure?";
+        private const string DELETE_CHARACTER_CAPTION = "Delete Character";
+
+        private bool isUpdatingCollection;
+        private object lastCharacterCrowdStateToUpdate;
+        private string OriginalName;
+        private bool IsUpdatingCharacter;
         public IEventAggregator EventAggregator { get; set; }
 
-        private ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> crowdCollection;
-        public ObservableCollection<HeroVirtualTabletop.Crowd.Crowd> CrowdCollection
+        #region Events
+        public event EventHandler EditModeEnter;
+        public void OnEditModeEnter(object sender, EventArgs e)
+        {
+            if (EditModeEnter != null)
+                EditModeEnter(sender, e);
+        }
+
+        public event EventHandler EditModeLeave;
+        public void OnEditModeLeave(object sender, EventArgs e)
+        {
+            if (EditModeLeave != null)
+                EditModeLeave(sender, e);
+        }
+
+        public event EventHandler<CustomEventArgs<string>> EditNeeded;
+        public void OnEditNeeded(object sender, CustomEventArgs<string> e)
+        {
+            if (EditNeeded != null)
+            {
+                EditNeeded(sender, e);
+            }
+        }
+
+        public event EventHandler<CustomEventArgs<ExpansionUpdateEvent>> ExpansionUpdateNeeded;
+        public void OnExpansionUpdateNeeded(object sender, CustomEventArgs<ExpansionUpdateEvent> e)
+        {
+            if (ExpansionUpdateNeeded != null)
+                ExpansionUpdateNeeded(sender, e);
+        }
+        #endregion
+
+        private ObservableCollection<Crowd> crowdCollection;
+        public ObservableCollection<Crowd> CrowdCollection
         {
             get
             {
-                crowdCollection = new ObservableCollection<HeroVirtualTabletop.Crowd.Crowd>(this.CrowdRepository.Crowds);
+                if(crowdCollection == null)
+                    crowdCollection = new ObservableCollection<Crowd>(this.CrowdRepository.Crowds);
                 return crowdCollection;
             }
             set
@@ -58,32 +110,49 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
 
-        private CrowdMember selectedCrowdMember;
-        public CrowdMember SelectedCrowdMember
+        private Crowd selectedCrowd;
+        public Crowd SelectedCrowd
         {
             get
             {
-                return selectedCrowdMember;
+                return selectedCrowd;
             }
 
             set
             {
-                selectedCrowdMember = value;
-                NotifyOfPropertyChange(() => SelectedCrowdMember);
+                selectedCrowd = value;
+                NotifyOfPropertyChange(() => SelectedCrowd);
+                NotifyOfPropertyChange(() => CanAddCharacterCrowd);
+                NotifyOfPropertyChange(() => CanDeleteCrowdMember);
             }
         }
 
-        public HeroVirtualTabletop.Crowd.Crowd SelectedCrowdMemberParent
+        private CharacterCrowdMember selectedCharacterCrowd;
+        public CharacterCrowdMember SelectedCharacterCrowd
         {
             get
             {
-                if (SelectedCrowdMember != null)
-                {
-                    if (SelectedCrowdMember is HeroVirtualTabletop.Crowd.Crowd)
-                        return SelectedCrowdMember as HeroVirtualTabletop.Crowd.Crowd;
-                    else return SelectedCrowdMember.Parent; 
-                }
-                return null;
+                return selectedCharacterCrowd;
+            }
+
+            set
+            {
+                selectedCharacterCrowd = value;
+                NotifyOfPropertyChange(() => SelectedCharacterCrowd);
+                NotifyOfPropertyChange(() => CanDeleteCrowdMember);
+            }
+        }
+
+        private Crowd selectedCrowdParent;
+        public Crowd SelectedCrowdParent
+        {
+            get
+            {
+                return selectedCrowdParent;
+            }
+            set
+            {
+                selectedCrowdParent = value;
             }
         }
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
@@ -96,20 +165,42 @@ namespace HeroVirtualTabletop.Crowd
             
         }
 
+        public bool CanAddCharacterCrowd
+        {
+            get
+            {
+                return this.SelectedCrowd != null;
+            }
+        }
+
         public void AddCharacterCrowd()
         {
-            var charCrowd = this.CrowdRepository.NewCharacterCrowdMember();
-            this.SelectedCrowdMemberParent.AddCrowdMember(charCrowd);
-            this.CrowdRepository.SaveCrowds();
+            var charCrowd = this.CrowdRepository.NewCharacterCrowdMember(this.SelectedCrowd);
+            //// Add default movements
+            //charCrowd.AddDefaultMovements();
+            //this.CrowdRepository.SaveCrowds();
+            //// Enter edit mode for the added character
+            OnEditNeeded(charCrowd, null);
         }
 
         public void AddCrowd()
         {
-            var crowd = this.CrowdRepository.NewCrowd();
-            this.SelectedCrowdMemberParent?.AddCrowdMember(crowd);
+            // Lock character crowd Tree from updating;
+            this.LockModelAndMemberUpdate(true);
+            // Add crowd
+            var crowd = this.CrowdRepository.NewCrowd(this.SelectedCrowd);
             //this.CrowdRepository.SaveCrowds();
-            NotifyOfPropertyChange(() => CrowdCollection);
-            
+            // UnLock character crowd Tree from updating;
+            this.LockModelAndMemberUpdate(false);
+            // Update character crowd if necessary
+            if (this.lastCharacterCrowdStateToUpdate != null)
+            {
+                this.SetSelectedCrowdMember(lastCharacterCrowdStateToUpdate);
+                this.lastCharacterCrowdStateToUpdate = null;
+            }
+
+            // Enter Edit mode for the added model
+            OnEditNeeded(crowd, null);
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)
@@ -130,28 +221,94 @@ namespace HeroVirtualTabletop.Crowd
 
         public void CloneCrowdMember(CrowdMember member)
         {
-            this.CrowdClipboard.CopyToClipboard(this.SelectedCrowdMember);
+            this.CrowdClipboard.CopyToClipboard(this.SelectedCrowd);
         }
 
         public void CutCrowdMember(CrowdMember member)
         {
-            this.CrowdClipboard.CutToClipboard(this.SelectedCrowdMember);
+            this.CrowdClipboard.CutToClipboard(this.SelectedCrowd);
+        }
+
+
+
+        #region Delete Character or Crowd
+
+        public bool CanDeleteCrowdMember
+        {
+            get
+            {
+                bool canDeleteCharacterOrCrowd = false;
+                if (SelectedCrowd != null)
+                {
+                    if (SelectedCharacterCrowd != null)
+                    {
+                        if (SelectedCharacterCrowd.Name != DEFAULT_CHARACTER_NAME && SelectedCharacterCrowd.Name != COMBAT_EFFECTS_CHARACTER_NAME)
+                            canDeleteCharacterOrCrowd = true;
+                    }
+                    else
+                        canDeleteCharacterOrCrowd = true;
+                }
+
+                return canDeleteCharacterOrCrowd;
+            }
         }
 
         public void DeleteCrowdMember()
         {
-            this.SelectedCrowdMemberParent.RemoveMember(this.SelectedCrowdMember);
-            this.CrowdRepository.SaveCrowds();
+            // Lock character crowd Tree from updating;
+            this.LockModelAndMemberUpdate(true);
+            CrowdMember rosterMember = null;
+            // Determine if Character or Crowd is to be deleted
+            if (SelectedCharacterCrowd != null) // Delete Character
+            {
+                if (SelectedCharacterCrowd.RosterParent != null && SelectedCharacterCrowd.RosterParent.Name == SelectedCrowd.Name)
+                    rosterMember = SelectedCharacterCrowd;
+                // Delete the Character from all occurances of this crowd
+                SelectedCrowd.RemoveMember(SelectedCharacterCrowd);
+            }
+            else // Delete Crowd
+            {
+                //If it is a nested crowd, just delete it from the parent
+                if (this.SelectedCrowdParent != null)
+                {
+                    SelectedCrowdParent.RemoveMember(SelectedCrowd);
+                    SelectedCrowdParent = SelectedCrowdParent.Parent;
+                }
+                else // Delete it from the repo altogether
+                {
+                    this.CrowdRepository.RemoveCrowd(SelectedCrowd);
+                    rosterMember = SelectedCrowd;
+                }
+            }
+            // Finally save repository
+            //this.SaveCrowdCollection();
+            // UnLock character crowd Tree from updating;
+            this.LockModelAndMemberUpdate(false);
+            // Update character crowd if necessary
+            if (this.lastCharacterCrowdStateToUpdate != null)
+            {
+                this.SetSelectedCrowdMember(lastCharacterCrowdStateToUpdate);
+                this.lastCharacterCrowdStateToUpdate = null;
+            }
+            //if (rosterMember != null)
+            //    this.eventAggregator.GetEvent<DeleteCrowdMemberEvent>().Publish(rosterMember);
+            if (this.SelectedCrowd != null)
+            {
+                OnExpansionUpdateNeeded(this.SelectedCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Delete });
+            }
         }
+
+        
+        #endregion
 
         public void LinkCrowdMember(CrowdMember member)
         {
-            this.CrowdClipboard.LinkToClipboard(this.SelectedCrowdMember);
+            this.CrowdClipboard.LinkToClipboard(this.SelectedCrowd);
         }
 
         public void PasteCrowdMember(CrowdMember member)
         {
-            this.CrowdClipboard.PasteFromClipboard(this.SelectedCrowdMember);
+            this.CrowdClipboard.PasteFromClipboard(this.SelectedCrowd);
         }
 
         public void RenameCrowdMember(CrowdMember member, string newName)
@@ -169,7 +326,7 @@ namespace HeroVirtualTabletop.Crowd
             
         }
 
-        public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd)
+        public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, Crowd destinationCrowd)
         {
             destinationCrowd.MoveCrowdMemberAfter(targetCrowdMember, movingCrowdMember);
         }
@@ -178,5 +335,144 @@ namespace HeroVirtualTabletop.Crowd
         {
             
         }
+
+        #region Update Selection
+
+        public void SetSelectedCrowdMember(object treeview)
+        {
+            if (!isUpdatingCollection) // We won't update selection in the middle of an update in collection
+            {
+                CrowdMember selectedCrowdMember;
+                Object selectedCrowd = ControlUtilities.GetCurrentSelectedCrowdInCrowdCollectionInTreeView(treeview, out selectedCrowdMember);
+                Crowd crowd = selectedCrowd as Crowd;
+                if (crowd != null) // Only update if something is selected
+                {
+                    this.SelectedCrowd = crowd;
+                    this.SelectedCharacterCrowd = selectedCrowdMember as CharacterCrowdMember;
+                }
+                else if(this.CrowdRepository.Crowds.Count == 0)
+                {
+                    this.SelectedCrowd = null;
+                    this.SelectedCharacterCrowd = null;
+                }
+            }
+            else
+                this.lastCharacterCrowdStateToUpdate = treeview; // save the current state so that we can update at the end of collection update
+        }
+
+        public void UnSelectCrowdMember()
+        {
+            this.SelectedCrowd = null;
+            this.SelectedCharacterCrowd = null;
+            this.SelectedCrowdParent = null;
+            OnEditNeeded(null, null);
+        }
+        private void LockModelAndMemberUpdate(bool isLocked)
+        {
+            this.isUpdatingCollection = isLocked;
+            if (!isLocked)
+                this.UpdateCharacterCrowdTree();
+        }
+
+        private void UpdateCharacterCrowdTree()
+        {
+            // Update character crowd if necessary
+            if (this.lastCharacterCrowdStateToUpdate != null)
+            {
+                this.SetSelectedCrowdMember(lastCharacterCrowdStateToUpdate);
+                this.lastCharacterCrowdStateToUpdate = null;
+            }
+        }
+
+        #endregion
+
+        #region Rename
+        public void EnterEditMode(object state)
+        {
+            if (this.SelectedCharacterCrowd != null)
+            {
+                this.OriginalName = SelectedCharacterCrowd.Name;
+                this.IsUpdatingCharacter = true;
+            }
+            else
+            {
+                this.OriginalName = SelectedCrowd.Name;
+                this.IsUpdatingCharacter = false;
+            }
+            OnEditModeEnter(state, null);
+        }
+
+        public void SubmitCharacterCrowdRename(object state)
+        {
+            if (this.OriginalName != null)
+            {
+                string updatedName = ControlUtilities.GetTextFromControlObject(state);
+                bool isDuplicate = false;
+                if(IsUpdatingCharacter)
+                {
+                    isDuplicate = SelectedCharacterCrowd.CheckIfNameIsDuplicate(updatedName, null);
+                }
+                else
+                {
+                    isDuplicate = SelectedCrowd.CheckIfNameIsDuplicate(updatedName, this.CrowdCollection);
+                }
+                if (!isDuplicate)
+                {
+                    RenameCharacterCrowd(updatedName);
+                    OnEditModeLeave(state, null);
+                    //this.SaveCrowdCollection();
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("The name already exists. Please choose another name!");
+                    this.CancelEditMode(state);
+                }
+            }
+
+        }
+
+        public void CancelEditMode(object state)
+        {
+            if (this.IsUpdatingCharacter)
+                SelectedCharacterCrowd.Name = this.OriginalName;
+            else
+                SelectedCrowd.Name = this.OriginalName;
+            OnEditModeLeave(state, null);
+        }
+
+        public void RenameCharacterCrowd(string updatedName)
+        {
+            if (this.OriginalName == updatedName)
+            {
+                OriginalName = null;
+                return;
+            }
+            if (this.IsUpdatingCharacter)
+            {
+                if (SelectedCharacterCrowd == null)
+                {
+                    return;
+                }
+                SelectedCharacterCrowd.Rename(updatedName);
+                
+                //this.characterCollection.Sort();
+                this.OriginalName = null;
+            }
+            else
+            {
+                if (SelectedCrowd == null)
+                {
+                    return;
+                }
+                SelectedCrowd.Rename(updatedName);
+                //this.CrowdCollection.Sort(ListSortDirection.Ascending, new CrowdMemberModelComparer());
+                this.OriginalName = null;
+            }
+
+            List<CrowdMember> rosterCharacters = new List<CrowdMember>();
+            //eventAggregator.GetEvent<AddToRosterEvent>().Publish(rosterCharacters); // sending empty list so that roster sorts its elements
+        }
+
+        #endregion
     }
 }

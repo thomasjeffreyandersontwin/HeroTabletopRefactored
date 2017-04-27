@@ -1,18 +1,25 @@
-﻿using System;
+﻿using Framework.WPF.Extensions;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Crowd;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Interactivity;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace HeroUI
 {
+    #region Converters
     /// <summary>   Boolean to visibility converter. </summary>
     public class BooleanToVisibilityConverter : IValueConverter
     {
@@ -369,4 +376,227 @@ namespace HeroUI
           };
         }
     }
+    #endregion
+
+    #region EventArgs
+
+    public class CustomEventArgs<T> : EventArgs
+    {
+        public T Value { get; set; }
+    }
+
+    #endregion
+
+    #region Control Utility Methods
+
+    public class ControlUtilities
+    {
+        #region TreeView
+
+        public static object GetCurrentSelectedCrowdInCrowdCollectionInTreeView(Object tv, out CrowdMember crowdMember)
+        {
+            Crowd containingCrowdModel = null;
+            crowdMember = null;
+            TreeView treeView = tv as TreeView;
+
+            if (treeView != null && treeView.SelectedItem != null)
+            {
+                if (treeView.SelectedItem is Crowd)
+                {
+                    containingCrowdModel = treeView.SelectedItem as Crowd;
+                }
+                else
+                {
+                    DependencyObject dObject = treeView.GetItemFromSelectedObject(treeView.SelectedItem);
+                    TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
+                    crowdMember = tvi.DataContext as CrowdMember;
+                    dObject = VisualTreeHelper.GetParent(tvi); // got the immediate parent
+                    tvi = dObject as TreeViewItem; // now get first treeview item parent
+                    while (tvi == null)
+                    {
+                        dObject = VisualTreeHelper.GetParent(dObject);
+                        tvi = dObject as TreeViewItem;
+                    }
+                    containingCrowdModel = tvi.DataContext as Crowd;
+                }
+            }
+
+            return containingCrowdModel;
+        }
+
+        public static object GetCurrentSelectedAnimationInAnimationCollection(Object tv, out AnimationElement animationElement)
+        {
+            AnimationElement selectedAnimationElement = null;
+            animationElement = null;
+            TreeView treeView = tv as TreeView;
+
+            if (treeView != null && treeView.SelectedItem != null)
+            {
+                DependencyObject dObject = treeView.GetItemFromSelectedObject(treeView.SelectedItem);
+                TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
+                if (tvi != null)
+                    selectedAnimationElement = tvi.DataContext as AnimationElement;
+                dObject = VisualTreeHelper.GetParent(tvi); // got the immediate parent
+                tvi = dObject as TreeViewItem; // now get first treeview item parent
+                while (tvi == null)
+                {
+                    dObject = VisualTreeHelper.GetParent(dObject);
+                    tvi = dObject as TreeViewItem;
+                    if (tvi == null)
+                    {
+                        var tView = dObject as TreeView;
+                        if (tView != null)
+                            break;
+                    }
+                    else
+                        animationElement = tvi.DataContext as AnimationElement;
+                }
+            }
+
+            return selectedAnimationElement;
+        }
+
+        public static string GetTextFromControlObject(object control)
+        {
+            string text = null;
+            PropertyInfo propertyInfo = control.GetType().GetProperty("Text");
+            if (propertyInfo != null)
+            {
+                text = propertyInfo.GetValue(control).ToString();
+            }
+            return text;
+        }
+
+        #endregion
+
+        #region General Control
+
+        public static Visual GetAncestorByType(DependencyObject element, Type type)
+        {
+            while (element != null && !(element.GetType() == type))
+                element = VisualTreeHelper.GetParent(element);
+
+            return element as Visual;
+        }
+
+        public static Visual GetTemplateAncestorByType(DependencyObject element, Type type)
+        {
+            while (element != null && !(element.GetType() == type))
+                element = (element as FrameworkElement).TemplatedParent;
+
+            return element as Visual;
+        }
+
+        public static Visual GetDescendantByType(Visual element, Type type)
+        {
+            if (element == null) return null;
+            if (element.GetType() == type) return element;
+            Visual foundElement = null;
+            if (element is FrameworkElement)
+                (element as FrameworkElement).ApplyTemplate();
+            for (int i = 0;
+                i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                Visual visual = VisualTreeHelper.GetChild(element, i) as Visual;
+                foundElement = GetDescendantByType(visual, type);
+                if (foundElement != null)
+                    break;
+            }
+            return foundElement;
+        }
+
+        public static string GetContainerWindowName(object element)
+        {
+            Window win = null;
+            string winName = "";
+
+            if (element is Window)
+            {
+                win = element as Window;
+                winName = win.Name;
+            }
+            else
+            {
+                DependencyObject dObj = element as DependencyObject;
+                while (win == null)
+                {
+                    FrameworkElement elem = dObj as FrameworkElement;
+                    dObj = elem.Parent;
+                    if (dObj is Window)
+                    {
+                        win = dObj as Window;
+                        winName = win.Name;
+                        break;
+                    }
+                }
+            }
+
+            return winName;
+        }
+
+        // Helper to search up the VisualTree
+        public static T FindAncestor<T>(DependencyObject current)
+            where T : DependencyObject
+        {
+            do
+            {
+                if (current is T)
+                {
+                    return (T)current;
+                }
+                current = VisualTreeHelper.GetParent(current);
+            }
+            while (current != null);
+            return null;
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #region Input Binding
+
+    public class InputBindingTrigger : TriggerBase<FrameworkElement>, ICommand
+    {
+        public InputBindingTrigger()
+        {
+
+        }
+        public InputBinding InputBinding
+        {
+            get { return (InputBinding)GetValue(InputBindingProperty); }
+            set { SetValue(InputBindingProperty, value); }
+        }
+        public static readonly DependencyProperty InputBindingProperty =
+            DependencyProperty.Register("InputBinding", typeof(InputBinding)
+            , typeof(InputBindingTrigger)
+            , new UIPropertyMetadata(null));
+        protected override void OnAttached()
+        {
+            if (InputBinding != null)
+            {
+                InputBinding.Command = this;
+                AssociatedObject.InputBindings.Add(InputBinding);
+            }
+            base.OnAttached();
+        }
+
+        #region ICommand Members
+        public bool CanExecute(object parameter)
+        {
+            // action is anyway blocked by Caliburn at the invoke level
+            return true;
+        }
+        public event EventHandler CanExecuteChanged = delegate { };
+
+        public void Execute(object parameter)
+        {
+            InvokeActions(parameter);
+        }
+
+        #endregion
+    }
+
+    #endregion
 }

@@ -51,7 +51,7 @@ namespace HeroVirtualTabletop.Crowd
             var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
-            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.SelectedCrowd = crowd0;
 
             charExpVM.AddCrowd();
 
@@ -68,7 +68,7 @@ namespace HeroVirtualTabletop.Crowd
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
-            charExpVM.SelectedCrowdMember = charCrowd0;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
             charExpVM.AddCrowd();
 
@@ -94,7 +94,7 @@ namespace HeroVirtualTabletop.Crowd
             var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
-            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.SelectedCrowd = crowd0;
 
             charExpVM.AddCharacterCrowd();
 
@@ -110,7 +110,7 @@ namespace HeroVirtualTabletop.Crowd
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
-            charExpVM.SelectedCrowdMember = charCrowd0;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
             charExpVM.AddCharacterCrowd();
 
@@ -126,7 +126,7 @@ namespace HeroVirtualTabletop.Crowd
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
-            charExpVM.SelectedCrowdMember = charCrowd0;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
             charExpVM.DeleteCrowdMember();
 

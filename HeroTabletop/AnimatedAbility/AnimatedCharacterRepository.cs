@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using HeroVirtualTabletop.Crowd;
+using Caliburn.Micro;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class AnimatedCharacterRepositoryImpl :  AnimatedCharacterRepository
+    public class AnimatedCharacterRepositoryImpl :  PropertyChangedBase, AnimatedCharacterRepository
     {
         public AnimatedCharacterRepositoryImpl()
         {

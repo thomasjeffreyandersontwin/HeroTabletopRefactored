@@ -9,8 +9,10 @@
              xmlns:extensions="clr-namespace:Framework.WPF.Extensions;assembly=Framework.WPF"
              xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
              xmlns:local="clr-namespace:HeroUI"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:cal="http://www.caliburnproject.org"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" behaviors:CommandBehavior.Event="Loaded" behaviors:CommandBehavior.Command="{Binding LoadCrowdCollectionCommand}" behaviors:CommandBehavior.CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
+             mc:Ignorable="d" Loaded="CrowdMemberExplorerView_Loaded">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -46,17 +48,16 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)"/>
-                <Button x:Name="btRemove" Content="&#xf235;" ToolTip="Remove (Ctrl+Minus/Del)" Command="{Binding DeleteCharacterCrowdCommand}" />
+                <Button x:Name="DeleteCrowdMember" Content="&#xf235;" ToolTip="Remove (Ctrl+Minus/Del)"/>
                 <Button x:Name="btEdit" Content="&#xf044;" ToolTip="Edit (Ctrl+E)" Command="{Binding EditCharacterCommand}"/>
                 <Button x:Name="btAddToRoster" Content="&#xf090;" ToolTip="Add to Roster (Ctrl+R)" Command="{Binding AddToRosterCommand}" />
             </StackPanel>
         </Grid>
-        <TreeView x:Name="treeViewCrowd" Grid.Row="1" ItemsSource="{Binding CrowdCollection}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
-                  Margin="0"  HorizontalAlignment="Stretch" 
-                  extensions:DragDropExtension.ScrollOnDragDrop="True"
+        <TreeView x:Name="treeViewCrowd" Grid.Row="1" ItemsSource="{Binding CrowdRepository.Crowds}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
+                  Margin="0"  HorizontalAlignment="Stretch" cal:Message.Attach="[Event SelectedItemChanged] = [Action SetSelectedCrowdMember($source)]"
+                  extensions:DragDropExtension.ScrollOnDragDrop="True" PreviewMouseDown="treeViewCrowd_OnPreviewMouseDown" PreviewKeyUp="treeViewCrowd_PreviewKeyUp" 
+                  PreviewMouseMove="treeViewCrowd_PreviewMouseMove" PreviewDragEnter="treeViewCrowd_PreviewDragEnter" PreviewDrop="treeViewCrowd_PreviewDrop"
                   >
-            <!--PreviewMouseDown="treeViewCrowd_OnPreviewMouseDown" PreviewKeyUp="treeViewCrowd_PreviewKeyUp" 
-                  PreviewMouseMove="treeViewCrowd_PreviewMouseMove" PreviewDragEnter="treeViewCrowd_PreviewDragEnter" PreviewDrop="treeViewCrowd_PreviewDrop"-->
             <TreeView.Resources>
                 <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext}"/>
                 <ContextMenu x:Key="CrowdMemberExplorerMenu">
@@ -82,31 +83,66 @@
                         <TextBlock Grid.Column="0" FontFamily="{StaticResource FontFamily_FontAwesome}" Text="&#xf0c0;" HorizontalAlignment="Center" VerticalAlignment="Center">
                         </TextBlock>
                         <Grid Grid.Column="1" VerticalAlignment="Center" Margin="5,0,0,0">
-                            <TextBox x:Name="textBlockCrowd" Text="{Binding Path=Name}" Style="{StaticResource SelectableTextBlockLikeStyle}" >
-                                <!--<PreviewDragEnter="textBlockCrowdMember_PreviewDragEnter" PreviewDragOver="textBlockCrowdMember_PreviewDragOver" PreviewDrop="textBlockCrowdMember_PreviewDrop">-->
-                                    <TextBox.InputBindings>
-                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.EnterEditModeCommand}" MouseAction="LeftDoubleClick" CommandParameter="{Binding ElementName=textBlockCrowd}"/>
-                                    <KeyBinding Key="Space" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.EnterEditModeCommand}" CommandParameter="{Binding ElementName=textBlockCrowd}"/>
-                                    <KeyBinding Key="Delete" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.DeleteCharacterCrowdCommand}"/>
-                                    <KeyBinding Key="Escape" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.UpdateSelectedCrowdMemberCommand}"/>
-                                </TextBox.InputBindings>
+                            <TextBox x:Name="textBlockCrowd" Text="{Binding Path=Name}" Style="{StaticResource SelectableTextBlockLikeStyle}" PreviewDragEnter="textBlockCrowdMember_PreviewDragEnter" PreviewDragOver="textBlockCrowdMember_PreviewDragOver" PreviewDrop="textBlockCrowdMember_PreviewDrop">
+                                <i:Interaction.Triggers>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Space"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="EnterEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBlockCrowd}" />
+                                        </cal:ActionMessage> 
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Delete"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="DeleteCrowdMember">
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Esc"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="UnSelectCrowdMember">
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <MouseBinding MouseAction="LeftDoubleClick"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="EnterEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBlockCrowd}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                </i:Interaction.Triggers>
                             </TextBox>
                             <TextBox x:Name="textBoxCrowd" Visibility="Hidden" MinWidth="100"
-                                         Text="{Binding Name, UpdateSourceTrigger=Explicit}">
-
-                                <behaviors:CommandBehaviorCollection.Behaviors>
-                                    <behaviors:BehaviorBinding Event="LostFocus" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.SubmitCharacterCrowdRenameCommand}" CommandParameter="{Binding ElementName=textBoxCrowd}"/>
-                                </behaviors:CommandBehaviorCollection.Behaviors>
-                                <TextBox.InputBindings>
-                                    <KeyBinding Key="Enter" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.SubmitCharacterCrowdRenameCommand}" CommandParameter="{Binding ElementName=textBoxCrowd}"/>
-                                    <KeyBinding Key="Escape" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.CancelEditModeCommand}" CommandParameter="{Binding ElementName=textBoxCrowd}"/>
-                                </TextBox.InputBindings>
+                                         Text="{Binding Name, UpdateSourceTrigger=Explicit}" cal:Message.Attach="[Event LostFocus] = [Action SubmitCharacterCrowdRename($source)]">
+                                <i:Interaction.Triggers>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Return"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="SubmitCharacterCrowdRename">
+                                            <cal:Parameter Value="{Binding ElementName=textBoxCrowd}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Esc"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="CancelEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBoxCrowd}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                </i:Interaction.Triggers>
                             </TextBox>
                         </Grid>
                     </Grid>
                 </HierarchicalDataTemplate>
 
-                <DataTemplate DataType="{x:Type managedcharacter:ManagedCharacter}" >
+                <DataTemplate DataType="{x:Type crowd:CharacterCrowdMemberImpl}" >
                     <Grid ContextMenu="{StaticResource ResourceKey=CrowdMemberExplorerMenu}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -114,44 +150,83 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" FontFamily="{StaticResource FontFamily_FontAwesome}" Text="&#xf007;" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <Grid Grid.Column="1" VerticalAlignment="Center" Margin="5,0,0,0">
-                            <TextBox x:Name="textBlockCharacter" Text="{Binding Path=Name}" Style="{StaticResource SelectableTextBlockLikeStyle}" 
+                            <TextBox x:Name="textBlockCharacter" cal:Bind.ModelWithoutContext="{Binding}" Text="{Binding Path=Name, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBlockLikeStyle}" PreviewDragEnter="textBlockCrowdMember_PreviewDragEnter" PreviewDragOver="textBlockCrowdMember_PreviewDragOver" PreviewDrop="textBlockCrowdMember_PreviewDrop"
                                               >
-                                <!--<PreviewDragEnter="textBlockCrowdMember_PreviewDragEnter" PreviewDragOver="textBlockCrowdMember_PreviewDragOver" PreviewDrop="textBlockCrowdMember_PreviewDrop">-->
-                                    <TextBox.InputBindings>
-                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.EnterEditModeCommand}" MouseAction="LeftDoubleClick" CommandParameter="{Binding ElementName=textBlockCharacter}"/>
-                                    <KeyBinding Key="Space" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.EnterEditModeCommand}" CommandParameter="{Binding ElementName=textBlockCharacter}"/>
-                                    <KeyBinding Key="Delete" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.DeleteCharacterCrowdCommand}"/>
-                                    <KeyBinding Key="Escape" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.UpdateSelectedCrowdMemberCommand}"/>
-                                </TextBox.InputBindings>
+                                <i:Interaction.Triggers>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Space"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="EnterEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBlockCharacter}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Delete"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="DeleteCrowdMember">
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Esc"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="UnSelectCrowdMember">
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <MouseBinding MouseAction="LeftDoubleClick"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="EnterEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBlockCharacter}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                </i:Interaction.Triggers>
                             </TextBox>
                             <TextBox x:Name="textBoxCharacter" Visibility="Hidden" MinWidth="100" 
-                                             Text="{Binding Path=Name, UpdateSourceTrigger=Explicit}">
-                                <behaviors:CommandBehaviorCollection.Behaviors>
-                                    <behaviors:BehaviorBinding Event="LostFocus" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.SubmitCharacterCrowdRenameCommand}" CommandParameter="{Binding ElementName=textBoxCharacter}"/>
-                                </behaviors:CommandBehaviorCollection.Behaviors>
-                                <TextBox.InputBindings>
-                                    <KeyBinding Key="Enter" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.SubmitCharacterCrowdRenameCommand}" CommandParameter="{Binding ElementName=textBoxCharacter}"/>
-                                    <KeyBinding Key="Escape" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.CancelEditModeCommand}" CommandParameter="{Binding ElementName=textBoxCharacter}"/>
-                                </TextBox.InputBindings>
+                                             Text="{Binding Path=Name, UpdateSourceTrigger=Explicit}" cal:Message.Attach="[Event LostFocus] = [Action SubmitCharacterCrowdRename($source)]">
+                                <i:Interaction.Triggers>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Return"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="SubmitCharacterCrowdRename">
+                                            <cal:Parameter Value="{Binding ElementName=textBoxCharacter}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <KeyBinding Key="Esc"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="CancelEditMode">
+                                            <cal:Parameter Value="{Binding ElementName=textBoxCharacter}" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                </i:Interaction.Triggers>
                             </TextBox>
                         </Grid>
                     </Grid>
                 </DataTemplate>
             </TreeView.Resources>
-            <!--<TreeView.ItemContainerStyle>
+            <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem" BasedOn="{StaticResource searchableTreeViewItem}">
                     <Style.Resources>
-                        <converters:BooleanToVisibilityConverter x:Key="boolToVisibility"></converters:BooleanToVisibilityConverter>
+                        <local:BooleanToVisibilityConverter x:Key="boolToVisibility"></local:BooleanToVisibilityConverter>
                     </Style.Resources>
-                    <Setter Property="Visibility" Value="{Binding Path=IsMatched, Mode=OneWay, Converter={StaticResource ResourceKey=boolToVisibility}}"/>
+                    <Setter Property="Visibility" Value="{Binding Path=MatchesFilter, Mode=OneWay, Converter={StaticResource ResourceKey=boolToVisibility}}"/>
                 </Style>
-            </TreeView.ItemContainerStyle>-->
-            <behaviors:CommandBehaviorCollection.Behaviors>
-                <behaviors:BehaviorBinding Event="SelectedItemChanged" Command="{Binding UpdateSelectedCrowdMemberCommand}" CommandParameter="{Binding ElementName=treeViewCrowd}"/>
-            </behaviors:CommandBehaviorCollection.Behaviors>
-            <TreeView.InputBindings>
-                <KeyBinding Key="Escape" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext.UpdateSelectedCrowdMemberCommand}"/>
-            </TreeView.InputBindings>
+            </TreeView.ItemContainerStyle>
+            <i:Interaction.Triggers>
+                <local:InputBindingTrigger>
+                    <local:InputBindingTrigger.InputBinding>
+                        <KeyBinding Key="Esc"/>
+                    </local:InputBindingTrigger.InputBinding>
+                    <cal:ActionMessage MethodName="UnSelectCrowdMember">
+                    </cal:ActionMessage>
+                </local:InputBindingTrigger>
+            </i:Interaction.Triggers>
         </TreeView>
         <Border Grid.Row="1"  Style="{StaticResource SearchBox}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4 4 20 4">
             <Grid>
@@ -159,8 +234,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Image Grid.Column="0" Source="pack://application:,,,/Common/Images/Search.png"/>
-                <!--The following text binding won't work, will need to modify it later-->
+                <Image Grid.Column="0" Source="pack://application:,,,/Images/Search.png"/>
                 <TextBox Grid.Column="1"                           
                          Text="{Binding Path=Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             </Grid>

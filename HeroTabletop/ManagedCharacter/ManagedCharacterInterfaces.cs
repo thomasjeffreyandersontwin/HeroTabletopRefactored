@@ -21,13 +21,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
         string DesktopLabel { get; }
         Position Position { get; }
         bool IsTargeted { get; set; }
-
         bool IsFollowed { get; set; }
         bool IsManueveringWithCamera { get; set; }
         CharacterActionList<Identity> Identities { get; }
         bool IsSpawned { get; set; }
-
-
        
         DesktopMemoryCharacter MemoryInstance { get; set; }
         KeyBindCommandGenerator Generator { get; set; }

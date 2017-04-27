@@ -35,7 +35,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public Position Position => MemoryInstance.Position;
         private string name;
-        public virtual string Name
+        public string Name
         {
             get
             {
