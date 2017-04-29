@@ -19,12 +19,12 @@ namespace HeroVirtualTabletop.Crowd
         void AddCrowd();
         void AddCharacterCrowd();
         void DeleteCrowdMember();
-        void RenameCrowdMember(CrowdMember member, string newName);
         void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd);
-        void CloneCrowdMember(CrowdMember member);
-        void CutCrowdMember(CrowdMember member);
-        void LinkCrowdMember(CrowdMember member);
-        void PasteCrowdMember(CrowdMember member);
+        void CloneCrowdMember();
+        void CutCrowdMember();
+        void LinkCrowdMember();
+        void CloneLinkCharacter(CrowdMember crowdMember);
+        void PasteCrowdMember();
         void AddCrowdMemberToRoster(CrowdMember member);
         void CreateCrowdFromModels();
         void ApplyFilter(string filter);

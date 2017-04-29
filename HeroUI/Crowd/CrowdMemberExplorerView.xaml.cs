@@ -127,6 +127,7 @@ namespace HeroVirtualTabletop.Crowd
                                         {
                                             this.viewModel.SelectedCrowd = model as Crowd;
                                             this.viewModel.SelectedCrowdParent = tvi.DataContext as Crowd;
+                                            this.viewModel.SelectedCharacterCrowd = null;
                                         }
                                         else
                                         {

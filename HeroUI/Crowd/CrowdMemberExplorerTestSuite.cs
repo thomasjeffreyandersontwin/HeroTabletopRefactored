@@ -132,34 +132,7 @@ namespace HeroVirtualTabletop.Crowd
 
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.RemoveMember(charCrowd0));
         }
-        [TestMethod]
-        [TestCategory("CrowdMemberExplorer")]
-        public void RenameCrowdMember_InvokesCrowdMemberRename()
-        {
-            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var crowd0 = TestObjectsFactory.MockCrowd;
-            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
-
-            charExpVM.RenameCrowdMember(crowd0, "newNameCrowd");
-            charExpVM.RenameCrowdMember(charCrowd0, "newNameCharacter");
-
-            Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.Rename("newNameCrowd"));
-            Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.Rename("newNameCharacter"));
-        }
-        [TestMethod]
-        [TestCategory("CrowdMemberExplorer")]
-        public void RenameCrowdMember_ChecksDuplicateNameForCrowdMember()
-        {
-            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var crowd0 = TestObjectsFactory.MockCrowd;
-            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
-
-            charExpVM.RenameCrowdMember(crowd0, "newNameCrowd");
-            charExpVM.RenameCrowdMember(charCrowd0, "newNameCharacter");
-
-            Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.CheckIfNameIsDuplicate("newNameCrowd", null));
-            Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.CheckIfNameIsDuplicate("newNameCharacter", null));
-        }
+        
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
         public void MoveCrowdMember_InvokesMoveCrowdMemberForDestinationCrowd()
@@ -190,8 +163,9 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
-            charExpVM.CloneCrowdMember(charCrowd0);
+            charExpVM.CloneCrowdMember();
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.CopyToClipboard(charCrowd0));
         }
@@ -209,8 +183,9 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
-            charExpVM.CutCrowdMember(charCrowd0);
+            charExpVM.CutCrowdMember();
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.CutToClipboard(charCrowd0, crowd0));
         }
@@ -228,8 +203,9 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
-            charExpVM.LinkCrowdMember(charCrowd0);
+            charExpVM.LinkCrowdMember();
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.LinkToClipboard(charCrowd0));
         }
@@ -247,9 +223,11 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCharacterCrowd = charCrowd0;
 
-            charExpVM.CloneCrowdMember(charCrowd0);
-            charExpVM.PasteCrowdMember(charCrowd1);
+            charExpVM.CloneCrowdMember();
+            charExpVM.SelectedCrowd = crowd1;
+            charExpVM.PasteCrowdMember();
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.PasteFromClipboard(charCrowd1));
         }

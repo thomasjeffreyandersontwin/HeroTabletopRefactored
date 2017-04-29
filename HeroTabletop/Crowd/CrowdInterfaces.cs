@@ -27,6 +27,7 @@ namespace HeroVirtualTabletop.Crowd
         void AddDefaultCharacters();
         void LoadCrowds();
         void SaveCrowds();
+        void AddCrowd(Crowd crowd);
         void RemoveCrowd(Crowd crowd);
     }
     public interface Crowd : CrowdMember
@@ -42,6 +43,7 @@ namespace HeroVirtualTabletop.Crowd
         void MoveCrowdMemberAfter(CrowdMember destination, CrowdMember crowdToMove);
         void AddManyCrowdMembers(List<CrowdMember> member);
         List<CharacterCrowdMember> GetCharactersSpecificToThisCrowd();
+        bool IsCrowdNestedWithinContainerCrowd(Crowd containerCrowd);
         void AddCrowdMember(CrowdMember member);
         void RemoveMember(CrowdMember member);
     }
@@ -87,7 +89,10 @@ namespace HeroVirtualTabletop.Crowd
         void CopyToClipboard(CrowdMember member);
         void LinkToClipboard(CrowdMember member);
         void CutToClipboard(CrowdMember member, Crowd sourceParent = null);
-        void PasteFromClipboard(CrowdMember member);
+        void CloneLinkToClipboard(CrowdMember member);
+        CrowdMember PasteFromClipboard(CrowdMember member);
+        CrowdMember GetClipboardCrowdMember();
+        bool CheckPasteEligibilityFromClipboard(Crowd destinationCrowd);
     }
    
 }
