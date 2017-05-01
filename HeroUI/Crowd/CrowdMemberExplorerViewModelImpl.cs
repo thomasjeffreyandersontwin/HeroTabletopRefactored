@@ -569,7 +569,6 @@ namespace HeroVirtualTabletop.Crowd
             if (this.SelectedCharacterCrowd != null) // dragged a Character
             {
                 // avoid linking or cloning of default and combat effect crowds
-                // avoid dragging to all characters crowd
                 if (this.SelectedCharacterCrowd.Name != DEFAULT_CHARACTER_NAME && this.SelectedCharacterCrowd.Name != COMBAT_EFFECTS_CHARACTER_NAME)
                 {
                     if (this.SelectedCrowd.Name == targetCrowd.Name)
