@@ -193,13 +193,13 @@ namespace HeroVirtualTabletop.Crowd
         public void AddCrowd()
         {
             // Lock character crowd Tree from updating;
-            this.LockModelAndMemberUpdate(true);
+            this.LockTreeUpdate(true);
             // Add crowd
             var crowd = this.CrowdRepository.NewCrowd(this.SelectedCrowd);
             this.CrowdRepository.AddCrowd(crowd);
             //this.CrowdRepository.SaveCrowds();
             // UnLock character crowd Tree from updating;
-            this.LockModelAndMemberUpdate(false);
+            this.LockTreeUpdate(false);
             // Update character crowd if necessary
             if (this.lastCharacterCrowdStateToUpdate != null)
             {
@@ -256,7 +256,7 @@ namespace HeroVirtualTabletop.Crowd
         public void DeleteCrowdMember()
         {
             // Lock character crowd Tree from updating;
-            this.LockModelAndMemberUpdate(true);
+            this.LockTreeUpdate(true);
             CrowdMember rosterMember = null;
             // Determine if Character or Crowd is to be deleted
             if (SelectedCharacterCrowd != null) // Delete Character
@@ -283,7 +283,7 @@ namespace HeroVirtualTabletop.Crowd
             // Finally save repository
             //this.SaveCrowdCollection();
             // UnLock character crowd Tree from updating;
-            this.LockModelAndMemberUpdate(false);
+            this.LockTreeUpdate(false);
             // Update character crowd if necessary
             if (this.lastCharacterCrowdStateToUpdate != null)
             {
@@ -347,7 +347,7 @@ namespace HeroVirtualTabletop.Crowd
             this.SelectedCrowdParent = null;
             OnEditNeeded(null, null);
         }
-        private void LockModelAndMemberUpdate(bool isLocked)
+        private void LockTreeUpdate(bool isLocked)
         {
             this.isUpdatingCollection = isLocked;
             if (!isLocked)
@@ -541,7 +541,7 @@ namespace HeroVirtualTabletop.Crowd
         public void PasteCrowdMember()
         {
             // Lock character crowd Tree from updating;
-            this.LockModelAndMemberUpdate(true);
+            this.LockTreeUpdate(true);
             var clipboardObjName = (this.CrowdClipboard.GetClipboardCrowdMember()).Name;
             CrowdMember pastedMember = this.CrowdClipboard.PasteFromClipboard(this.SelectedCrowd);
             if (pastedMember.Name != clipboardObjName) // cloned
@@ -555,7 +555,79 @@ namespace HeroVirtualTabletop.Crowd
                 OnExpansionUpdateNeeded(this.SelectedCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Paste });
             }
             // UnLock character crowd Tree from updating
-            this.LockModelAndMemberUpdate(false);
+            this.LockTreeUpdate(false);
+        }
+
+        #endregion
+
+        #region Drag Drop CrowdMembers
+
+        public void DragDropSelectedCrowdMember(Crowd targetCrowd)
+        {
+            bool saveNeeded = false;
+            this.LockTreeUpdate(true);
+            if (this.SelectedCharacterCrowd != null) // dragged a Character
+            {
+                // avoid linking or cloning of default and combat effect crowds
+                // avoid dragging to all characters crowd
+                if (this.SelectedCharacterCrowd.Name != DEFAULT_CHARACTER_NAME && this.SelectedCharacterCrowd.Name != COMBAT_EFFECTS_CHARACTER_NAME)
+                {
+                    if (this.SelectedCrowd.Name == targetCrowd.Name)
+                    {
+                        // It is in the same crowd, so clone
+                        this.CrowdClipboard.CopyToClipboard(this.SelectedCharacterCrowd);
+                        CrowdMember pastedMember = this.CrowdClipboard.PasteFromClipboard(targetCrowd);
+                        OnEditNeeded(pastedMember, new CustomEventArgs<string>() { Value = "EditAfterDragDrop" });
+                    }
+                    else
+                    {
+                        // different crowd, so link
+                        if (!targetCrowd.ContainsMember(SelectedCharacterCrowd))
+                        {
+                            this.CrowdClipboard.LinkToClipboard(this.SelectedCharacterCrowd);
+                            this.CrowdClipboard.PasteFromClipboard(targetCrowd);
+                        }
+                    }
+                }
+            }
+            else // dragged a Crowd
+            {
+                // link/clone the crowd but don't create circular reference
+                if (this.SelectedCrowd != null && targetCrowd.Name != this.SelectedCrowd.Name)
+                {
+                    bool canLinkCrowd = false;
+                    if (SelectedCrowd.Members != null && !targetCrowd.IsCrowdNestedWithinContainerCrowd(SelectedCrowd))
+                    {
+                        canLinkCrowd = true;
+                    }
+                    else
+                        canLinkCrowd = true;
+                    if (canLinkCrowd)
+                    {
+                        saveNeeded = true;
+                        if (!targetCrowd.ContainsMember(this.SelectedCrowd))
+                        {
+                            // Link
+                            this.CrowdClipboard.LinkToClipboard(this.SelectedCrowd);
+                            this.CrowdClipboard.PasteFromClipboard(targetCrowd); 
+                        }
+                        else
+                        {
+                            // Clone
+                            this.CrowdClipboard.CopyToClipboard(this.SelectedCrowd);
+                            CrowdMember pastedMember = this.CrowdClipboard.PasteFromClipboard(targetCrowd);
+                            OnEditNeeded(pastedMember, new CustomEventArgs<string>() { Value = "EditAfterDragDrop" });
+                        }
+                    }
+                }
+            }
+            //if (saveNeeded)
+            //    this.SaveCrowdCollection();
+            if (targetCrowd != null)
+            {
+                OnExpansionUpdateNeeded(targetCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.DragDrop });
+            }
+            this.LockTreeUpdate(false);
         }
 
         #endregion

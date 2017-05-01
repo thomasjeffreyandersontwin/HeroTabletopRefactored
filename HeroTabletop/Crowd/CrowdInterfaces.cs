@@ -39,7 +39,7 @@ namespace HeroVirtualTabletop.Crowd
         List<CrowdMember> Members { get; }
         Dictionary<string, CrowdMember> MembersByName { get; }
         bool IsExpanded { get; set; }
-
+        bool ContainsMember(CrowdMember member);
         void MoveCrowdMemberAfter(CrowdMember destination, CrowdMember crowdToMove);
         void AddManyCrowdMembers(List<CrowdMember> member);
         List<CharacterCrowdMember> GetCharactersSpecificToThisCrowd();

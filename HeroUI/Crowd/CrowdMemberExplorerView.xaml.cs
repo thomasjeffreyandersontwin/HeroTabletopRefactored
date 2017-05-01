@@ -543,7 +543,7 @@ namespace HeroVirtualTabletop.Crowd
                         targetCrowd = currentDropItemNodeParent != null ? currentDropItemNodeParent.DataContext as Crowd : null;
                     }
 
-                    //this.viewModel.DragDropSelectedCrowdMember(targetCrowd);
+                    this.viewModel.DragDropSelectedCrowdMember(targetCrowd);
                 }
             }
         }
@@ -574,7 +574,6 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
         #endregion
-
         
     }
 }

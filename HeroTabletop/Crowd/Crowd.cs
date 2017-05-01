@@ -487,6 +487,11 @@ namespace HeroVirtualTabletop.Crowd
             FilterApplied = true;
         }
 
+        public bool ContainsMember(CrowdMember member)
+        {
+            return this.MembersByName.ContainsKey(member.Name);
+        }
+
         public bool IsCrowdNestedWithinContainerCrowd(Crowd containerCrowd)
         {
             bool isNested = false;
@@ -530,10 +535,10 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
 
-        private static void deleteAllChildrenIfThisDoesntHaveAnyOtherParentsAndChildrenDoNotHaveOtherParents(
+        private void deleteAllChildrenIfThisDoesntHaveAnyOtherParentsAndChildrenDoNotHaveOtherParents(
             Crowd crowdBeingDeleted)
         {
-            if (crowdBeingDeleted.AllCrowdMembershipParents.Count == 0)
+            if (crowdBeingDeleted.AllCrowdMembershipParents.Count == 0 && !this.CrowdRepository.CrowdsByName.ContainsKey(crowdBeingDeleted.Name))
                 foreach (var childOfCrowdBeingDeleted in crowdBeingDeleted.Members)
                     if (childOfCrowdBeingDeleted.AllCrowdMembershipParents.Count <= 2)
                         //parent from this crowd and allcrowds is all thats left
