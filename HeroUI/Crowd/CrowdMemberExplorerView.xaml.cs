@@ -164,13 +164,15 @@ namespace HeroVirtualTabletop.Crowd
             textBox.SelectAll();
         }
 
-        private void viewModel_EditModeLeave(object sender, EventArgs e)
+        private void viewModel_EditModeLeave(object sender, CustomEventArgs<string> e)
         {
             TextBox txtBox = sender as TextBox;
             Grid grid = txtBox.Parent as Grid;
             TextBox otherTextBox = grid.Children[0] as TextBox;
 
             txtBox.Visibility = Visibility.Hidden;
+            if(e != null && !string.IsNullOrEmpty(e.Value))
+                txtBox.Text = e.Value;
             BindingExpression expression = txtBox.GetBindingExpression(TextBox.TextProperty);
             expression.UpdateSource();
             otherTextBox.GetBindingExpression(TextBox.TextProperty).UpdateTarget();

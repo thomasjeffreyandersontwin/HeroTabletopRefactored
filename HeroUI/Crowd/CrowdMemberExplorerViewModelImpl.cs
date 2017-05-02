@@ -42,8 +42,8 @@ namespace HeroVirtualTabletop.Crowd
                 EditModeEnter(sender, e);
         }
 
-        public event EventHandler EditModeLeave;
-        public void OnEditModeLeave(object sender, EventArgs e)
+        public event EventHandler<CustomEventArgs<string>> EditModeLeave;
+        public void OnEditModeLeave(object sender, CustomEventArgs<string> e)
         {
             if (EditModeLeave != null)
                 EditModeLeave(sender, e);
@@ -162,6 +162,20 @@ namespace HeroVirtualTabletop.Crowd
                 selectedCrowdParent = value;
             }
         }
+        private string filter;
+        public string Filter
+        {
+            get
+            {
+                return filter;
+            }
+            set
+            {
+                filter = value;
+                NotifyOfPropertyChange(() => Filter);
+                ApplyFilter(value);
+            }
+        }
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = repository;
@@ -218,12 +232,15 @@ namespace HeroVirtualTabletop.Crowd
 
         public void ApplyFilter(string filter)
         {
-            foreach (var crowd in this.CrowdRepository.Crowds)
+            foreach (Crowd cr in this.CrowdRepository.Crowds)
             {
-                foreach (var mem in crowd.Members)
-                {
-                    mem.ApplyFilter(filter);
-                }
+                cr.ResetFilter();
+            }
+
+            foreach (Crowd cr in this.CrowdRepository.Crowds)
+            {
+                cr.ApplyFilter(filter); //Filter already check
+                OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
             }
         }
 
@@ -417,7 +434,7 @@ namespace HeroVirtualTabletop.Crowd
                 SelectedCharacterCrowd.Name = this.OriginalName;
             else
                 SelectedCrowd.Name = this.OriginalName;
-            OnEditModeLeave(state, null);
+            OnEditModeLeave(state, new CustomEventArgs<string> { Value = this.OriginalName});
         }
 
         public void RenameCrowdMember(string updatedName)

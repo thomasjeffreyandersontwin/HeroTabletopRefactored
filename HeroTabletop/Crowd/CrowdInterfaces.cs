@@ -65,7 +65,7 @@ namespace HeroVirtualTabletop.Crowd
 
         CrowdMember Clone();
         void ApplyFilter(string filter);
-       
+        void ResetFilter();
         bool CheckIfNameIsDuplicate(string updatedName, IEnumerable<CrowdMember> members);
 
         void RemoveParent(CrowdMember crowdMember);  

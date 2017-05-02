@@ -483,8 +483,35 @@ namespace HeroVirtualTabletop.Crowd
                 var re = new Regex(filter, RegexOptions.IgnoreCase);
                 MatchesFilter = re.IsMatch(Name);
             }
+            if (MatchesFilter)
+            {
+                foreach (CrowdMember cm in Members)
+                {
+                    cm.ApplyFilter(string.Empty);
+                }
+            }
+            else
+            {
+                foreach (CrowdMember cm in Members)
+                {
+                    cm.ApplyFilter(filter);
+                }
+                if (Members.Any(cm => { return cm.MatchesFilter; }))
+                {
+                    MatchesFilter = true;
+                }
+            }
             IsExpanded = MatchesFilter;
             FilterApplied = true;
+        }
+
+        public void ResetFilter()
+        {
+            FilterApplied = false;
+            foreach (CrowdMember cm in Members)
+            {
+                cm.ResetFilter();
+            }
         }
 
         public bool ContainsMember(CrowdMember member)
@@ -868,20 +895,6 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdRepository CrowdRepository { get; set; }
 
         public string OldName { get; set; }
-
-        //public string Name
-        //{
-        //    get { return _name; }
-
-        //    set
-        //    {
-        //        if (CheckIfNameIsDuplicate(value, null))
-        //            throw new DuplicateKeyException(value);
-        //        OldName = _name;
-        //        _name = value;
-        //        NotifyOfPropertyChange(() => Name);
-        //    }
-        //}
 
         public bool CheckIfNameIsDuplicate(string updatedName, IEnumerable<CrowdMember> members)
         {
