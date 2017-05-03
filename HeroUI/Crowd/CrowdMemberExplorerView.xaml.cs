@@ -171,7 +171,7 @@ namespace HeroVirtualTabletop.Crowd
             TextBox otherTextBox = grid.Children[0] as TextBox;
 
             txtBox.Visibility = Visibility.Hidden;
-            if(e != null && !string.IsNullOrEmpty(e.Value))
+            if (e != null && !string.IsNullOrEmpty(e.Value))
                 txtBox.Text = e.Value;
             BindingExpression expression = txtBox.GetBindingExpression(TextBox.TextProperty);
             expression.UpdateSource();

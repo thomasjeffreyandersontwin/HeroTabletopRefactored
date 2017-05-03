@@ -29,14 +29,14 @@ namespace HeroVirtualTabletop.Crowd
         void SaveCrowds();
         void AddCrowd(Crowd crowd);
         void RemoveCrowd(Crowd crowd);
+        void SortCrowds(bool ascending = true);
     }
     public interface Crowd : CrowdMember
     {
 
         bool UseRelativePositioning { get; set; }
-        
         List<CrowdMemberShip> MemberShips { get; }
-        List<CrowdMember> Members { get; }
+        ObservableCollection<CrowdMember> Members { get; }
         Dictionary<string, CrowdMember> MembersByName { get; }
         bool IsExpanded { get; set; }
         bool ContainsMember(CrowdMember member);
@@ -46,6 +46,7 @@ namespace HeroVirtualTabletop.Crowd
         bool IsCrowdNestedWithinContainerCrowd(Crowd containerCrowd);
         void AddCrowdMember(CrowdMember member);
         void RemoveMember(CrowdMember member);
+        void SortMembers();
     }
     public interface CharacterCrowdMember : AnimatedCharacter, CrowdMember, RosterParticipant
     {

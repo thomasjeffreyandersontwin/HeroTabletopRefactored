@@ -199,6 +199,17 @@ namespace HeroVirtualTabletop.Crowd
             }
             this.Crowds.Remove(crowd);
         }
+
+        public void SortCrowds(bool ascending = true)
+        {
+            //foreach(var crowd in this.Crowds)
+            //{
+            //    crowd.SortMembers();
+            //}
+            var sorted = this.Crowds.OrderBy(cr => cr, new CrowdMemberComparer()).ToList();
+            for (int i = 0; i < sorted.Count(); i++)
+                this.Crowds.Move(this.Crowds.IndexOf(sorted[i]), i);
+        }
     }
 
     public class CrowdImpl : PropertyChangedBase, Crowd
@@ -314,16 +325,26 @@ namespace HeroVirtualTabletop.Crowd
 
         public List<CrowdMemberShip> MemberShips { get; }
 
-        public List<CrowdMember> Members
+        private ObservableCollection<CrowdMember> members;
+        public ObservableCollection<CrowdMember> Members
         {
             get
             {
-                return MemberShips.Select(i =>
+                if (members == null)
+                {
+                    members = new ObservableCollection<CrowdMember>( MemberShips.Select(i =>
                     {
                         i.Child.Parent = this;
                         return i.Child;
                     }
-                ).OrderBy(x => x.Order).ToList();
+                    ).OrderBy(x => x, new CrowdMemberComparer()).ToList());
+                }
+                return members;
+            }
+            set
+            {
+                members = value;
+                NotifyOfPropertyChange(() => Members);
             }
         }
 
@@ -350,6 +371,7 @@ namespace HeroVirtualTabletop.Crowd
                 member.Order = Members.Count;
                 member.Parent = this;
                 member.PropertyChanged += Member_PropertyChanged;
+                Members.Add(member);
                 NotifyOfPropertyChange(() => Members);
             }
         }
@@ -395,9 +417,16 @@ namespace HeroVirtualTabletop.Crowd
                 deleteAllChildrenIfThisDoesntHaveAnyOtherParentsAndChildrenDoNotHaveOtherParents(crowdBeingDeleted);
             }
             child.PropertyChanged -= Member_PropertyChanged;
+            Members.Remove(child);
             NotifyOfPropertyChange(() => Members);
         }
 
+        public void SortMembers()
+        {
+            var sorted = this.Members.OrderBy(cr => cr, new CrowdMemberComparer()).ToList();
+            for (int i = 0; i < sorted.Count(); i++)
+                this.Members.Move(this.Members.IndexOf(sorted[i]), i);
+        }
         public void MoveCrowdMemberAfter(CrowdMember destination, CrowdMember memberToMove)
         {
             if (destination.Parent == memberToMove.Parent)
@@ -541,7 +570,7 @@ namespace HeroVirtualTabletop.Crowd
                 var crowd = crowdMember as Crowd;
                 if (crowd?.Members != null && crowd.Members.Count > 0)
 
-                    flattened.AddRange(GetFlattenedMemberList(crowd.Members));
+                    flattened.AddRange(GetFlattenedMemberList(crowd.Members.ToList()));
                 flattened.Add(crowdMember);
             }
             return flattened;
@@ -981,9 +1010,6 @@ namespace HeroVirtualTabletop.Crowd
         {
             this.OldName = this.Name;
             this.Name = newName;
-            NotifyOfPropertyChange(() => Name);
-            if(this.Parent != null)
-                NotifyOfPropertyChange(() => this.Parent.Members);
         }
 
         public RosterGroup RosterParent { get; set; }
@@ -1186,6 +1212,19 @@ namespace HeroVirtualTabletop.Crowd
             if (member is CharacterCrowdMember)
                 return (member as CharacterCrowdMember).Parent;
             else return member as Crowd;
+        }
+    }
+
+    public class CrowdMemberComparer : IComparer<CrowdMember>
+    {
+        public int Compare(CrowdMember cmm1, CrowdMember cmm2)
+        {
+            //if (cmm1.Order != cmm2.Order)
+            //    return cmm1.Order.CompareTo(cmm2.Order);
+            string s1 = cmm1.Name;
+            string s2 = cmm2.Name;
+
+            return CommonLibrary.CompareStrings(s1, s2);
         }
     }
 }

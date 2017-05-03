@@ -210,7 +210,9 @@ namespace HeroVirtualTabletop.Crowd
             this.LockTreeUpdate(true);
             // Add crowd
             var crowd = this.CrowdRepository.NewCrowd(this.SelectedCrowd);
-            this.CrowdRepository.AddCrowd(crowd);
+            if(this.SelectedCrowd == null)
+                this.CrowdRepository.AddCrowd(crowd);
+
             //this.CrowdRepository.SaveCrowds();
             // UnLock character crowd Tree from updating;
             this.LockTreeUpdate(false);
@@ -223,6 +225,7 @@ namespace HeroVirtualTabletop.Crowd
 
             // Enter Edit mode for the added model
             OnEditNeeded(crowd, null);
+            this.CrowdRepository.SortCrowds();
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)
@@ -243,10 +246,6 @@ namespace HeroVirtualTabletop.Crowd
                 OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
             }
         }
-
-
-
-
 
         #region Delete Character or Crowd
 
@@ -320,7 +319,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public void SortCrowds()
         {
-
+            
         }
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, Crowd destinationCrowd)
@@ -451,8 +450,7 @@ namespace HeroVirtualTabletop.Crowd
                     return;
                 }
                 SelectedCharacterCrowd.Rename(updatedName);
-
-                //this.characterCollection.Sort();
+                this.SelectedCrowd.SortMembers();
                 this.OriginalName = null;
             }
             else
@@ -462,10 +460,10 @@ namespace HeroVirtualTabletop.Crowd
                     return;
                 }
                 SelectedCrowd.Rename(updatedName);
-                //this.CrowdCollection.Sort(ListSortDirection.Ascending, new CrowdMemberModelComparer());
+                this.CrowdRepository.SortCrowds();
                 this.OriginalName = null;
             }
-
+            
             List<CrowdMember> rosterCharacters = new List<CrowdMember>();
             //eventAggregator.GetEvent<AddToRosterEvent>().Publish(rosterCharacters); // sending empty list so that roster sorts its elements
         }
