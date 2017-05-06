@@ -42,8 +42,8 @@ namespace HeroVirtualTabletop.Crowd
                 EditModeEnter(sender, e);
         }
 
-        public event EventHandler EditModeLeave;
-        public void OnEditModeLeave(object sender, EventArgs e)
+        public event EventHandler<CustomEventArgs<string>> EditModeLeave;
+        public void OnEditModeLeave(object sender, CustomEventArgs<string> e)
         {
             if (EditModeLeave != null)
                 EditModeLeave(sender, e);
@@ -131,18 +131,18 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
 
-        private CharacterCrowdMember _selectedCharacterCrowdMember;
-        public CharacterCrowdMember SelectedCharacterCrowdMember
+        private CharacterCrowdMember selectedCharacterCrowd;
+        public CharacterCrowdMember SelectedCharacterCrowd
         {
             get
             {
-                return _selectedCharacterCrowdMember;
+                return selectedCharacterCrowd;
             }
 
             set
             {
-                _selectedCharacterCrowdMember = value;
-                NotifyOfPropertyChange(() => SelectedCharacterCrowdMember);
+                selectedCharacterCrowd = value;
+                NotifyOfPropertyChange(() => SelectedCharacterCrowd);
                 NotifyOfPropertyChange(() => CanDeleteCrowdMember);
                 NotifyOfPropertyChange(() => CanCloneCrowdMember);
                 NotifyOfPropertyChange(() => CanCutCrowdMember);
@@ -162,6 +162,20 @@ namespace HeroVirtualTabletop.Crowd
                 selectedCrowdParent = value;
             }
         }
+        private string filter;
+        public string Filter
+        {
+            get
+            {
+                return filter;
+            }
+            set
+            {
+                filter = value;
+                NotifyOfPropertyChange(() => Filter);
+                ApplyFilter(value);
+            }
+        }
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = repository;
@@ -172,23 +186,35 @@ namespace HeroVirtualTabletop.Crowd
 
         }
 
-        public bool CanAddCharacterCrowd =>eturn this.SelectedCrowd != null;
+        public bool CanAddCharacterCrowd
+        {
+            get
+            {
+                return this.SelectedCrowd != null;
             }
         }
 
-        public void AddCharacterCrowdMember()
+        public void AddCharacterCrowd()
         {
             var charCrowd = this.CrowdRepository.NewCharacterCrowdMember(this.SelectedCrowd);
-
+            //// Add default movements
+            //charCrowd.AddDefaultMovements();
+            //this.CrowdRepository.SaveCrowds();
+            //// Enter edit mode for the added character
             OnEditNeeded(charCrowd, null);
         }
 
         public void AddCrowd()
         {
+            // Lock character crowd Tree from updating;
             this.LockTreeUpdate(true);
+            // Add crowd
             var crowd = this.CrowdRepository.NewCrowd(this.SelectedCrowd);
-            //JA TO DO why do we AddCrowd but do not AddCharacerCrowdMember above?
-            this.CrowdRepository.AddCrowd(crowd);
+            if(this.SelectedCrowd == null)
+                this.CrowdRepository.AddCrowd(crowd);
+
+            //this.CrowdRepository.SaveCrowds();
+            // UnLock character crowd Tree from updating;
             this.LockTreeUpdate(false);
             // Update character crowd if necessary
             if (this.lastCharacterCrowdStateToUpdate != null)
@@ -199,6 +225,7 @@ namespace HeroVirtualTabletop.Crowd
 
             // Enter Edit mode for the added model
             OnEditNeeded(crowd, null);
+            this.CrowdRepository.SortCrowds();
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)
@@ -208,18 +235,17 @@ namespace HeroVirtualTabletop.Crowd
 
         public void ApplyFilter(string filter)
         {
-            foreach (var crowd in this.CrowdRepository.Crowds)
+            foreach (Crowd cr in this.CrowdRepository.Crowds)
             {
-                foreach (var mem in crowd.Members)
-                {
-                    mem.ApplyFilter(filter);
-                }
+                cr.ResetFilter();
+            }
+
+            foreach (Crowd cr in this.CrowdRepository.Crowds)
+            {
+                cr.ApplyFilter(filter); //Filter already check
+                OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
             }
         }
-
-
-
-
 
         #region Delete Character or Crowd
 
@@ -230,9 +256,9 @@ namespace HeroVirtualTabletop.Crowd
                 bool canDeleteCharacterOrCrowd = false;
                 if (SelectedCrowd != null)
                 {
-                    if (SelectedCharacterCrowdMember != null)
+                    if (SelectedCharacterCrowd != null)
                     {
-                        if (SelectedCharacterCrowdMember.Name != DEFAULT_CHARACTER_NAME && SelectedCharacterCrowdMember.Name != COMBAT_EFFECTS_CHARACTER_NAME)
+                        if (SelectedCharacterCrowd.Name != DEFAULT_CHARACTER_NAME && SelectedCharacterCrowd.Name != COMBAT_EFFECTS_CHARACTER_NAME)
                             canDeleteCharacterOrCrowd = true;
                     }
                     else
@@ -249,16 +275,15 @@ namespace HeroVirtualTabletop.Crowd
             this.LockTreeUpdate(true);
             CrowdMember rosterMember = null;
             // Determine if Character or Crowd is to be deleted
-            if (SelectedCharacterCrowdMember != null) // Delete Character
+            if (SelectedCharacterCrowd != null) // Delete Character
             {
-                if (SelectedCharacterCrowdMember.RosterParent != null && SelectedCharacterCrowdMember.RosterParent.Name == SelectedCrowd.Name)
-                    rosterMember = SelectedCharacterCrowdMember;
+                if (SelectedCharacterCrowd.RosterParent != null && SelectedCharacterCrowd.RosterParent.Name == SelectedCrowd.Name)
+                    rosterMember = SelectedCharacterCrowd;
                 // Delete the Character from all occurances of this crowd
-                SelectedCrowd.RemoveMember(SelectedCharacterCrowdMember);
+                SelectedCrowd.RemoveMember(SelectedCharacterCrowd);
             }
             else // Delete Crowd
             {
-                //TO DO JA why is this necessary? shouldnt this logic be in the model / domain layer
                 //If it is a nested crowd, just delete it from the parent
                 if (this.SelectedCrowdParent != null)
                 {
@@ -294,7 +319,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public void SortCrowds()
         {
-
+            
         }
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, Crowd destinationCrowd)
@@ -319,12 +344,12 @@ namespace HeroVirtualTabletop.Crowd
                 if (crowd != null) // Only update if something is selected
                 {
                     this.SelectedCrowd = crowd;
-                    this.SelectedCharacterCrowdMember = selectedCrowdMember as CharacterCrowdMember;
+                    this.SelectedCharacterCrowd = selectedCrowdMember as CharacterCrowdMember;
                 }
                 else if (this.CrowdRepository.Crowds.Count == 0)
                 {
                     this.SelectedCrowd = null;
-                    this.SelectedCharacterCrowdMember = null;
+                    this.SelectedCharacterCrowd = null;
                 }
             }
             else
@@ -334,12 +359,10 @@ namespace HeroVirtualTabletop.Crowd
         public void UnSelectCrowdMember()
         {
             this.SelectedCrowd = null;
-            this.SelectedCharacterCrowdMember = null;
+            this.SelectedCharacterCrowd = null;
             this.SelectedCrowdParent = null;
             OnEditNeeded(null, null);
         }
-
-        //JA TO DO this looks like two very different methods with diferent intentions can we refactor?
         private void LockTreeUpdate(bool isLocked)
         {
             this.isUpdatingCollection = isLocked;
@@ -362,9 +385,9 @@ namespace HeroVirtualTabletop.Crowd
         #region Rename
         public void EnterEditMode(object state)
         {
-            if (this.SelectedCharacterCrowdMember != null)
+            if (this.SelectedCharacterCrowd != null)
             {
-                this.OriginalName = SelectedCharacterCrowdMember.Name;
+                this.OriginalName = SelectedCharacterCrowd.Name;
                 this.IsUpdatingCharacter = true;
             }
             else
@@ -383,7 +406,7 @@ namespace HeroVirtualTabletop.Crowd
                 bool isDuplicate = false;
                 if (IsUpdatingCharacter)
                 {
-                    isDuplicate = SelectedCharacterCrowdMember.CheckIfNameIsDuplicate(updatedName, null);
+                    isDuplicate = SelectedCharacterCrowd.CheckIfNameIsDuplicate(updatedName, null);
                 }
                 else
                 {
@@ -407,10 +430,10 @@ namespace HeroVirtualTabletop.Crowd
         public void CancelEditMode(object state)
         {
             if (this.IsUpdatingCharacter)
-                SelectedCharacterCrowdMember.Name = this.OriginalName;
+                SelectedCharacterCrowd.Name = this.OriginalName;
             else
                 SelectedCrowd.Name = this.OriginalName;
-            OnEditModeLeave(state, null);
+            OnEditModeLeave(state, new CustomEventArgs<string> { Value = this.OriginalName});
         }
 
         public void RenameCrowdMember(string updatedName)
@@ -422,13 +445,12 @@ namespace HeroVirtualTabletop.Crowd
             }
             if (this.IsUpdatingCharacter)
             {
-                if (SelectedCharacterCrowdMember == null)
+                if (SelectedCharacterCrowd == null)
                 {
                     return;
                 }
-                SelectedCharacterCrowdMember.Rename(updatedName);
-
-                //this.characterCollection.Sort();
+                SelectedCharacterCrowd.Rename(updatedName);
+                this.SelectedCrowd.SortMembers();
                 this.OriginalName = null;
             }
             else
@@ -438,10 +460,10 @@ namespace HeroVirtualTabletop.Crowd
                     return;
                 }
                 SelectedCrowd.Rename(updatedName);
-                //this.CrowdCollection.Sort(ListSortDirection.Ascending, new CrowdMemberModelComparer());
+                this.CrowdRepository.SortCrowds();
                 this.OriginalName = null;
             }
-
+            
             List<CrowdMember> rosterCharacters = new List<CrowdMember>();
             //eventAggregator.GetEvent<AddToRosterEvent>().Publish(rosterCharacters); // sending empty list so that roster sorts its elements
         }
@@ -459,8 +481,8 @@ namespace HeroVirtualTabletop.Crowd
         public void CloneCrowdMember()
         {
 
-            if (this.SelectedCharacterCrowdMember != null)
-                this.CrowdClipboard.CopyToClipboard(this.SelectedCharacterCrowdMember);
+            if (this.SelectedCharacterCrowd != null)
+                this.CrowdClipboard.CopyToClipboard(this.SelectedCharacterCrowd);
             else
                 this.CrowdClipboard.CopyToClipboard(this.SelectedCrowd);
             NotifyOfPropertyChange(() => CanPasteCrowdMember);
@@ -479,9 +501,9 @@ namespace HeroVirtualTabletop.Crowd
         }
         public void CutCrowdMember()
         {
-            if (this.SelectedCharacterCrowdMember != null)
+            if (this.SelectedCharacterCrowd != null)
             {
-                this.CrowdClipboard.CutToClipboard(this.SelectedCharacterCrowdMember, this.SelectedCrowd);
+                this.CrowdClipboard.CutToClipboard(this.SelectedCharacterCrowd, this.SelectedCrowd);
             }
             else
             {
@@ -501,9 +523,9 @@ namespace HeroVirtualTabletop.Crowd
         }
         public void LinkCrowdMember()
         {
-            if (this.SelectedCharacterCrowdMember != null)
+            if (this.SelectedCharacterCrowd != null)
             {
-                this.CrowdClipboard.LinkToClipboard(this.SelectedCharacterCrowdMember);
+                this.CrowdClipboard.LinkToClipboard(this.SelectedCharacterCrowd);
             }
             else
             {
@@ -559,24 +581,24 @@ namespace HeroVirtualTabletop.Crowd
         {
             bool saveNeeded = false;
             this.LockTreeUpdate(true);
-            if (this.SelectedCharacterCrowdMember != null) // dragged a Character
+            if (this.SelectedCharacterCrowd != null) // dragged a Character
             {
                 // avoid linking or cloning of default and combat effect crowds
-                if (this.SelectedCharacterCrowdMember.Name != DEFAULT_CHARACTER_NAME && this.SelectedCharacterCrowdMember.Name != COMBAT_EFFECTS_CHARACTER_NAME)
+                if (this.SelectedCharacterCrowd.Name != DEFAULT_CHARACTER_NAME && this.SelectedCharacterCrowd.Name != COMBAT_EFFECTS_CHARACTER_NAME)
                 {
                     if (this.SelectedCrowd.Name == targetCrowd.Name)
                     {
                         // It is in the same crowd, so clone
-                        this.CrowdClipboard.CopyToClipboard(this.SelectedCharacterCrowdMember);
+                        this.CrowdClipboard.CopyToClipboard(this.SelectedCharacterCrowd);
                         CrowdMember pastedMember = this.CrowdClipboard.PasteFromClipboard(targetCrowd);
                         OnEditNeeded(pastedMember, new CustomEventArgs<string>() { Value = "EditAfterDragDrop" });
                     }
                     else
                     {
                         // different crowd, so link
-                        if (!targetCrowd.ContainsMember(SelectedCharacterCrowdMember))
+                        if (!targetCrowd.ContainsMember(SelectedCharacterCrowd))
                         {
-                            this.CrowdClipboard.LinkToClipboard(this.SelectedCharacterCrowdMember);
+                            this.CrowdClipboard.LinkToClipboard(this.SelectedCharacterCrowd);
                             this.CrowdClipboard.PasteFromClipboard(targetCrowd);
                         }
                     }
