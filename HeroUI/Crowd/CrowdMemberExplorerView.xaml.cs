@@ -65,7 +65,7 @@ namespace HeroVirtualTabletop.Crowd
                 
                 if (sender is Crowd)
                 {
-                    if (this.viewModel.SelectedCrowd == null) // A new crowd has been added to the collection
+                    if (this.viewModel.SelectedCrowdMember == null) // A new crowd has been added to the collection
                     {
                         for (int i = 0; i < treeViewCrowd.Items.Count; i++)
                         {
@@ -78,7 +78,7 @@ namespace HeroVirtualTabletop.Crowd
                                     item.IsSelected = true;
                                     itemFound = true;
                                     txtBox = FindTextBoxInTemplate(item);
-                                    this.viewModel.SelectedCrowd = model as Crowd;
+                                    this.viewModel.SelectedCrowdMember = model as Crowd;
                                     break;
                                 }
                             }
@@ -97,13 +97,13 @@ namespace HeroVirtualTabletop.Crowd
                     }
                     else
                     {
-                        if (this.selectedCrowdRoot != null && this.viewModel.SelectedCrowd != null)
+                        if (this.selectedCrowdRoot != null && this.viewModel.SelectedCrowdMember != null)
                         {
                             TreeViewItem item = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(this.selectedCrowdRoot) as TreeViewItem;
-                            dObject = FindTreeViewItemUnderTreeViewItemByModelName(item, this.viewModel.SelectedCrowd.Name);
+                            dObject = FindTreeViewItemUnderTreeViewItemByModelName(item, this.viewModel.SelectedCrowdMember.Name);
                         }
                         else
-                            dObject = treeViewCrowd.GetItemFromSelectedObject(this.viewModel.SelectedCrowd);
+                            dObject = treeViewCrowd.GetItemFromSelectedObject(this.viewModel.SelectedCrowdMember);
                     }
                     TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
                     if (tvi != null)
@@ -127,14 +127,14 @@ namespace HeroVirtualTabletop.Crowd
                                         txtBox = FindTextBoxInTemplate(item);
                                         if (model is Crowd)
                                         {
-                                            this.viewModel.SelectedCrowd = model as Crowd;
+                                            this.viewModel.SelectedCrowdMember = model as Crowd;
                                             this.viewModel.SelectedCrowdParent = tvi.DataContext as Crowd;
                                             this.viewModel.SelectedCharacterCrowdMember = null;
                                         }
                                         else
                                         {
                                             this.viewModel.SelectedCharacterCrowdMember = model as CharacterCrowdMemberImpl;
-                                            this.viewModel.SelectedCrowd = tvi.DataContext as Crowd;
+                                            this.viewModel.SelectedCrowdMember = tvi.DataContext as Crowd;
                                         }
                                         if (this.selectedCrowdRoot == null)
                                             this.selectedCrowdRoot = tvi.DataContext as CrowdImpl;

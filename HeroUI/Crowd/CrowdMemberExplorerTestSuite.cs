@@ -51,7 +51,7 @@ namespace HeroVirtualTabletop.Crowd
             var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
-            charExpVM.SelectedCrowd = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
 
             charExpVM.AddCrowd();
 
@@ -94,7 +94,7 @@ namespace HeroVirtualTabletop.Crowd
             var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
-            charExpVM.SelectedCrowd = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
 
             charExpVM.AddCharacterCrowdMember();
 
@@ -226,7 +226,8 @@ namespace HeroVirtualTabletop.Crowd
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.CloneCrowdMember();
-            charExpVM.SelectedCrowd = crowd1;
+            charExpVM.SelectedCrowdMember = crowd1;
+            charExpVM.SelectedCrowdMember = crowd1;
             charExpVM.PasteCrowdMember();
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.PasteFromClipboard(charCrowd1));

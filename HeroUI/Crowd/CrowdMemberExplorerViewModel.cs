@@ -11,7 +11,7 @@ namespace HeroVirtualTabletop.Crowd
     public interface CrowdMemberExplorerViewModel
     {
         CrowdRepository CrowdRepository { get; set; }
-        Crowd SelectedCrowd { get; set; }
+        Crowd SelectedCrowdMember { get; set; }
         CharacterCrowdMember SelectedCharacterCrowdMember { get; set; }
         CrowdClipboard CrowdClipboard { get; set; }
         IEventAggregator EventAggregator { get; set; }
