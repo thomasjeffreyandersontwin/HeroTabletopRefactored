@@ -20,7 +20,7 @@
             </ResourceDictionary.MergedDictionaries>
             <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=crowdUI:CrowdMemberExplorerView}, Path=DataContext}"/>
             <ContextMenu x:Key="CrowdMemberExplorerMenu">
-                <MenuItem Header="Add Character" cal:Message.Attach="AddCharacterCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Add Character" cal:Message.Attach="AddCharacterCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Add Crowd" cal:Message.Attach="AddCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Add Crowd From Models" cal:Message.Attach="AddCrowdFromModels" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
             </ContextMenu>
@@ -47,7 +47,7 @@
                 <Button x:Name="AddCharacterCrowd" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)"/>
+                <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)" Click="AddCrowd_Click"/>
                 <Button x:Name="DeleteCrowdMember" Content="&#xf235;" ToolTip="Remove (Ctrl+Minus/Del)"/>
                 <Button x:Name="EditCharacterCrowd" Content="&#xf044;" ToolTip="Edit (Ctrl+E)"/>
                 <Button x:Name="AddToRoster" Content="&#xf090;" ToolTip="Add to Roster (Ctrl+R)" />
@@ -66,7 +66,7 @@
                     <MenuItem Header="Cut" cal:Message.Attach="CutCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Link" cal:Message.Attach="LinkCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Paste" cal:Message.Attach="PasteCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
-                    <MenuItem Header="Add Character" cal:Message.Attach="AddCharacterCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                    <MenuItem Header="Add Character" cal:Message.Attach="AddCharacterCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Add Crowd"  cal:Message.Attach="AddCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Edit Character" cal:Message.Attach="EditCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Remove" cal:Message.Attach="DeleteCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
