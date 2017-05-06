@@ -42,6 +42,8 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
         }
+
+        //JA TO DO can we please createe some intention revealing functions so we have less nested cyclomatic complexity
         private void viewModel_EditNeeded(object sender, CustomEventArgs<string> e)
         {
             CrowdMember modelToSelect = sender as CrowdMember;
@@ -127,11 +129,11 @@ namespace HeroVirtualTabletop.Crowd
                                         {
                                             this.viewModel.SelectedCrowd = model as Crowd;
                                             this.viewModel.SelectedCrowdParent = tvi.DataContext as Crowd;
-                                            this.viewModel.SelectedCharacterCrowd = null;
+                                            this.viewModel.SelectedCharacterCrowdMember = null;
                                         }
                                         else
                                         {
-                                            this.viewModel.SelectedCharacterCrowd = model as CharacterCrowdMemberImpl;
+                                            this.viewModel.SelectedCharacterCrowdMember = model as CharacterCrowdMemberImpl;
                                             this.viewModel.SelectedCrowd = tvi.DataContext as Crowd;
                                         }
                                         if (this.selectedCrowdRoot == null)
@@ -574,6 +576,10 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
         #endregion
-        
+
+        private void AddCrowd_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
