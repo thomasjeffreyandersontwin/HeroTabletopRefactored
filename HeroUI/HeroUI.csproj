@@ -117,6 +117,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="BusyService\BusyControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HeroVirtualTabletopMainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -137,6 +141,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BusyService\AdornerBehavior.cs" />
+    <Compile Include="BusyService\BusyControl.xaml.cs">
+      <DependentUpon>BusyControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BusyService\BusyService.cs" />
+    <Compile Include="BusyService\ControlAdorner.cs" />
     <Compile Include="HeroVirtualTabletopMainViewModel.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="HeroVirtualTabletopMainViewModelImpl.cs" />

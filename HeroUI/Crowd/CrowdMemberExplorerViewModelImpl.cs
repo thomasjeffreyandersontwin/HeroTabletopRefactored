@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Caliburn.Micro;
 using System.IO;
 using HeroUI;
+using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -20,7 +21,7 @@ namespace HeroVirtualTabletop.Crowd
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
         private const string GAME_DATA_FOLDERNAME = "data";
-        private const string GAME_CROWD_REPOSITORY_FILENAME = "CrowdRepo.data";
+        private const string GAME_CROWD_REPOSITORY_FILENAME = "CrowdRepository.data";
         private const string DEFAULT_CHARACTER_NAME = "DEFAULT";
         private const string COMBAT_EFFECTS_CHARACTER_NAME = "COMBAT EFFECTS";
         private const string DELETE_CONTAINING_CHARACTERS_FROM_CROWD_PROMPT_MESSAGE = "Do you want to delete every character specific to this crowd from the system as well?";
@@ -33,6 +34,7 @@ namespace HeroVirtualTabletop.Crowd
         private string OriginalName;
         private bool IsUpdatingCharacter;
         public IEventAggregator EventAggregator { get; set; }
+        private BusyService busyService;
 
         #region Events
         public event EventHandler EditModeEnter;
@@ -176,14 +178,13 @@ namespace HeroVirtualTabletop.Crowd
                 ApplyFilter(value);
             }
         }
-        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator)
+        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator, BusyService busyService)
         {
             this.CrowdRepository = repository;
             this.CrowdClipboard = clipboard;
             this.EventAggregator = eventAggregator;
+            this.busyService = busyService;
             this.CrowdRepository.CrowdRepositoryPath = Path.Combine(HeroUI.Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_CROWD_REPOSITORY_FILENAME);
-            this.CrowdRepository.LoadCrowds();
-
         }
 
         public bool CanAddCharacterCrowd
@@ -202,6 +203,7 @@ namespace HeroVirtualTabletop.Crowd
             //this.CrowdRepository.SaveCrowds();
             //// Enter edit mode for the added character
             OnEditNeeded(charCrowd, null);
+            SaveCrowdCollectionAsync();
         }
 
         public void AddCrowd()
@@ -226,6 +228,7 @@ namespace HeroVirtualTabletop.Crowd
             // Enter Edit mode for the added model
             OnEditNeeded(crowd, null);
             this.CrowdRepository.SortCrowds();
+            SaveCrowdCollectionAsync();
         }
 
         public void AddCrowdMemberToRoster(CrowdMember member)
@@ -288,7 +291,6 @@ namespace HeroVirtualTabletop.Crowd
                 if (this.SelectedCrowdParent != null)
                 {
                     SelectedCrowdParent.RemoveMember(SelectedCrowd);
-                    SelectedCrowdParent = SelectedCrowdParent.Parent;
                 }
                 else // Delete it from the repo altogether
                 {
@@ -312,15 +314,12 @@ namespace HeroVirtualTabletop.Crowd
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Delete });
             }
+
+            SaveCrowdCollectionAsync();
         }
 
 
         #endregion
-
-        public void SortCrowds()
-        {
-            
-        }
 
         public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, Crowd destinationCrowd)
         {
@@ -331,6 +330,24 @@ namespace HeroVirtualTabletop.Crowd
         {
 
         }
+
+        #region Load/Save Crowds
+
+        public async Task LoadCrowdCollectionAsync()
+        {
+            this.busyService.ShowBusy();
+            await this.CrowdRepository.LoadCrowdsAsync();
+            this.busyService.HideBusy();
+        }
+
+        public async Task SaveCrowdCollectionAsync()
+        {
+            this.busyService.ShowBusy();
+            await this.CrowdRepository.SaveCrowdsAsync();
+            this.busyService.HideBusy();
+        }
+
+        #endregion
 
         #region Update Selection
 
@@ -417,6 +434,7 @@ namespace HeroVirtualTabletop.Crowd
                     RenameCrowdMember(updatedName);
                     OnEditModeLeave(state, null);
                     //this.SaveCrowdCollection();
+                    SaveCrowdCollectionAsync();
                 }
                 else
                 {
@@ -564,7 +582,7 @@ namespace HeroVirtualTabletop.Crowd
                 OnEditNeeded(pastedMember, null);
             }
 
-            //this.CrowdRepository.SaveCrowds();
+            SaveCrowdCollectionAsync();
             if (SelectedCrowd != null)
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Paste });
@@ -635,8 +653,7 @@ namespace HeroVirtualTabletop.Crowd
                     }
                 }
             }
-            //if (saveNeeded)
-            //    this.SaveCrowdCollection();
+            SaveCrowdCollectionAsync();
             if (targetCrowd != null)
             {
                 OnExpansionUpdateNeeded(targetCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.DragDrop });

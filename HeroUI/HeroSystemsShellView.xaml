@@ -14,9 +14,11 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <DockPanel>
-        <ContentControl x:Name="ActiveItem" />
-    </DockPanel>
+    <AdornerDecorator>
+        <Grid x:Name="LayoutRoot">
+            <ContentControl x:Name="ActiveItem" />
+        </Grid>
+    </AdornerDecorator>
     <Window.Style>
         <Style TargetType="{x:Type Window}">
             <Setter Property="Topmost" Value="True"></Setter>

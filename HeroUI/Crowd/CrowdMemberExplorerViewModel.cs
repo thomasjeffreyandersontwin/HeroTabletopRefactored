@@ -28,6 +28,7 @@ namespace HeroVirtualTabletop.Crowd
         void AddCrowdMemberToRoster(CrowdMember member);
         void CreateCrowdFromModels();
         void ApplyFilter(string filter);
-        void SortCrowds();
+        Task LoadCrowdCollectionAsync();
+        Task SaveCrowdCollectionAsync();
     }
 }

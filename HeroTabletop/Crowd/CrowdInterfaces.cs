@@ -7,6 +7,7 @@ using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Roster;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -25,8 +26,8 @@ namespace HeroVirtualTabletop.Crowd
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");
         string CreateUniqueName(string name, IEnumerable<CrowdMember> context);
         void AddDefaultCharacters();
-        void LoadCrowds();
-        void SaveCrowds();
+        Task LoadCrowdsAsync();
+        Task SaveCrowdsAsync();
         void AddCrowd(Crowd crowd);
         void RemoveCrowd(Crowd crowd);
         void SortCrowds(bool ascending = true);

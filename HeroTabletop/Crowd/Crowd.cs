@@ -13,6 +13,9 @@ using System.IO;
 using Caliburn.Micro;
 using HeroVirtualTabletop.Movement;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Threading;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
 namespace HeroVirtualTabletop.Crowd
@@ -159,7 +162,6 @@ namespace HeroVirtualTabletop.Crowd
         {
             allMembersCrowd = new CrowdImpl(this);
             allMembersCrowd.Name = CROWD_CONSTANTS.ALL_CHARACTER_CROWD_NAME;
-            //Crowds.Add(allMembersCrowd);
         }
 
         public void AddDefaultCharacters()
@@ -167,17 +169,24 @@ namespace HeroVirtualTabletop.Crowd
             throw new NotImplementedException();
         }
 
-        public void LoadCrowds()
+        public async Task LoadCrowdsAsync()
         {
-            if(File.Exists(this.CrowdRepositoryPath))
-                this.Crowds = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<Crowd>>(this.CrowdRepositoryPath);
-            if (this.Crowds == null)
-                this.Crowds = new ObservableCollection<Crowd>();
+            await Task.Run(() => 
+            {
+                if (File.Exists(this.CrowdRepositoryPath))
+                    this.Crowds = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<Crowd>>(this.CrowdRepositoryPath);
+                if (this.Crowds == null)
+                    this.Crowds = new ObservableCollection<Crowd>();
+            });
+            
         }
 
-        public void SaveCrowds()
+        public async Task SaveCrowdsAsync()
         {
-            CommonLibrary.SerializeObjectAsJSONToFile(this.CrowdRepositoryPath, this.Crowds);
+            await Task.Run(() =>
+            {
+                CommonLibrary.SerializeObjectAsJSONToFile(this.CrowdRepositoryPath, this.Crowds);
+            });
         }
         public void AddCrowd(Crowd crowd)
         {
@@ -202,10 +211,6 @@ namespace HeroVirtualTabletop.Crowd
 
         public void SortCrowds(bool ascending = true)
         {
-            //foreach(var crowd in this.Crowds)
-            //{
-            //    crowd.SortMembers();
-            //}
             var sorted = this.Crowds.OrderBy(cr => cr, new CrowdMemberComparer()).ToList();
             for (int i = 0; i < sorted.Count(); i++)
                 this.Crowds.Move(this.Crowds.IndexOf(sorted[i]), i);
@@ -218,6 +223,12 @@ namespace HeroVirtualTabletop.Crowd
 
         private bool _matchedFilter;
         private string _name;
+        [JsonConstructor]
+        private CrowdImpl()
+        {
+            MatchesFilter = true;
+            CrowdRepository = IoC.Get<CrowdRepository>();
+        }
 
         public CrowdImpl(CrowdRepository repo)
         {
@@ -230,17 +241,13 @@ namespace HeroVirtualTabletop.Crowd
         public bool FilterApplied { get; set; }
         public bool IsExpanded { get; set; }
         public string OldName { get; set; }
-
+        [JsonProperty(Order=1)]
         public string Name
         {
             get { return _name; }
 
             set
             {
-                if (Parent != null)
-                    if (CheckIfNameIsDuplicate(value, Parent.Members))
-                        throw new DuplicateKeyException(value);
-                OldName = value;
                 _name = value;
                 NotifyOfPropertyChange(() => Name);
             }
@@ -275,15 +282,6 @@ namespace HeroVirtualTabletop.Crowd
                     var otherParent = currentCharacterCrowdMember.AllCrowdMembershipParents.FirstOrDefault(mship => mship.ParentCrowd != this && mship.ParentCrowd.Name != this.CrowdRepository.AllMembersCrowd.Name);
                     if (otherParent == null && !crowdSpecificCharacters.Contains(currentCharacterCrowdMember))
                         crowdSpecificCharacters.Add(currentCharacterCrowdMember);
-                    //foreach (Crowd cModel in this.CrowdRepository.Crowds.Where(cm => cm.Name != this.Name))
-                    //{
-                    //    var crm = cModel.Members.Where(cm => cm is CharacterCrowdMember && cm.Name == currentCharacterCrowdMember.Name).FirstOrDefault();
-                    //    if (crm == null)
-                    //    {
-                    //        if (crowdSpecificCharacters.Where(csc => csc.Name == currentCharacterCrowdMember.Name).FirstOrDefault() == null)
-                    //            crowdSpecificCharacters.Add(currentCharacterCrowdMember);
-                    //    }
-                    //}
                 }
             }
             return crowdSpecificCharacters;
@@ -291,16 +289,19 @@ namespace HeroVirtualTabletop.Crowd
 
         public CrowdRepository CrowdRepository { get; set; }
         public bool UseRelativePositioning { get; set; }
-        public List<CrowdMemberShip> AllCrowdMembershipParents { get; }
-
+        [JsonProperty(Order = 2)]
+        public List<CrowdMemberShip> AllCrowdMembershipParents { get; set; }
+        private Crowd parent;
         public Crowd Parent
         {
             get
             {
-                return _loadedParentMembership?.ParentCrowd;
+                //return parent;
+                return _loadedParentMembership.ParentCrowd;
             }
             set
             {
+                parent = value;
                 if (value != null)
                 {
                     var parents = AllCrowdMembershipParents.ToDictionary(x => x.ParentCrowd.Name);
@@ -322,9 +323,9 @@ namespace HeroVirtualTabletop.Crowd
                 }
             }
         }
-
-        public List<CrowdMemberShip> MemberShips { get; }
-
+        [JsonProperty(Order = 3)]
+        public List<CrowdMemberShip> MemberShips { get; set; }
+        
         private ObservableCollection<CrowdMember> members;
         public ObservableCollection<CrowdMember> Members
         {
@@ -595,10 +596,15 @@ namespace HeroVirtualTabletop.Crowd
             Crowd crowdBeingDeleted)
         {
             if (crowdBeingDeleted.AllCrowdMembershipParents.Count == 0 && !this.CrowdRepository.CrowdsByName.ContainsKey(crowdBeingDeleted.Name))
+            {
+                List<CrowdMember> membersToDelete = new List<CrowdMember>();
                 foreach (var childOfCrowdBeingDeleted in crowdBeingDeleted.Members)
                     if (childOfCrowdBeingDeleted.AllCrowdMembershipParents.Count <= 2)
+                        membersToDelete.Add(childOfCrowdBeingDeleted);
+                foreach(var member in membersToDelete)
                         //parent from this crowd and allcrowds is all thats left
-                        crowdBeingDeleted.RemoveMember(childOfCrowdBeingDeleted);
+                        crowdBeingDeleted.RemoveMember(member);
+            }
         }
 
         private CrowdMemberShip getMembershipThatAssociatesChildMemberToThis(CrowdMember member)
@@ -630,17 +636,24 @@ namespace HeroVirtualTabletop.Crowd
     public class CrowdMemberShipImpl : PropertyChangedBase, CrowdMemberShip
     {
         private Position _savedPosition;
+        [JsonConstructor]
+        private CrowdMemberShipImpl()
+        {
+
+        }
 
         public CrowdMemberShipImpl(Crowd parent, CrowdMember child)
         {
             ParentCrowd = parent;
             Child = child;
         }
-
+        [JsonProperty]
         public int Order { get; set; }
+        [JsonProperty]
         public Crowd ParentCrowd { get; set; }
+        [JsonProperty]
         public CrowdMember Child { get; set; }
-
+        [JsonProperty]
         public Position SavedPosition
         {
             get
@@ -844,6 +857,20 @@ namespace HeroVirtualTabletop.Crowd
 
 
         private bool isExpanded;
+        [JsonConstructor]
+        private CharacterCrowdMemberImpl(): base(null, null, null, null, null)
+        {
+            InitializeCharacterCrowdMember();
+        }
+
+        private void InitializeCharacterCrowdMember()
+        {
+            this.Targeter = IoC.Get<DesktopCharacterTargeter>();
+            this.Generator = IoC.Get<KeyBindCommandGenerator>();
+            this.Camera = IoC.Get<Camera>();
+            this.CrowdRepository = IoC.Get<CrowdRepository>();
+            this.MatchesFilter = true;
+        }
 
         public CharacterCrowdMemberImpl(Crowd parent, DesktopCharacterTargeter targeter,
             KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities,
@@ -866,17 +893,19 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         public bool FilterApplied { get; set; }
-
-        public List<CrowdMemberShip> AllCrowdMembershipParents { get; }
-
+        [JsonProperty(Order = 1)]
+        public List<CrowdMemberShip> AllCrowdMembershipParents { get; set; }
+        private Crowd parent;
         public Crowd Parent
         {
             get
             {
+                //return parent;
                 return _loadedParentMembership.ParentCrowd;
             }
             set
             {
+                parent = value;
                 if (value == null)
                 {
                     _loadedParentMembership = null;
@@ -1011,7 +1040,7 @@ namespace HeroVirtualTabletop.Crowd
             this.OldName = this.Name;
             this.Name = newName;
         }
-
+        [JsonProperty(Order=4)]
         public RosterGroup RosterParent { get; set; }
     }
 

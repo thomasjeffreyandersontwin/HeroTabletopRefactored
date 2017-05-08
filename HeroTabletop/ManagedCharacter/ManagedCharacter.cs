@@ -5,6 +5,7 @@ using Framework.WPF.Library;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Common;
 using Caliburn.Micro;
+using Newtonsoft.Json;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -35,6 +36,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public Position Position => MemoryInstance.Position;
         private string name;
+        [JsonProperty(Order = 0)]
         public string Name
         {
             get
@@ -171,7 +173,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        
+        [JsonProperty(Order = 5)]
         public CharacterActionList<Identity> Identities { get; private set; }
         public virtual Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> CharacterActionGroups
         {

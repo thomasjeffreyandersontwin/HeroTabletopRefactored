@@ -41,6 +41,8 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
+
+            this.viewModel.LoadCrowdCollectionAsync();
         }
         private void viewModel_EditNeeded(object sender, CustomEventArgs<string> e)
         {

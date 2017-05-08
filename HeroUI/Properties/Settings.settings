@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="GameDirectory" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">E:\TEST 23</Value>
     </Setting>
   </Settings>
 </SettingsFile>

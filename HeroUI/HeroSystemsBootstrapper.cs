@@ -47,6 +47,7 @@ namespace HeroUI
             container.Singleton<CrowdClipboard, CrowdClipboardImpl>();
             container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
             container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
+            container.Singleton<BusyService, BusyServiceImpl>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }
