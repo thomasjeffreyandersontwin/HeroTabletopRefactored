@@ -882,6 +882,8 @@ namespace HeroVirtualTabletop.Crowd
             MatchesFilter = true;
         }
 
+        
+
         public bool IsExpanded
         {
             get { return isExpanded; }

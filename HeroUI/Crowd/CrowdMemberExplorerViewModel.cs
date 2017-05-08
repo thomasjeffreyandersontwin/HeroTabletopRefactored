@@ -11,13 +11,13 @@ namespace HeroVirtualTabletop.Crowd
     public interface CrowdMemberExplorerViewModel
     {
         CrowdRepository CrowdRepository { get; set; }
-        Crowd SelectedCrowd { get; set; }
-        CharacterCrowdMember SelectedCharacterCrowd { get; set; }
+        Crowd SelectedCrowdMember { get; set; }
+        CharacterCrowdMember SelectedCharacterCrowdMember { get; set; }
         CrowdClipboard CrowdClipboard { get; set; }
         IEventAggregator EventAggregator { get; set; }
         //KeyBoardHook keyBoardHook { get; set; } // To do under desktops
         void AddCrowd();
-        void AddCharacterCrowd();
+        void AddCharacterCrowdMember();
         void DeleteCrowdMember();
         void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd);
         void CloneCrowdMember();
