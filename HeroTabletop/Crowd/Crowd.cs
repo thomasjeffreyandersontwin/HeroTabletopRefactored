@@ -854,11 +854,21 @@ namespace HeroVirtualTabletop.Crowd
 
         private bool _matchedFilter;
         private string _name;
-
-
+        
         private bool isExpanded;
+
+        public CharacterCrowdMemberImpl(Crowd parent, DesktopCharacterTargeter targeter,
+            KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities,
+            CrowdRepository repo) : base(targeter, generator, camera, identities, repo)
+        {
+            AllCrowdMembershipParents = new List<CrowdMemberShip>();
+            Parent = parent;
+            CrowdRepository = repo;
+            MatchesFilter = true;
+        }
+
         [JsonConstructor]
-        private CharacterCrowdMemberImpl(): base(null, null, null, null, null)
+        private CharacterCrowdMemberImpl() : this(null, null, null, null, null, null)
         {
             InitializeCharacterCrowdMember();
         }
@@ -871,18 +881,6 @@ namespace HeroVirtualTabletop.Crowd
             this.CrowdRepository = IoC.Get<CrowdRepository>();
             this.MatchesFilter = true;
         }
-
-        public CharacterCrowdMemberImpl(Crowd parent, DesktopCharacterTargeter targeter,
-            KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities,
-            CrowdRepository repo) : base(targeter, generator, camera, identities, repo)
-        {
-            AllCrowdMembershipParents = new List<CrowdMemberShip>();
-            Parent = parent;
-            CrowdRepository = repo;
-            MatchesFilter = true;
-        }
-
-        
 
         public bool IsExpanded
         {

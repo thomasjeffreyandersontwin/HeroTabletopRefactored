@@ -760,7 +760,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
     }
 
-    public class AnimatedAbilityTestObjectsFactory : ManagedCustomerTestObjectsFactory
+    public class AnimatedAbilityTestObjectsFactory : ManagedCharacterTestObjectsFactory
     {
         public AnimatedAbilityTestObjectsFactory()
         {

@@ -7,6 +7,7 @@ using Caliburn.Micro;
 using System.IO;
 using HeroUI;
 using System.Threading.Tasks;
+using HeroVirtualTabletop.Roster;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -20,6 +21,8 @@ namespace HeroVirtualTabletop.Crowd
 
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
     {
+        #region Private Fields
+
         private const string GAME_DATA_FOLDERNAME = "data";
         private const string GAME_CROWD_REPOSITORY_FILENAME = "CrowdRepository.data";
         private const string DEFAULT_CHARACTER_NAME = "DEFAULT";
@@ -33,8 +36,9 @@ namespace HeroVirtualTabletop.Crowd
         private object lastCharacterCrowdStateToUpdate;
         private string OriginalName;
         private bool IsUpdatingCharacter;
-        public IEventAggregator EventAggregator { get; set; }
         private BusyService busyService;
+
+        #endregion
 
         #region Events
         public event EventHandler EditModeEnter;
@@ -67,6 +71,10 @@ namespace HeroVirtualTabletop.Crowd
                 ExpansionUpdateNeeded(sender, e);
         }
         #endregion
+
+        #region Properties
+
+        public IEventAggregator EventAggregator { get; set; }
 
         private ObservableCollection<Crowd> crowdCollection;
         public ObservableCollection<Crowd> CrowdCollection
@@ -178,6 +186,10 @@ namespace HeroVirtualTabletop.Crowd
                 ApplyFilter(value);
             }
         }
+
+        #endregion
+
+        #region Constructor
         public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator, BusyService busyService)
         {
             this.CrowdRepository = repository;
@@ -187,6 +199,9 @@ namespace HeroVirtualTabletop.Crowd
             this.CrowdRepository.CrowdRepositoryPath = Path.Combine(HeroUI.Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_CROWD_REPOSITORY_FILENAME);
         }
 
+        #endregion
+
+        #region Add Crowd/Character
         public bool CanAddCharacterCrowdMember
         {
             get
@@ -231,10 +246,18 @@ namespace HeroVirtualTabletop.Crowd
             SaveCrowdCollectionAsync();
         }
 
+        #endregion
+
+        #region Add to Roster
+
         public void AddCrowdMemberToRoster(CrowdMember member)
         {
-
+            this.EventAggregator.Publish(new AddToRosterEvent(), null);
         }
+
+        #endregion
+
+        #region Filter
 
         public void ApplyFilter(string filter)
         {
@@ -249,6 +272,8 @@ namespace HeroVirtualTabletop.Crowd
                 OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
             }
         }
+
+        #endregion
 
         #region Delete Character or Crowd
 
@@ -290,12 +315,12 @@ namespace HeroVirtualTabletop.Crowd
                 //If it is a nested crowd, just delete it from the parent
                 if (this.SelectedCrowdParent != null)
                 {
-                    SelectedCrowdParent.RemoveMember(SelectedCrowd);
+                    SelectedCrowdParent.RemoveMember(SelectedCrowdMember);
                 }
                 else // Delete it from the repo altogether
                 {
-                    this.CrowdRepository.RemoveCrowd(SelectedCrowd);
-                    rosterMember = SelectedCrowd;
+                    this.CrowdRepository.RemoveCrowd(SelectedCrowdMember);
+                    rosterMember = SelectedCrowdMember;
                 }
             }
             // Finally save repository
@@ -321,15 +346,14 @@ namespace HeroVirtualTabletop.Crowd
 
         #endregion
 
-        public void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, Crowd destinationCrowd)
-        {
-            destinationCrowd.MoveCrowdMemberAfter(targetCrowdMember, movingCrowdMember);
-        }
+        #region Create Crowd From Models
 
         public void CreateCrowdFromModels()
         {
-
+            this.EventAggregator.Publish(new CreateCrowdFromModelsEvent(), null);
         }
+
+        #endregion
 
         #region Load/Save Crowds
 

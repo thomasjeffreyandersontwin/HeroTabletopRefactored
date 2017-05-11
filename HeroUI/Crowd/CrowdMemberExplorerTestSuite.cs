@@ -9,6 +9,8 @@ using Moq;
 using Caliburn.Micro;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using HeroVirtualTabletop.Roster;
+using Ploeh.AutoFixture.Kernel;
+using HeroUI;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -30,10 +32,12 @@ namespace HeroVirtualTabletop.Crowd
         public void TestInitialize()
         {
             TestObjectsFactory = new CrowdTestObjectsFactory();
+            var moqBusyService = TestObjectsFactory.CustomizedMockFixture.Create<BusyService>();
+            TestObjectsFactory.StandardizedFixture.Inject<BusyService>(moqBusyService);
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCrowd_InvokesRepositoryAddCrowd()
+        public void AddCrowd_InvokesRepositoryNewCrowd()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             var repo = TestObjectsFactory.MockRepository;
@@ -41,14 +45,14 @@ namespace HeroVirtualTabletop.Crowd
 
             charExpVM.AddCrowd();
 
-            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(null, "Character"));
+            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCrowd(It.IsAny<Crowd>(), "Character"));
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowdWithSelectedCrowdAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepository;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
             charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             charExpVM.SelectedCrowdMember = crowd0;
@@ -60,14 +64,27 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCrowd_InvokesRepositoryAddCrowdWithParentOfSelectedCrowdMemberAsParent()
+        public void AddCrowd_SavesCrowds()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             var repo = TestObjectsFactory.MockRepository;
             charExpVM.CrowdRepository = repo;
+
+            charExpVM.AddCrowd();
+
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void AddCrowd_InvokesRepositoryAddCrowdWithParentOfSelectedCharacterCrowdMemberAsParent()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
+            charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.AddCrowd();
@@ -84,8 +101,9 @@ namespace HeroVirtualTabletop.Crowd
 
             charExpVM.AddCharacterCrowdMember();
 
-            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCharacterCrowdMember(null, "Character"));
+            Mock.Get<CrowdRepository>(repo).Verify(r => r.NewCharacterCrowdMember(It.IsAny<Crowd>(), "Character"));
         }
+        
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
         public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithSelectedCrowdAsParent()
@@ -102,7 +120,7 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithParentOfSelectedCrowdMemberAsParent()
+        public void AddCharacterCrowd_InvokesRepositoryAddCharacterCrowdWithParentOfSelectedCharacterCrowdMember()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             var repo = TestObjectsFactory.MockRepository;
@@ -110,6 +128,7 @@ namespace HeroVirtualTabletop.Crowd
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.AddCharacterCrowdMember();
@@ -118,7 +137,7 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void DeleteCrowdMember_InvokesRemoveCrowdMemberForParentOfSelectedCrowdMember()
+        public void RenameCrowdMember_RenamesCrowdsAndCharacters()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             var repo = TestObjectsFactory.MockRepository;
@@ -126,28 +145,71 @@ namespace HeroVirtualTabletop.Crowd
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
+            (charExpVM as CrowdMemberExplorerViewModelImpl).EnterEditMode(null);
+            string updatedName = "CharacterNameUpdated";
+            charExpVM.RenameCrowdMember(updatedName);
+            Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.Rename(updatedName));
+            charExpVM.SelectedCharacterCrowdMember = null;
+            (charExpVM as CrowdMemberExplorerViewModelImpl).EnterEditMode(null);
+            updatedName = "CrowdNameUpdated";
+            charExpVM.RenameCrowdMember(updatedName);
+            Mock.Get<Crowd>(crowd0).Verify(c => c.Rename(updatedName));
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void RenameCrowdMember_SortsCrowdsAndCharactersAfterRename()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
+            charExpVM.CrowdRepository = repo;
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
+            charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
+            (charExpVM as CrowdMemberExplorerViewModelImpl).EnterEditMode(null);
+            charExpVM.RenameCrowdMember("CharacterNameUpdated");
+            Mock.Get<Crowd>(crowd0).Verify(c => c.SortMembers());
+            charExpVM.SelectedCharacterCrowdMember = null;
+            (charExpVM as CrowdMemberExplorerViewModelImpl).EnterEditMode(null);
+            charExpVM.RenameCrowdMember("CrowdNameUpdated");
+            Mock.Get<CrowdRepository>(repo).Verify(r => r.SortCrowds(true));
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void DeleteCrowdMember_InvokesRemoveCrowdMemberForParentOfSelectedCharacterCrowdMember()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
+            charExpVM.CrowdRepository = repo;
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
+            charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.DeleteCrowdMember();
 
             Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd0).Verify(c => c.RemoveMember(charCrowd0));
         }
-        
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void MoveCrowdMember_InvokesMoveCrowdMemberForDestinationCrowd()
+        public void DeleteCrowdMember_SavesCrowds()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepository;
+            charExpVM.CrowdRepository = repo;
             var crowd0 = TestObjectsFactory.MockCrowd;
-            var crowd1 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
-            var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
-            charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
-            charExpVM.MoveCrowdMember(charCrowd0, charCrowd1, crowd1);
+            charExpVM.DeleteCrowdMember();
 
-            Mock.Get<HeroVirtualTabletop.Crowd.Crowd>(crowd1).Verify(c => c.MoveCrowdMemberAfter(charCrowd1, charCrowd0));
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
@@ -163,6 +225,7 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.CloneCrowdMember();
@@ -183,6 +246,7 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.CutCrowdMember();
@@ -203,6 +267,7 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.LinkCrowdMember();
@@ -223,14 +288,14 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd1 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
             charCrowd1.Parent = crowd1;
+            charExpVM.SelectedCrowdMember = crowd0;
             charExpVM.SelectedCharacterCrowdMember = charCrowd0;
 
             charExpVM.CloneCrowdMember();
             charExpVM.SelectedCrowdMember = crowd1;
-            charExpVM.SelectedCrowdMember = crowd1;
             charExpVM.PasteCrowdMember();
 
-            Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.PasteFromClipboard(charCrowd1));
+            Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.PasteFromClipboard(crowd1));
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
@@ -273,11 +338,26 @@ namespace HeroVirtualTabletop.Crowd
                 }
             }
         }
+
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void SortCrowds_SortsCrowdCollectionAlphaNumerically()
+        public async Task LoadCrowdCollection_InvokesRepositoryLoadCrowdsAsync()
         {
-            Assert.Fail();
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            charExpVM.CrowdRepository = TestObjectsFactory.MockRepository;
+
+            await charExpVM.LoadCrowdCollectionAsync();
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.LoadCrowdsAsync());
+        }
+
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public async Task SaveCrowdCollection_InvokesRepositorySaveCrowdsAsync()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            charExpVM.CrowdRepository = TestObjectsFactory.MockRepository;
+            await charExpVM.SaveCrowdCollectionAsync();
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
         }
     }
 }

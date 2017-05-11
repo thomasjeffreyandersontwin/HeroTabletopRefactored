@@ -11,11 +11,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
     [TestClass]
     public class ManagedCharacterTestSuite
     {
-        public ManagedCustomerTestObjectsFactory TestObjectsFactory;
+        public ManagedCharacterTestObjectsFactory TestObjectsFactory;
 
         public ManagedCharacterTestSuite()
         {
-            TestObjectsFactory = new ManagedCustomerTestObjectsFactory();
+            TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
         }
 
         [TestMethod]
@@ -239,11 +239,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
     [TestClass]
     public class CameraTestSuite
     {
-        public ManagedCustomerTestObjectsFactory TestObjectsFactory;
+        public ManagedCharacterTestObjectsFactory TestObjectsFactory;
 
         public CameraTestSuite()
         {
-            TestObjectsFactory = new ManagedCustomerTestObjectsFactory();
+            TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
         }
 
         [TestMethod]
@@ -343,12 +343,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
     [TestClass]
     public class IdentityTestSuite
     {
-        public ManagedCustomerTestObjectsFactory TestObjectsFactory;
+        public ManagedCharacterTestObjectsFactory TestObjectsFactory;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            TestObjectsFactory = new ManagedCustomerTestObjectsFactory();
+            TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
         }
 
         [TestMethod]
@@ -385,11 +385,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
     [TestClass]
     public class CharacterActionListTestSuite
     {
-        public ManagedCustomerTestObjectsFactory TestObjectsFactory;
+        public ManagedCharacterTestObjectsFactory TestObjectsFactory;
 
         public CharacterActionListTestSuite()
         {
-            TestObjectsFactory = new ManagedCustomerTestObjectsFactory();
+            TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
         }
 
         [TestMethod]
@@ -491,9 +491,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
     }
 
-    public class ManagedCustomerTestObjectsFactory : DesktopTestObjectsFactory
+    public class ManagedCharacterTestObjectsFactory : DesktopTestObjectsFactory
     {
-        public ManagedCustomerTestObjectsFactory()
+        public ManagedCharacterTestObjectsFactory()
         {
             setupMockFixture();
             setupStandardizedFixture();
@@ -620,7 +620,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         private void setupStandardizedFixture()
         {
             //all core dependencies use mock objects
-            StandardizedFixture = new Fixture();
+            //StandardizedFixture = new Fixture();
             StandardizedFixture.Inject(MockPosition);
             StandardizedFixture.Inject(MockKeybindGenerator);
             StandardizedFixture.Inject(MockDesktopCharacterTargeter);

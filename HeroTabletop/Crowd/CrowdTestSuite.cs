@@ -11,6 +11,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using Caliburn.Micro;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -737,6 +738,7 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdRepository RepositoryUnderTest => StandardizedFixture.Create<CrowdRepository>();
 
         public CrowdRepository MockRepository => CustomizedMockFixture.Create<CrowdRepository>();
+        public CrowdRepository MockRepositoryImpl => CustomizedMockFixture.Create<CrowdRepositoryImpl>();
 
         public CrowdRepository MockRepositoryWithCrowdsOnlyUnderTest
         {
@@ -884,10 +886,6 @@ namespace HeroVirtualTabletop.Crowd
                     typeof(CharacterCrowdMemberImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
-                    typeof(Crowd),
-                    typeof(CrowdImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
                     typeof(CrowdRepository),
                     typeof(CrowdRepositoryImpl)));
             StandardizedFixture.Customizations.Add(
@@ -902,6 +900,7 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(IEventAggregator),
                     typeof(EventAggregator)));
+            
             setupFixtureToBuildCrowdRepositories();
         }
         private void setupFixtureToBuildCrowdRepositories()
@@ -913,6 +912,18 @@ namespace HeroVirtualTabletop.Crowd
                 .Without(x => x.Crowds)
                 .With(x => x.UsingDependencyInjection, false)
             );
+
+            StandardizedFixture.Customize<CrowdImpl>(c => c
+                .Without(x => x.AllCrowdMembershipParents)
+                .Without(x => x.MemberShips)
+                .With(x => x.Members, new ObservableCollection<HeroVirtualTabletop.Crowd.CrowdMember>())
+                );
+
+            StandardizedFixture.Customize<CharacterCrowdMemberImpl>(c => c
+                .Without(x => x.AllCrowdMembershipParents)
+                .Without(x => x.ActiveMovement)
+                .Without(x => x.DesktopNavigator)
+                );
 
             var crowds = StandardizedFixture.CreateMany<Crowd>().ToList();
 

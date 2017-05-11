@@ -18,8 +18,8 @@ namespace HeroVirtualTabletop.Crowd
         //KeyBoardHook keyBoardHook { get; set; } // To do under desktops
         void AddCrowd();
         void AddCharacterCrowdMember();
+        void RenameCrowdMember(string updatedName);
         void DeleteCrowdMember();
-        void MoveCrowdMember(CrowdMember movingCrowdMember, CrowdMember targetCrowdMember, HeroVirtualTabletop.Crowd.Crowd destinationCrowd);
         void CloneCrowdMember();
         void CutCrowdMember();
         void LinkCrowdMember();

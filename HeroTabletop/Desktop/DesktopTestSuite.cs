@@ -8,6 +8,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using Xceed.Wpf.Toolkit;
+using System.Collections.Generic;
 
 namespace HeroVirtualTabletop.Desktop
 {
@@ -509,7 +510,23 @@ namespace HeroVirtualTabletop.Desktop
         void NavigateCharacterWithGravityintoFloorThatIsTooSteepTWalk_CharacterStopsAtCollision() { }
         void NavigateCharacterIntoAvoidableCollision_CharacterMovesAroundCollionToDestination() { }
     }
-
+    public class GreedyEngineParts : DefaultEngineParts
+    {
+        public override IEnumerator<ISpecimenBuilder> GetEnumerator()
+        {
+            var iter = base.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                if (iter.Current is MethodInvoker)
+                    yield return new MethodInvoker(
+                        new CompositeMethodQuery(
+                            new GreedyConstructorQuery(),
+                            new FactoryMethodQuery()));
+                else
+                    yield return iter.Current;
+            }
+        }
+    }
     public class DesktopTestObjectsFactory
     {
         public IFixture CustomizedMockFixture;
@@ -521,10 +538,10 @@ namespace HeroVirtualTabletop.Desktop
             //handle recursion
             StandardizedFixture = new Fixture();
             StandardizedFixture.Behaviors.Add(new OmitOnRecursionBehavior());
-           // StandardizedFixture.Customizations.Add(
+            // StandardizedFixture.Customizations.Add(
             //    new TypeRelay(
-             //       typeof(Position),
-              //      typeof(PositionImpl)));
+            //       typeof(Position),
+            //      typeof(PositionImpl)));
             MockFixture = new Fixture();
             MockFixture.Customize(new AutoMoqCustomization());
 

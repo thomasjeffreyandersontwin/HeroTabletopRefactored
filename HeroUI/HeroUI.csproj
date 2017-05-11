@@ -192,7 +192,9 @@
     <Resource Include="Fonts\FontAwesome.otf" />
     <Resource Include="Fonts\Montreal-DemiBold.TTF" />
     <Resource Include="Fonts\Paragon City Italic.ttf" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -200,7 +202,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HeroTabletop\HeroVirtualTabletop.csproj">
