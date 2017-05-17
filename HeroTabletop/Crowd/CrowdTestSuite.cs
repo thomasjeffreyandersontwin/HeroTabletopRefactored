@@ -26,6 +26,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdRepository")]
         public void NewCrowd_IsAddedToParent()
         {
             //arrange
@@ -41,6 +42,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdRepository")]
         public void NewCharacterCrowdMember_IsAddedToAllMembersAndParent()
         {
             //arrange
@@ -59,6 +61,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdRepository")]
         public void NewCharacterMember_CreatesAUniqueNameAcrossCrowds()
         {
             var repo = TestObjectsFactory.RepositoryUnderTest;
@@ -97,13 +100,14 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
-        public void NewCrowdMember_CreatesAUniqueNameWithinSameCrowdOnly()
+        [TestCategory("CrowdRepository")]
+        public void NewCrowdMember_CreatesAUniqueName()
         {
             var repo = TestObjectsFactory.RepositoryUnderTest;
             var parent = TestObjectsFactory.CrowdUnderTest;
 
             //act
-            repo.NewCrowd(parent);
+            var nextFirst = repo.NewCrowd(parent);
 
             //((CrowdRepositoryImpl)repo).NewCrowdInstance = TestObjectsFactory.MockCrowd;
             var nextActual = repo.NewCrowd(parent);
@@ -126,16 +130,6 @@ namespace HeroVirtualTabletop.Crowd
         {
 
         }
-        [TestMethod]
-        public void LoadCrowds_PopulatesCrowdCollection()
-        {
-
-        }
-        [TestMethod]
-        public void SaveCrowds_SavesCrowdCollection()
-        {
-
-        }
     }
 
     [TestClass]
@@ -149,6 +143,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("Crowd")]
         public void ChangingCrowdMemberChildInOneCrowd_ChangesTheSameMemberThatIaPartOfAnotherCrowd()
         {
             var parent1 = TestObjectsFactory.CrowdUnderTest;
@@ -163,183 +158,10 @@ namespace HeroVirtualTabletop.Crowd
 
             Assert.AreEqual(parent1.MembersByName["New Name"], parent2.MembersByName["New Name"]);
         }
+        
 
         [TestMethod]
-        public void ChangeCrowdName_FailsIfDuplicateNameExsistsWithinParent()
-        {
-            //arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithCrowdsOnly;
-            var crowdToChange = (Crowd)repo.Crowds[0].Members[0];
-
-            DuplicateKeyException ex = null;
-
-            //act
-            try
-            {
-                crowdToChange.Name = "0.0.1";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNotNull(ex);
-            ex = null;
-
-            try
-            {
-                crowdToChange.Name = "0.0.2";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNotNull(ex);
-            ex = null;
-
-            try
-            {
-                crowdToChange.Name = "new name";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNull(ex);
-        }
-
-        [TestMethod]
-        public void ChangeCharacterName_FailsIfDuplicateNameExistsInEntireRepository()
-        {
-            //arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
-            var characterToChange = (CharacterCrowdMember)repo.Crowds[0].Members[1];
-
-            DuplicateKeyException ex = null;
-
-            //act
-            try
-            {
-                characterToChange.Name = "0.0.1";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNotNull(ex);
-            ex = null;
-
-            try
-            {
-                characterToChange.Name = "0.0.2";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNotNull(ex);
-            ex = null;
-
-            try
-            {
-                characterToChange.Name = "new name";
-            }
-            catch (DuplicateKeyException e)
-            {
-                ex = e;
-            }
-
-            // Assert
-            Assert.IsNull(ex);
-        }
-
-        [TestMethod]
-        public void MoveMemberToNewPositionWithinParent_UpdatesOrderCorrectlyOfAllChildren()
-        {
-            var crowdList = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest.Crowds;
-
-            var parent = crowdList[0];
-            parent.AddCrowdMember(TestObjectsFactory.CharacterCrowdMemberUnderTest);
-
-            var movedDown = parent.Members[1];
-            var toMove = parent.Members[0];
-            var destination = parent.Members[1];
-
-            var destinationOrder = destination.Order;
-            var maxOrder = parent.Members[2].Order;
-            var movedDownOrder = parent.Members[1].Order;
-
-            parent.MoveCrowdMemberAfter(destination, toMove);
-
-            Assert.AreEqual(toMove.Order, destinationOrder);
-            Assert.AreEqual(parent.Members[2].Order, maxOrder);
-            Assert.AreEqual(movedDown.Order, movedDownOrder - 1);
-        }
-
-        [TestMethod]
-        public void MoveMemberFromOneParentToNewParent_RemovesFromOriginalAndPlacesInNewCrowdAndUpdatesOrderForMembersInOldAndNewparent()
-        {
-            //arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
-            Crowd parent0, parent1;
-            CharacterCrowdMember child0_0, child0_1, child0_2, child0_3;
-            CharacterCrowdMember child1_0, child1_1, child1_2, child1_3;
-            TestObjectsFactory.AddCrowdwMemberHierarchyWithTwoParentsANdFourChildrenEach(repo, out parent0, out parent1, out child0_0,
-                out child0_1, out child0_2, out child0_3, out child1_0, out child1_1, out child1_2, out child1_3);
-
-            var parent0Count = parent0.Members.Count;
-            var parent1Count = parent1.Members.Count;
-
-            var child0_0Order = child0_0.Order;
-
-            var child0_2Order = child0_2.Order;
-            var child0_3Order = child0_3.Order;
-
-            var child1_0Order = child1_0.Order;
-            var child1_1Order = child1_1.Order;
-            var child1_2Order = child1_2.Order;
-            var child1_3Order = child1_3.Order;
-
-            //act
-            CrowdMember memberToMove = child0_1;
-            CrowdMember destination = child1_1;
-            parent1.MoveCrowdMemberAfter(destination, memberToMove);
-
-            //assert - did orders update on children
-            Assert.AreEqual(child0_0Order, child0_0.Order); //unchanged
-            Assert.AreEqual(child0_2Order - 1, child0_2.Order); //element moved down
-            Assert.AreEqual(child0_3Order - 1, child0_3.Order); //element moved down
-
-            Assert.AreEqual(child1_0Order, child1_0.Order); //unchanged
-            Assert.AreEqual(child1_1Order, child1_1.Order); //unchanged
-            Assert.AreEqual(child1_2Order + 1, child1_2.Order); //element moved up
-            Assert.AreEqual(child1_3Order + 1, child1_3.Order); //element moved up
-
-            //assert did parent members update
-            Assert.AreEqual(destination.Order + 1, memberToMove.Order); //element now destination +1
-            Assert.AreEqual(parent1.Members[2], memberToMove); //movedMember is a meber of new parent
-            Assert.IsFalse(parent0.Members.Contains(memberToMove)); //movedMember is not a  member of the old parent
-            Assert.AreEqual(memberToMove.Parent, parent1); //movedmember is connected to the parent
-
-            //did child lose old membership and get new one
-            var oldParentCount =
-                memberToMove.AllCrowdMembershipParents.Where(x => x.ParentCrowd.Name == parent0.Name).ToList().Count;
-            Assert.IsFalse(oldParentCount > 0);
-            var newParentCount =
-                memberToMove.AllCrowdMembershipParents.Where(x => x.ParentCrowd.Name == parent1.Name).ToList().Count;
-            Assert.IsTrue(newParentCount == 1);
-        }
-
-        [TestMethod]
+        [TestCategory("Crowd")]
         public void MembersByName_returnsDictionaryOfMembersBasedOnUnderlyingMembershipList()
         {
             var parent = TestObjectsFactory.CrowdUnderTest;
@@ -356,28 +178,9 @@ namespace HeroVirtualTabletop.Crowd
             Assert.AreEqual(child2.Parent, parent);
         }
 
+       
         [TestMethod]
-        public void Parent_ChildReturnsParentBasedOnWhatParentChildWasRetrievedFromLast()
-        {
-            var parent1 = TestObjectsFactory.CrowdUnderTest;
-            var parent2 = TestObjectsFactory.CrowdUnderTest;
-            var child = TestObjectsFactory.CharacterCrowdMemberUnderTest;
-
-            parent1.AddCrowdMember(child);
-            parent2.AddCrowdMember(child);
-
-            var crowdChild = parent1.Members[0];
-
-            Assert.AreEqual(crowdChild.Parent, parent1);
-            Assert.AreNotEqual(crowdChild.Parent, parent2);
-
-            crowdChild = parent2.Members[0];
-
-            Assert.AreEqual(crowdChild.Parent, parent2);
-            Assert.AreNotEqual(crowdChild.Parent, parent1);
-        }
-
-        [TestMethod]
+        [TestCategory("Crowd")]
         public void RemoveMember_UpdatesOrderCorrectly()
         {
             var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
@@ -405,6 +208,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("Crowd")]
         public void RemoveCrowd_RemovingChildFromLastParentCrowdDeletesChildAndAnyNestedChildrenThatHaveNoOtherParents()
         {
             //arrange
@@ -453,6 +257,7 @@ namespace HeroVirtualTabletop.Crowd
         
 
         [TestMethod]
+        [TestCategory("Crowd")]
         public void AddMember_CreatesMembershipAndUpdatesParentAndOrderOfMember()
         {
             var crowd = TestObjectsFactory.CrowdUnderTest;
@@ -464,11 +269,6 @@ namespace HeroVirtualTabletop.Crowd
 
             character = TestObjectsFactory.CharacterCrowdMemberUnderTest;
             crowd.AddCrowdMember(character);
-
-            Assert.AreEqual(crowd.Members.Count, 3);
-            Assert.AreEqual(crowd.Members[0].Order, 1);
-            Assert.AreEqual(crowd.Members[1].Order, 2);
-            Assert.AreEqual(crowd.Members[2].Order, 3);
 
             Assert.AreEqual(crowd.Members[0].Parent, crowd);
             Assert.AreEqual(crowd.Members[1].Parent, crowd);
@@ -499,6 +299,7 @@ namespace HeroVirtualTabletop.Crowd
 
         
         [TestMethod]
+        [TestCategory("Crowd")]
         public void ExecutingSaveCurrentTableTopPositionOnCrowd_RunsSavePosOnAllCharactersInCrowd()
         {
             var crowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
@@ -511,6 +312,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("Crowd")]
         public void ExecutingPlaceOnTableTopOnCrowd__RunsPlaceOnTableTopOnAllchsractersInCrowd()
         {
             var crowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
@@ -523,6 +325,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("Crowd")]
         public void CloneNestedCrowd_CopiesCrowdAndChildrenAndNestedChildrenAndCreatesUniqueNamesForAllClonedChildren()
         {
             var nested = TestObjectsFactory.RepositoryUnderTestWithNestedgraphOfCharactersAndCrowds.Crowds;
@@ -534,35 +337,23 @@ namespace HeroVirtualTabletop.Crowd
             Assert.AreEqual(clone.Order, original.Order);
             Assert.AreEqual(clone.Members.Count, original.Members.Count);
 
-            CrowdMember cloneMember;
-            foreach (var originalmember in original.Members)
+            for(int i = 0; i < original.Members.Count; i++)
             {
-                cloneMember = clone.Members[originalmember.Order - 1];
-                Assert.AreEqual(cloneMember.Name, originalmember.Name + " (1)");
+                Assert.AreEqual(clone.Members[i].Name, original.Members[i].Name + " (1)");
             }
 
             original = (Crowd)original.Members[0];
 
             clone = (Crowd)clone.Members[0];
-            foreach (var originalmember in original.Members)
+
+            for(int i = 0; i<clone.Members.Count; i++)
             {
-                cloneMember = clone.Members[originalmember.Order - 1];
-                Assert.AreEqual(originalmember.Name + " (1)", cloneMember.Name);
+                Assert.AreEqual(original.Members[i].Name + " (1)", clone.Members[i].Name);
             }
-        }
-
-        //to do
-        public void ApplyFIlter_IncludesAllMatchedCrowdsAndCharactersAsWellAsCharactersPartOfMatchedCrowds()
-        // need to verify
-        {
-        }
-
-        public void resetFilter_clearsFilterForCrowdAndAllNestedCrowdMembers()
-        {
         }
     }
 
-    //to do
+    [TestClass]
     public class CharacterCrowdMemberTestSuite
     {
         public CrowdTestObjectsFactory TestObjectsFactory;
@@ -573,14 +364,13 @@ namespace HeroVirtualTabletop.Crowd
             TestObjectsFactory = new CrowdTestObjectsFactory();
         }
 
-        public void DeleteCharacter_AllMembersCrowdRemovesItFromAllOtherParents()
-        {
-        }
-
+        [TestMethod]
+        [TestCategory("CharacterCrowdMember")]
         public void SaveCurrentTableTopPosition_savesCurrentMemoryInstancePositionToCrowdMembershipOfCrowdParent()
         {
         }
-
+        [TestMethod]
+        [TestCategory("CharacterCrowdMember")]
         public void
             PlaceOnTableTop_SetsurrentMemoryInstancePositionFromSavedPositionOfCrowdMembershipBelongingToCrowdParent()
         {
@@ -599,10 +389,11 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdClipboard")]
         public void CutAndPaste_ToSameCrowdDoesNothing()
         {
             // arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
+            var repo = TestObjectsFactory.RepositoryUnderTest;
             var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
             Crowd parent0, parent1;
             CharacterCrowdMember child0_0, child0_1, child0_2, child0_3;
@@ -628,10 +419,11 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdClipboard")]
         public void CutAndPaste_ToDifferentCrowdRemovesMembershipFromSourceCrowdANdAddsNewMembershipToDestination()
         {
             // arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
+            var repo = TestObjectsFactory.RepositoryUnderTest;
             var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
             Crowd parent0, parent1;
             CharacterCrowdMember child0_0, child0_1, child0_2, child0_3;
@@ -656,10 +448,11 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdClipboard")]
         public void CopyndPaste_ToSameCrowdCreatesACloneAndNewMembershipAndUniqueName()
         {
             // arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
+            var repo = TestObjectsFactory.RepositoryUnderTest;
             var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
             Crowd parent0, parent1;
             CharacterCrowdMember child0_0, child0_1, child0_2, child0_3;
@@ -684,45 +477,53 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [TestMethod]
+        [TestCategory("CrowdClipboard")]
         public void CopyAndPasteCrowd_ClonesAllNestedCrowdChildren()
         {
             // arrange
-            var repo = TestObjectsFactory.MockRepositoryWithCrowdsOnlyUnderTest;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
             var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
+            Crowd crowdFirst = TestObjectsFactory.CrowdUnderTestWithMockCrowdMembers;
+            Crowd crowdSecond = TestObjectsFactory.CrowdUnderTestWithMockCrowdMembers;
+            repo.Crowds = new ObservableCollection<Crowd> { crowdFirst, crowdSecond };
 
             var crowd1 = repo.Crowds[0];
             var crowd2 = repo.Crowds[1];
 
-            var nestedCrowd1 = crowd1.Members[0];
-            var nestedCrowd2 = crowd1.Members[1];
+            var nestedMember1 = crowd1.Members[0];
+            var nestedMember2 = crowd1.Members[1];
 
             //act
             crowdClipboard.CopyToClipboard(crowd1);
             crowdClipboard.PasteFromClipboard(crowd2);
 
             //assert
-        //    Mock.Get<Crowd>(crowd1).Verify(c => c.Clone());
-        //    Mock.Get<CrowdMember>(nestedCrowd1).Verify(c => c.Clone());
-        //    Mock.Get<CrowdMember>(nestedCrowd2).Verify(c => c.Clone());
+            
+            Mock.Get<CrowdMember>(nestedMember1).Verify(c => c.Clone());
+            Mock.Get<CrowdMember>(nestedMember2).Verify(c => c.Clone());
         }
 
         [TestMethod]
+        [TestCategory("CrowdClipboard")]
         public void LinkPasteCrowd_InvokesAddCrowdMemberForDestinationCrowd()
         {
             // arrange
-            var repo = TestObjectsFactory.RepositoryUnderTestWithLabeledCrowdChildrenAndcharacterGrandChildren;
+            var repo = TestObjectsFactory.RepositoryUnderTest;
             var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
-            Crowd parent0, parent1;
-            CharacterCrowdMember child0_0, child0_1, child0_2, child0_3;
-            CharacterCrowdMember child1_0, child1_1, child1_2, child1_3;
-            TestObjectsFactory.AddCrowdwMemberHierarchyWithTwoParentsANdFourChildrenEach(repo, out parent0, out parent1, out child0_0,
-                out child0_1, out child0_2, out child0_3, out child1_0, out child1_1, out child1_2, out child1_3);
 
-            crowdClipboard.LinkToClipboard(parent0);
-            crowdClipboard.PasteFromClipboard(parent1);
+            Crowd crowdFirst = TestObjectsFactory.CrowdUnderTestWithMockCrowdMembers;
+            Crowd crowdSecond = TestObjectsFactory.MockCrowd;
+            repo.Crowds = new ObservableCollection<Crowd> { crowdFirst, crowdSecond };
+
+            var crowd1 = repo.Crowds[0];
+            var crowd2 = repo.Crowds[1];
+
+            //act
+            crowdClipboard.LinkToClipboard(crowd1);
+            crowdClipboard.PasteFromClipboard(crowd2);
 
             //assert
-         //   Mock.Get<Crowd>(parent1).Verify(c => c.AddCrowdMember(parent0));
+            Mock.Get<Crowd>(crowd2).Verify(c => c.AddCrowdMember(crowd1));
         }
     }
 
@@ -812,7 +613,6 @@ namespace HeroVirtualTabletop.Crowd
         public CharacterCrowdMember MockCharacterCrowdMember => CustomizedMockFixture.Create<CharacterCrowdMember>();
 
         public Crowd MockCrowd => CustomizedMockFixture.Create<Crowd>();
-
         public Crowd CrowdUnderTest => StandardizedFixture.Create<CrowdImpl>();
 
         public CrowdClipboard CrowdClipboardUnderTest => StandardizedFixture.Create<CrowdClipboardImpl>();
@@ -916,7 +716,8 @@ namespace HeroVirtualTabletop.Crowd
             StandardizedFixture.Customize<CrowdImpl>(c => c
                 .Without(x => x.AllCrowdMembershipParents)
                 .Without(x => x.MemberShips)
-                .With(x => x.Members, new ObservableCollection<HeroVirtualTabletop.Crowd.CrowdMember>())
+                //.With(x => x.Members, new ObservableCollection<HeroVirtualTabletop.Crowd.CrowdMember>())
+                .Without(x => x.Members)
                 );
 
             StandardizedFixture.Customize<CharacterCrowdMemberImpl>(c => c
@@ -941,7 +742,7 @@ namespace HeroVirtualTabletop.Crowd
             var repo = StandardizedFixture.Create<CrowdRepositoryImpl>();
             //add the the circular ref back to the repo to the dependencies 
             //AUTOFIXTURE AND CIRC DEPENDECIES SUCK!!!
-            repo.NewCharacterCrowdMemberInstance.CrowdRepository = repo;
+            repo.NewCrowdInstance.CrowdRepository = repo;
             repo.NewCharacterCrowdMemberInstance.CrowdRepository = repo;
 
             StandardizedFixture.Inject<CrowdRepository>(repo);
@@ -951,9 +752,9 @@ namespace HeroVirtualTabletop.Crowd
             out CharacterCrowdMember child0_2, out CharacterCrowdMember child0_3, out CharacterCrowdMember child1_0,
             out CharacterCrowdMember child1_1, out CharacterCrowdMember child1_2, out CharacterCrowdMember child1_3)
         {
-            parent0 = CrowdUnderTest;
+            parent0 = StandardizedFixture.Create<CrowdImpl>();
             parent0.Name = "Parent0";
-            parent1 = CrowdUnderTest;
+            parent1 = StandardizedFixture.Create<CrowdImpl>();
             parent1.Name = "Parent1";
             repo.Crowds.Add(parent0);
             repo.Crowds.Add(parent1);
@@ -974,8 +775,8 @@ namespace HeroVirtualTabletop.Crowd
         {
             child = GetCharacterUnderTestWithMockDependenciesAnddOrphanedWithRepo(repo);
             child.Name = name;
-            parent.AddCrowdMember(child);
             repo.AllMembersCrowd.AddCrowdMember(child);
+            parent.AddCrowdMember(child);
         }
         private void addChildCrowdsLabeledByOrder(CrowdRepository repo)
         {
@@ -997,12 +798,11 @@ namespace HeroVirtualTabletop.Crowd
             var count = 0;
             foreach (var grandchild in StandardizedFixture.CreateMany<CharacterCrowdMember>().ToList())
             {
-                parent.AddCrowdMember(grandchild);
-
                 grandchild.Name = nestedName + "." + count;
                 count++;
                 grandchild.Order = count;
                 repo.AllMembersCrowd.AddCrowdMember(grandchild);
+                parent.AddCrowdMember(grandchild);
             }
         }
 
@@ -1012,12 +812,11 @@ namespace HeroVirtualTabletop.Crowd
             var count = 0;
             foreach (var child in StandardizedFixture.CreateMany<Crowd>().ToList())
             {
-                parent.AddCrowdMember(child);
-
                 child.Name = nestedChildName + "." + count;
                 count++;
                 child.Order = count;
                 repo.Crowds.Add(child);
+                parent.AddCrowdMember(child);
             }
         }
 

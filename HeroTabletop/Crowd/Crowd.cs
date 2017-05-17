@@ -98,10 +98,15 @@ namespace HeroVirtualTabletop.Crowd
                 newCrowd = new CrowdImpl(this) {Name = "Crowd"};
             }
 
-            newCrowd.Name = CreateUniqueName(name, Crowds);
+            
             if (parent != null)
-            {
+            { 
+                newCrowd.Name = CreateUniqueName(name, parent.Members);
                 parent.AddCrowdMember(newCrowd);
+            }
+            else
+            {
+                newCrowd.Name = CreateUniqueName(name, Crowds);
             }
             return newCrowd;
         }

@@ -34,7 +34,6 @@ namespace HeroVirtualTabletop.Crowd
     }
     public interface Crowd : CrowdMember
     {
-
         bool UseRelativePositioning { get; set; }
         List<CrowdMemberShip> MemberShips { get; }
         ObservableCollection<CrowdMember> Members { get; }
