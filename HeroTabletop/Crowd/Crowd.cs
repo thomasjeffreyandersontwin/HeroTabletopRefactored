@@ -37,7 +37,7 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdRepositoryImpl()
         {
             Crowds = new ObservableCollection<Crowd>();
-            createAllmembersCrowd();
+            //createAllmembersCrowd();
         }
 
         public Crowd NewCrowdInstance { get; set; } //for DI to insert
@@ -55,7 +55,7 @@ namespace HeroVirtualTabletop.Crowd
                     Crowds = new ObservableCollection<Crowd>();
                 var crowdsbyname = CrowdsByName;
                 if (allMembersCrowd == null)
-                    createAllmembersCrowd();
+                    RefreshAllmembersCrowd();
                 return allMembersCrowd;
             }
         }
@@ -101,13 +101,12 @@ namespace HeroVirtualTabletop.Crowd
             
             if (parent != null)
             { 
-                newCrowd.Name = CreateUniqueName(name, parent.Members);
                 parent.AddCrowdMember(newCrowd);
             }
-            else
-            {
-                newCrowd.Name = CreateUniqueName(name, Crowds);
-            }
+
+            newCrowd.Name = CreateUniqueName(name, AllMembersCrowd.Members);
+            AllMembersCrowd.AddCrowdMember(newCrowd);
+
             return newCrowd;
         }
 
@@ -163,10 +162,39 @@ namespace HeroVirtualTabletop.Crowd
             return newName;
         }
 
-        private void createAllmembersCrowd()
+        public void RefreshAllmembersCrowd()
         {
+            if(allMembersCrowd != null)
+            {
+                List<CrowdMember> membersToUpdate = new List<CrowdMember>();
+                membersToUpdate.AddRange(allMembersCrowd.Members);
+                foreach (var member in membersToUpdate)
+                {
+                    member.RemoveParent(allMembersCrowd);
+                }
+            }
+            
             allMembersCrowd = new CrowdImpl(this);
             allMembersCrowd.Name = CROWD_CONSTANTS.ALL_CHARACTER_CROWD_NAME;
+            IEnumerable<CrowdMember> crowdList = this.Crowds;
+            var flattenedList = GetFlattenedMemberList(crowdList.ToList());
+            foreach (var member in flattenedList)
+            {
+                allMembersCrowd.AddCrowdMember(member);
+            }
+        }
+
+        public List<CrowdMember> GetFlattenedMemberList(List<CrowdMember> list)
+        {
+            var flattened = new List<CrowdMember>();
+            foreach (var crowdMember in list)
+            {
+                var crowd = crowdMember as Crowd;
+                if (crowd?.Members != null && crowd.Members.Count > 0)
+                    flattened.AddRange(GetFlattenedMemberList(crowd.Members.ToList()));
+                flattened.Add(crowdMember);
+            }
+            return flattened;
         }
 
         public void AddDefaultCharacters()
@@ -212,6 +240,7 @@ namespace HeroVirtualTabletop.Crowd
                     c.RemoveMember(crowd);
             }
             this.Crowds.Remove(crowd);
+            AllMembersCrowd.RemoveMember(crowd);
         }
 
         public void SortCrowds(bool ascending = true)
@@ -374,8 +403,8 @@ namespace HeroVirtualTabletop.Crowd
             {
                 CrowdMemberShip membership = new CrowdMemberShipImpl(this, member);
                 MemberShips.Add(membership);
-                member.Order = Members.Count;
                 member.Parent = this;
+                member.Order = Members.Count;
                 member.PropertyChanged += Member_PropertyChanged;
                 Members.Add(member);
                 NotifyOfPropertyChange(() => Members);
@@ -414,6 +443,7 @@ namespace HeroVirtualTabletop.Crowd
         public void RemoveMember(CrowdMember child)
         {
             var removeOrder = child.Order;
+            Members.Remove(child);
             var ship = getMembershipThatAssociatesChildMemberToThis(child);
             removeMembershipFromThisAndChild(child, ship);
             decrementOrderForAllMembersAfterTheDeletedOrder(removeOrder);
@@ -423,7 +453,7 @@ namespace HeroVirtualTabletop.Crowd
                 deleteAllChildrenIfThisDoesntHaveAnyOtherParentsAndChildrenDoNotHaveOtherParents(crowdBeingDeleted);
             }
             child.PropertyChanged -= Member_PropertyChanged;
-            Members.Remove(child);
+            this.CrowdRepository.RefreshAllmembersCrowd();
             NotifyOfPropertyChange(() => Members);
         }
 
@@ -559,27 +589,12 @@ namespace HeroVirtualTabletop.Crowd
             bool isNested = false;
             if (containerCrowd.Members != null)
             {
-                List<CrowdMember> models = GetFlattenedMemberList(containerCrowd.Members.ToList());
+                List<CrowdMember> models = this.CrowdRepository.GetFlattenedMemberList(containerCrowd.Members.ToList());
                 var model = models.Where(m => m.Name == this.Name).FirstOrDefault();
                 if (model != null)
                     isNested = true;
             }
             return isNested;
-        }
-
-
-        private List<CrowdMember> GetFlattenedMemberList(List<CrowdMember> list)
-        {
-            var flattened = new List<CrowdMember>();
-            foreach (var crowdMember in list)
-            {
-                var crowd = crowdMember as Crowd;
-                if (crowd?.Members != null && crowd.Members.Count > 0)
-
-                    flattened.AddRange(GetFlattenedMemberList(crowd.Members.ToList()));
-                flattened.Add(crowdMember);
-            }
-            return flattened;
         }
 
         private void decrementOrderForAllMembersAfterTheDeletedOrder(int removeOrder)
@@ -600,15 +615,19 @@ namespace HeroVirtualTabletop.Crowd
         private void deleteAllChildrenIfThisDoesntHaveAnyOtherParentsAndChildrenDoNotHaveOtherParents(
             Crowd crowdBeingDeleted)
         {
-            if (crowdBeingDeleted.AllCrowdMembershipParents.Count == 0 && !this.CrowdRepository.CrowdsByName.ContainsKey(crowdBeingDeleted.Name))
+            if (crowdBeingDeleted.AllCrowdMembershipParents.Count == 1 && crowdBeingDeleted.AllCrowdMembershipParents[0].ParentCrowd.Name == CROWD_CONSTANTS.ALL_CHARACTER_CROWD_NAME && !this.CrowdRepository.CrowdsByName.ContainsKey(crowdBeingDeleted.Name))
             {
                 List<CrowdMember> membersToDelete = new List<CrowdMember>();
                 foreach (var childOfCrowdBeingDeleted in crowdBeingDeleted.Members)
                     if (childOfCrowdBeingDeleted.AllCrowdMembershipParents.Count <= 2)
                         membersToDelete.Add(childOfCrowdBeingDeleted);
                 foreach(var member in membersToDelete)
-                        //parent from this crowd and allcrowds is all thats left
-                        crowdBeingDeleted.RemoveMember(member);
+                {
+                    //parent from this crowd and allcrowds is all thats left
+                    crowdBeingDeleted.RemoveMember(member);
+                    //this.CrowdRepository.AllMembersCrowd.RemoveMember(member);
+                }      
+                //this.CrowdRepository.AllMembersCrowd.RemoveMember(crowdBeingDeleted);
             }
         }
 
@@ -919,9 +938,10 @@ namespace HeroVirtualTabletop.Crowd
                 var parents = AllCrowdMembershipParents.ToDictionary(x => x.ParentCrowd.Name);
                 if (!parents.ContainsKey(value.Name))
                 {
-                    CrowdMemberShip parent = new CrowdMemberShipImpl(value, this);
-                    AllCrowdMembershipParents.Add(parent);
-                    _loadedParentMembership = parent;
+                    CrowdMemberShip memship = new CrowdMemberShipImpl(value, this);
+                    memship.Order = value.Order;
+                    AllCrowdMembershipParents.Add(memship);
+                    _loadedParentMembership = memship;
                 }
                 else
                 {
@@ -933,8 +953,12 @@ namespace HeroVirtualTabletop.Crowd
 
         public void RemoveParent(CrowdMember parent)
         {
-            var shipToKill = AllCrowdMembershipParents.First(y => y.ParentCrowd.Name == parent.Name);
-            AllCrowdMembershipParents.Remove(shipToKill);
+            var shipToKill = AllCrowdMembershipParents.FirstOrDefault(y => y.ParentCrowd.Name == parent.Name);
+            if (shipToKill != null)
+            {
+                AllCrowdMembershipParents.Remove(shipToKill);
+            }
+            
             if (AllCrowdMembershipParents.Count == 1) //remove from Allmembers crowd
                 CrowdRepository.AllMembersCrowd.RemoveMember(this);
         }

@@ -8,10 +8,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HeroUI.Properties
-{
-
-
+namespace HeroUI.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,49 +22,124 @@ namespace HeroUI.Properties
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources
-    {
-
+    internal class Resources {
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources()
-        {
+        internal Resources() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager
-        {
-            get
-            {
-                if ((resourceMan == null))
-                {
+        internal static global::System.Resources.ResourceManager ResourceManager {
+            get {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("HeroUI.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture
-        {
-            get
-            {
+        internal static global::System.Globalization.CultureInfo Culture {
+            get {
                 return resourceCulture;
             }
-            set
-            {
+            set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 01_Default_Costume
+        ///1stSigArcIssue4_Doctor_Female
+        ///1stSigArcIssue4_Doctor_Male
+        ///1stSigArcIssue4_Patient_Female
+        ///1stSigArcIssue4_Patient_Male
+        ///1stSigArcIssue4_SisterPsyche_Patient
+        ///5thFog_00
+        ///5thFog_01
+        ///5thFog_02
+        ///5thFog_09
+        ///5thFog_091
+        ///5thFog_092
+        ///5thFog_093
+        ///5thFog_094
+        ///5thFog_10
+        ///5thFog_11
+        ///5thFog_12
+        ///5thFog_19
+        ///5thFog_191
+        ///5thFog_192
+        ///5thFog_193
+        ///5thFog_194
+        ///5thFog_20
+        ///5thFog_29
+        ///5thFog_30
+        ///5thFog_39
+        ///5thFog_40
+        ///5thFog_49
+        ///5thFog_Medic
+        ///5thGladiator
+        ///5thNight_00
+        ///5thNight_01
+        ///5thNight_02
+        ///5thNight_09
+        ///5t [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Models {
+            get {
+                return ResourceManager.GetString("Models", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to W &quot;+forward&quot;
+        ///A &quot;+left&quot;
+        ///S &quot;+backward&quot;
+        ///D &quot;+right&quot;
+        ///Z &quot;+down&quot;
+        ///SPACE &quot;+up&quot;
+        ///
+        ///DOWN &quot;+lookup&quot;
+        ///DOWNARROW &quot;+lookup&quot;
+        ///LEFT &quot;+turnleft&quot;
+        ///LEFTARROW &quot;+turnleft&quot;
+        ///RIGHT &quot;+turnright&quot;
+        ///RIGHTARROW &quot;+turnright&quot;
+        ///UP &quot;+lookdown&quot;
+        ///UPARROW &quot;+lookdown&quot;
+        ///
+        ///; &quot;+zoomin&quot;
+        ///. &quot;+zoomout&quot;
+        ///
+        ///B &quot;bind_load_file b.txt&quot;
+        ///C /nop
+        ///H /nop
+        ///delete /nop
+        ///
+        ///M &quot;move_npc&quot;
+        ///
+        ///X /nop&quot;
+        ///
+        ///F &quot;fly&quot;
+        ///N &quot;noclip&quot;
+        ///SHIFT+M &quot;popmenu maps&quot;
+        ///SHIFT+N &quot;popmenu NPC&quot;.
+        /// </summary>
+        internal static string required_keybinds {
+            get {
+                return ResourceManager.GetString("required_keybinds", resourceCulture);
             }
         }
     }

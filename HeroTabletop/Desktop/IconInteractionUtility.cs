@@ -2,20 +2,21 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace HeroVirtualTabletop.Desktop
 {
     public class IconInteractionUtilityImpl : IconInteractionUtility
     {
         private static IntPtr dllHandle;
-        private static readonly InitGame initGame;
-        private static readonly CloseGame closeGame;
-        private static readonly SetUserHWND setUserHWnd;
-        private static readonly ExecuteCommand executeCmd;
-        private static readonly GetHoveredNPCInfo getHoveredNPCInfo;
-        private static readonly GetMouseXYZInGame getMouseXYZInGame;
-        private static readonly CheckIfGameLoaded checkIfGameLoaded;
-        private static readonly DetectCollision detectCollision;
+        private static InitGame initGame;
+        private static CloseGame closeGame;
+        private static SetUserHWND setUserHWnd;
+        private static ExecuteCommand executeCmd;
+        private static GetHoveredNPCInfo getHoveredNPCInfo;
+        private static GetMouseXYZInGame getMouseXYZInGame;
+        private static CheckIfGameLoaded checkIfGameLoaded;
+        private static DetectCollision detectCollision;
 
         public Vector3 Start { get; set; }
         public Vector3 Destination { get; set; }
@@ -52,9 +53,10 @@ namespace HeroVirtualTabletop.Desktop
             set { throw new NotImplementedException(); }
         }
 
-        static IconInteractionUtilityImpl()
+        public void InitializeDlll(string path)
         {
-            //TO DO FIX dllHandle = WindowsUtilities.LoadLibrary(Path.Combine(Settings.Default.CityOfHeroesGameDirectory, "HookCostume.dll"));
+            //TO DO FIX 
+            dllHandle = WindowsUtilities.LoadLibrary(Path.Combine(path, "HookCostume.dll"));
             if (dllHandle != null)
             {
                 var initGameAddress = WindowsUtilities.GetProcAddress(dllHandle, "InitGame");
@@ -152,6 +154,24 @@ namespace HeroVirtualTabletop.Desktop
         public void CloseCOH()
         {
             closeGame(IntPtr.Zero);
+        }
+
+        public void InitializeGame(string path)
+        {
+            InitializeDlll(path);
+            initGame(1, path);
+        }
+
+        public bool IsGameLoaded()
+        {
+            bool gameLoaded = checkIfGameLoaded();
+            return gameLoaded;
+        }
+
+        public void DoPostInitialization()
+        {
+            System.Threading.Thread.Sleep(1500);
+            setUserHWnd(IntPtr.Zero);
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

@@ -7,6 +7,8 @@ using Caliburn.Micro;
 using System.Reflection;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroUI
 {
@@ -48,6 +50,9 @@ namespace HeroUI
             container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
             container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
+            container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
+            container.Singleton<Camera, CameraImpl>();
+            container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }

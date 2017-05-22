@@ -48,6 +48,9 @@ namespace HeroVirtualTabletop.Desktop
     public interface IconInteractionUtility
     {
         void RunCOHAndLoadDLL(string path);
+        void InitializeGame(string path);
+        bool IsGameLoaded();
+        void DoPostInitialization();
         void ExecuteCmd(string command);
         string GeInfoFromNpcMouseIsHoveringOver();
         string GetMouseXYZString();

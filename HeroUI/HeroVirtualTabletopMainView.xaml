@@ -44,7 +44,7 @@
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="CharacterExplorer">
                     </ToggleButton>
                     <Grid x:Name="charExplorerPanel" Grid.Row="1">
-                        <ContentControl x:Name="CrowdMemberExplorerView" />
+                        <ContentControl x:Name="CrowdMemberExplorerViewModel" />
                     </Grid>
                 </Grid>
             </GroupBox>

@@ -323,8 +323,7 @@ namespace HeroVirtualTabletop.Crowd
                     rosterMember = SelectedCrowdMember;
                 }
             }
-            // Finally save repository
-            //this.SaveCrowdCollection();
+
             // UnLock character crowd Tree from updating;
             this.LockTreeUpdate(false);
             // Update character crowd if necessary
@@ -339,7 +338,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowdMember, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Delete });
             }
-
+            // Finally save repository
             SaveCrowdCollectionAsync();
         }
 

@@ -22,6 +22,8 @@ namespace HeroVirtualTabletop.Crowd
         ObservableCollection<Crowd> Crowds { get; set; }
         string CrowdRepositoryPath { get; set; }
         Crowd AllMembersCrowd { get; }
+        void RefreshAllmembersCrowd();
+        List<CrowdMember> GetFlattenedMemberList(List<CrowdMember> list);
         Crowd NewCrowd(Crowd parent = null, string name = "Character");
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");
         string CreateUniqueName(string name, IEnumerable<CrowdMember> context);

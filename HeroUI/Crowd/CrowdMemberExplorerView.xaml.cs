@@ -180,6 +180,12 @@ namespace HeroVirtualTabletop.Crowd
             BindingExpression expression = txtBox.GetBindingExpression(TextBox.TextProperty);
             expression.UpdateSource();
             otherTextBox.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+            // Now recursively update tree because for some reason the character nodes don't update themselves!!!
+            foreach(var item in treeViewCrowd.Items)
+            {
+                var tvi = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                UpdateItemsRecursivelyToUpdateNodeText(tvi, item);
+            }
         }
         private void treeViewCrowd_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -208,6 +214,19 @@ namespace HeroVirtualTabletop.Crowd
                     this.viewModel.SelectedCrowdParent = null;
             }
         }
+
+        private void UpdateItemsRecursivelyToUpdateNodeText(TreeViewItem tvi, object obj)
+        {
+            tvi.UpdateLayout();
+            TextBox textBox = FindTextBoxInTemplate(tvi);
+            textBox?.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+            foreach (var innerItem in tvi.Items)
+            {
+                var tviInner = tvi.ItemContainerGenerator.ContainerFromItem(innerItem) as TreeViewItem;
+                UpdateItemsRecursivelyToUpdateNodeText(tviInner, innerItem);
+            }
+        }
+
         private TreeViewItem VisualUpwardSearch(DependencyObject source)
         {
             while (source != null && !(source is TreeViewItem))

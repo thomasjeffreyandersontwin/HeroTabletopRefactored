@@ -35,7 +35,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             if (completeEvent)
                 Generator.CompleteEvent();
-            ((ManagedCharacter)Owner).Target(completeEvent);
+            ((ManagedCharacter)Owner)?.Target(completeEvent);
         }
 
         public override CharacterAction Clone()

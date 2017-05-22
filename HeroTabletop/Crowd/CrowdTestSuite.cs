@@ -334,7 +334,6 @@ namespace HeroVirtualTabletop.Crowd
 
             var expected = original.Name + " (1)";
             Assert.AreEqual(expected, clone.Name);
-            Assert.AreEqual(clone.Order, original.Order);
             Assert.AreEqual(clone.Members.Count, original.Members.Count);
 
             for(int i = 0; i < original.Members.Count; i++)
@@ -439,11 +438,9 @@ namespace HeroVirtualTabletop.Crowd
             crowdClipboard.PasteFromClipboard(parent1);
 
             //assert
-            Assert.AreEqual(parent1, child0_0.Parent); // new parent
-            Assert.AreNotEqual(parent0, child0_0.Parent); // no longer Parent
             var oldMem = parent0.MemberShips.FirstOrDefault(m => m.Child == child0_0);
             var newMem = parent1.MemberShips.FirstOrDefault(m => m.Child == child0_0);
-         //   Assert.IsNull(oldMem);
+            Assert.IsNull(oldMem);
             Assert.IsNotNull(newMem);
         }
 
@@ -775,7 +772,7 @@ namespace HeroVirtualTabletop.Crowd
         {
             child = GetCharacterUnderTestWithMockDependenciesAnddOrphanedWithRepo(repo);
             child.Name = name;
-            repo.AllMembersCrowd.AddCrowdMember(child);
+            //repo.AllMembersCrowd.AddCrowdMember(child);
             parent.AddCrowdMember(child);
         }
         private void addChildCrowdsLabeledByOrder(CrowdRepository repo)
@@ -801,7 +798,7 @@ namespace HeroVirtualTabletop.Crowd
                 grandchild.Name = nestedName + "." + count;
                 count++;
                 grandchild.Order = count;
-                repo.AllMembersCrowd.AddCrowdMember(grandchild);
+                //repo.AllMembersCrowd.AddCrowdMember(grandchild);
                 parent.AddCrowdMember(grandchild);
             }
         }

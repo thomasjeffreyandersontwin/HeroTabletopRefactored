@@ -4,13 +4,15 @@ using HeroVirtualTabletop.Desktop;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
-    internal class CameraImpl : Camera
+    public class CameraImpl : Camera
     {
         private ManagedCharacter _manueveringCharacter;
 
         public CameraImpl(KeyBindCommandGenerator generator)
         {
             Generator = generator;
+            // base("V_Arachnos_Security_Camera", IdentityType.Model, "Camera")
+            this.Identity = new IdentityImpl(null, "Camera", "V_Arachnos_Security_Camera", SurfaceType.Model, Generator, null);
         }
 
         public KeyBindCommandGenerator Generator { get; }
@@ -20,7 +22,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public ManagedCharacter ManueveringCharacter
         {
-            get { return _manueveringCharacter; }
+            get
+            {
+                return _manueveringCharacter;
+            }
             set
             {
                 if (value != null)
@@ -67,6 +72,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void ActivateCameraIdentity()
         {
+            //We need to untarget everything before loading camera skin
+            Generator.GenerateDesktopCommandText(DesktopCommand.TargetEnemyNear);
+            Identity.Play(true);
         }
 
         public void ActivateManueveringCharacterIdentity()
