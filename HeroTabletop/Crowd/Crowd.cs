@@ -958,9 +958,6 @@ namespace HeroVirtualTabletop.Crowd
             {
                 AllCrowdMembershipParents.Remove(shipToKill);
             }
-            
-            if (AllCrowdMembershipParents.Count == 1) //remove from Allmembers crowd
-                CrowdRepository.AllMembersCrowd.RemoveMember(this);
         }
 
         public int Order
