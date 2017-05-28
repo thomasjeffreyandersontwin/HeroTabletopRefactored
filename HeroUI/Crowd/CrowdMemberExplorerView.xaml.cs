@@ -41,8 +41,6 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
-
-            this.viewModel.LoadCrowdCollectionAsync();
         }
 
         //JA TO DO can we please createe some intention revealing functions so we have less nested cyclomatic complexity
@@ -223,7 +221,8 @@ namespace HeroVirtualTabletop.Crowd
             foreach (var innerItem in tvi.Items)
             {
                 var tviInner = tvi.ItemContainerGenerator.ContainerFromItem(innerItem) as TreeViewItem;
-                UpdateItemsRecursivelyToUpdateNodeText(tviInner, innerItem);
+                if(tviInner != null)
+                    UpdateItemsRecursivelyToUpdateNodeText(tviInner, innerItem);
             }
         }
 

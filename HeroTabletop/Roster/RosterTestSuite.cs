@@ -21,58 +21,57 @@ namespace HeroVirtualTabletop.Roster
         public RosterTestObjectsFactory TestObjectsFactory = new RosterTestObjectsFactory();
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void AddCrowdToRoster_CrowdMembersAvailableAsParticipants()
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             Crowd.Crowd c = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
             r.CreateGroupFromCrowd(c);
-            int counter = 0;
-            foreach (RosterParticipant p in r.Participants)
+            foreach(var member in c.Members)
             {
-                Assert.AreEqual(p, c.Members[counter]);
-                counter++;
+                Assert.IsTrue(r.Participants.Contains(member));
             }
-
-            Assert.AreEqual(r.Participants.Count, c.Members.Count);
-
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void AddNestedCrowdToRoster_AddsAllCrowdsInGraphWithCharacterMembersToTheRoster()
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             Crowd.Crowd gran = TestObjectsFactory.NestedCrowdCharacterGraph;
             r.CreateGroupFromCrowd(gran);
-            int counter = 0;
 
             foreach (CrowdMember parent in gran.Members)
             {
                 Crowd.Crowd parentcrowd = parent as Crowd.Crowd;
                 foreach (CrowdMember child in parentcrowd?.Members)
                 {
-                    Assert.AreEqual(r.Participants[counter], child);
-                    counter++;
+                    Assert.IsTrue(r.Participants.Contains(child));
                 }
             }
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void AddCharacterToRoster_AddsTheCharacterAndCrowdParentOfCharacterToRoster()
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             CharacterCrowdMember p =
                 TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters.Members[0] as CharacterCrowdMember;
-            r.AddCrowdMemberAsParticipant(p);
+            r.AddCharacterCrowdMemberAsParticipant(p);
 
-            Assert.AreEqual((p as CharacterCrowdMember)?.Parent.Name, r.Groups.Values.FirstOrDefault()?.Name);
-            Assert.AreEqual(p, r.Participants.FirstOrDefault());
+            Assert.AreEqual((p as CharacterCrowdMember)?.RosterParent.Name, r.Groups.Values.FirstOrDefault()?.Name);
+            Assert.IsTrue(r.Participants.Contains(p));
 
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void ActivatingCharacter_RosterActiveCharacterWillReturnsTheActivatedCharacter()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
+            foreach (var p in r.Participants)
+                p.IsActive = false;
             RosterParticipant activeParticipant = r.Participants[2];
             CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
 
@@ -82,9 +81,12 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void DeactivatingCharacter_RemovesExsistingAtttackingCharacterFromRoster()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
+            foreach (var p in r.Participants)
+                p.IsActive = false;
             RosterParticipant activeParticipant = r.Participants[2];
             CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
 
@@ -95,19 +97,21 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void CharacterStartsAttack_RosterAttackingCharacterWillReturnTheAttackingCharacter()
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             AnimatedAttack a = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
             a.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
-            r.AddCrowdMemberAsParticipant((CharacterCrowdMember) a.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) a.Attacker);
 
             a.StartAttackCycle();
             Assert.AreEqual(a.Target, r.AttackingCharacter);
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void ActivatingAttack_PutsPreviousAttackingCharacterOutOfAttackMode()
         {
             //arrange
@@ -115,7 +119,7 @@ namespace HeroVirtualTabletop.Roster
             AnimatedAttack first = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
             first.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
-            r.AddCrowdMemberAsParticipant((CharacterCrowdMember) first.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) first.Attacker);
             first.StartAttackCycle();
 
             //arrange
@@ -123,33 +127,27 @@ namespace HeroVirtualTabletop.Roster
             second.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
             //act
-            r.AddCrowdMemberAsParticipant((CharacterCrowdMember) second.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) second.Attacker);
             second.StartAttackCycle();
 
             //Assert
             Assert.IsNull(first.Attacker.ActiveAttack);
-
-
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void SelectParticipant_AddsParticipantToRosterSelectedParticipants()
         {
-            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
             CharacterCrowdMember selected = r.Participants[0];
 
             r.SelectParticipant(selected);
             Assert.AreEqual(r.Selected.Participants[0], selected);
-
-            selected = r.Participants[1];
-            r.SelectParticipant(selected);
-            Assert.AreEqual(r.Selected.Participants[1], selected);
-
-
         }
 
         [TestMethod]
-        public void UnsSelectParticipant_RemovesTheParticipantfromSelectedParticipantsInRoster()
+        [TestCategory("Roster")]
+        public void UnSelectParticipant_RemovesTheParticipantfromSelectedParticipantsInRoster()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
             RosterParticipant selected = r.Participants[0];
@@ -157,11 +155,12 @@ namespace HeroVirtualTabletop.Roster
             r.SelectParticipant(r.Participants[0]);
             r.SelectParticipant(r.Participants[1]);
 
-            r.UnsSelectParticipant(r.Participants[1]);
+            r.UnSelectParticipant(r.Participants[1]);
             Assert.IsFalse(r.Selected.Participants.Contains(r.Participants[1]));
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void SelectGroup_AddsAllParticipantsInGroupToRosterSelectedParticipants()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -177,6 +176,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void UnsSelectGroup_RemovesAllParticipantsInGroupFromRosterSelectedParticipants()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -193,6 +193,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void ClearParticipants_RemovesAllParticipantsInAllGroupsFromRosterSelectedParticipants()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -209,19 +210,20 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void SelectAll_AddsAllParticipantsAcrossAllGroupsInRosterToRosterSelectedParticipants()
         {
-            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
             r.SelectAllParticipants();
-            int counter = 0;
             foreach (var p in r.Participants)
             {
-                Assert.AreEqual(p, r.Selected.Participants[counter]);
-                counter++;
+                if(p is CharacterCrowdMember)
+                    Assert.IsTrue(r.Selected.Participants.Contains(p));
             }
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void
             SaveRoster_RosterIsSavedAsNestedCrowdMadeUpOfClonedCrowdMembershipsWithSameCharactersInSameOrderAsParticipantsInRosterGroups
             ()
@@ -245,6 +247,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void TargetingCharacter_RosterReturnsLastTargetedCharacter()
         {
             //arrange
@@ -262,6 +265,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void UnTargetingCharacter_TargetedCharacterIsRemovedFromRoster()
         {
             //arange
@@ -278,6 +282,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void SelectCharacter_UpdatesSelectedParticipantsInRoster()
         {
             //arrange
@@ -293,6 +298,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         [TestMethod]
+        [TestCategory("Roster")]
         public void UnSelectCharacter_CharacterIsRemovedFromSelectedParticipants()
         {
             //arrange
@@ -314,6 +320,7 @@ namespace HeroVirtualTabletop.Roster
         public RosterTestObjectsFactory TestObjectsFactory = new RosterTestObjectsFactory();
 
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_InvokeIdentitiesWhereAllSelectedHaveIdentityWithCommonName()
         {
             //arrange
@@ -337,6 +344,7 @@ namespace HeroVirtualTabletop.Roster
             }
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokeAbilititesWhereSelectedHasAbilitieswithCommonName()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWhereTwoHaveCommonAbilityNames;
@@ -364,6 +372,7 @@ namespace HeroVirtualTabletop.Roster
 
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokeManagedCharacterCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
@@ -385,6 +394,7 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual(r.Selected.Participants.Count, 3);
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokAnimatedCharacterCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
@@ -401,6 +411,7 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual(r.Selected.Participants.Count, 3);
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokAnimatedCrowdCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
@@ -422,14 +433,7 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual(r.Selected.Participants.Count, 3);
         }
         [TestMethod]
-        public void SelectionWithMultipleCharactersOfCommonCrowd_NameEqualsCrowdName()
-        {
-            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
-            r.SelectAllParticipants();
-            string actualName = r.Selected.Name;
-            Assert.AreEqual(r?.Participants?.FirstOrDefault()?.RosterParent.Name, actualName);
-        }
-        [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharactersOfDifferentCrowd_NameEqualsTheWordSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -438,6 +442,7 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual("Selected", actualName);
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharactersOfDifferentCrowdButSameCharacterName_NameEqualsCharacterName()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -448,6 +453,7 @@ namespace HeroVirtualTabletop.Roster
 
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharactersOfDifferentCrowdButSameCharacterNameWithDifferentTrailingNumbers_NameEqualsCharacterName()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -458,6 +464,7 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual("Minions", actualName);
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_DefaultCharacterActionsWillPlayDefaultsAcrossSelectedCharacters()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWithDefaultActions;
@@ -473,6 +480,7 @@ namespace HeroVirtualTabletop.Roster
                    Mock.Get<Identity>(participant.DefaultIdentity).Verify(x => x.Play(true)));
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanRemoveStatesWhereSelectedHasCommonStates()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
@@ -487,6 +495,7 @@ namespace HeroVirtualTabletop.Roster
                     Mock.Get<CharacterCrowdMember> (participant).Verify(x => x.RemoveStateByName(stateName)));
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokeAttacksWhereSelectedHaveAttacksWithCommonName()
         {
             //arrange
@@ -522,6 +531,7 @@ namespace HeroVirtualTabletop.Roster
 
         }
         [TestMethod]
+        [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_AccessStateReturnsStateWrapper()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWithCommonState;
@@ -540,6 +550,7 @@ namespace HeroVirtualTabletop.Roster
             .Without(x => x.TargetedCharacter)
             .Without(x => x.AttackingCharacter)
             .Without(x => x.LastSelectedCharacter)
+            .Without(x => x.Participants)
             .Create();
 
         public Crowd.Crowd NestedCrowdCharacterGraph
@@ -569,9 +580,9 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 Roster rosterUnderTest = RosterUnderTest;
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
                 return rosterUnderTest;
 
             }
@@ -582,9 +593,9 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 Roster rosterUnderTest = RosterUnderTest;
-                rosterUnderTest.AddCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
-                rosterUnderTest.AddCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
-                rosterUnderTest.AddCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
                 return rosterUnderTest;
             }
         }
@@ -632,12 +643,16 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 Roster rosterUnderTest = RosterUnderTest;
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
-                rosterUnderTest.AddCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
 
                 RosterGroup g = rosterUnderTest.Groups.FirstOrDefault().Value;
-                rosterUnderTest.Participants.ForEach(x => x.RosterParent = g);
+                //rosterUnderTest.Participants.ForEach(x => x.RosterParent = g);
+                foreach(var x in rosterUnderTest.Participants)
+                {
+                    x.RosterParent = new RosterParentImpl { Name = g.Name, Order = g.Order, RosterGroup = g };
+                }
                 return rosterUnderTest;
             }
         }

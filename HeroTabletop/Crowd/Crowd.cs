@@ -1067,7 +1067,7 @@ namespace HeroVirtualTabletop.Crowd
             this.Name = newName;
         }
         [JsonProperty(Order=4)]
-        public RosterGroup RosterParent { get; set; }
+        public RosterParent RosterParent { get; set; }
     }
 
     public class CrowdClipboardImpl : CrowdClipboard

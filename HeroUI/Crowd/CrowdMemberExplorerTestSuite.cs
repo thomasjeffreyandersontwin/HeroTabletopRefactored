@@ -299,7 +299,7 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCrowdMemberToRoster_FiresRosterAddCrowdMemberEvent()
+        public void SyncCrowdMembersWithRoster_FiresSyncCrowdMembersWithRosterEvent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
 
@@ -307,9 +307,9 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
 
-            charExpVM.AddCrowdMemberToRoster(charCrowd0);
+            charExpVM.SyncCrowdMembersWithRoster();
 
-            Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<AddToRosterEvent>(), null));
+            Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<SyncWithRosterEvent>(), It.IsAny<System.Action<System.Action>>()));
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]

@@ -13,7 +13,7 @@ namespace HeroVirtualTabletop.Crowd
 {
     public static class CROWD_CONSTANTS
     {
-        public const string ALL_CHARACTER_CROWD_NAME = "All Characters";
+        public const string ALL_CHARACTER_CROWD_NAME = "All Crowd Members";
     }
     
     public interface CrowdRepository : AnimatedCharacterRepository

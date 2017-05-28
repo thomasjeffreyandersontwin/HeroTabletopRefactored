@@ -6,6 +6,8 @@ using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Common;
 using Caliburn.Micro;
 using Newtonsoft.Json;
+using System.Windows.Data;
+using System;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -257,5 +259,47 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public CharacterProgressBarStats ProgressBar { get; set; }
         
+    }
+
+    public class CharacterComparer : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType,
+               object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool retV = true;
+            if (values.Count() > 0)
+            {
+                foreach (object o in values)
+                {
+                    if (!(o is ManagedCharacter))
+                    {
+                        retV = false;
+                        break;
+                    }
+                }
+                if (retV)
+                {
+                    foreach (ManagedCharacter c in values)
+                    {
+                        if (c != (ManagedCharacter)values[0])
+                        {
+                            retV = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                retV = false;
+            }
+
+            return retV;
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes,
+               object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException("Cannot convert back");
+        }
     }
 }

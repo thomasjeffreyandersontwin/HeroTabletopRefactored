@@ -1,0 +1,225 @@
+﻿<UserControl x:Class="HeroVirtualTabletop.Roster.RosterExplorerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:roster="clr-namespace:HeroVirtualTabletop.Roster"
+             xmlns:local="clr-namespace:HeroUI"
+             xmlns:characters="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
+             xmlns:behaviors="clr-namespace:Framework.WPF.Behaviors;assembly=Framework.WPF"
+             xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
+             xmlns:extensions="clr-namespace:Framework.WPF.Extensions;assembly=Framework.WPF"
+             xmlns:library="clr-namespace:Framework.WPF.Library;assembly=Framework.WPF"
+             mc:Ignorable="d" Loaded="RosterExplorerView_Loaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <local:BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
+            <characters:CharacterComparer x:Key="characterComparer"/>
+            <!--<localconverters:ActiveAttackEffectToAnimationIconTextConverter x:Key="ActiveAttackEffectToAnimationIconTextConverter"/>
+            <localconverters:ActiveAttackModeToVisibilityConverter x:Key="ActiveAttackModeToVisibilityConverter"/>
+            <localconverters:ActiveAttackModeToAnimationIconTextConverter x:Key="ActiveAttackModeToAnimationIconTextConverter"/>
+            <localconverters:ActiveAttackEffectToVisibilityConverter x:Key="ActiveAttackEffectToVisibilityConverter"/>-->
+            <CollectionViewSource 
+                x:Key="ParticipantsView" 
+                Source="{Binding DataContext.Roster.Participants, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}}">
+
+                <!-- Grouping -->
+                <CollectionViewSource.GroupDescriptions>
+                    <PropertyGroupDescription PropertyName="RosterParent.Name" />
+                </CollectionViewSource.GroupDescriptions>
+            </CollectionViewSource>
+            <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext}"/>
+            <ContextMenu x:Key="RosterExplorerMenu">
+                <MenuItem Header="Activate Character" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ActivateCharacterCommand}"></MenuItem>
+                <MenuItem Header="Edit Character" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.EditCharacterCommand}"></MenuItem>
+                <MenuItem Header="Save Position" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.SavePositionCommand}"></MenuItem>
+                <MenuItem Header="Place" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.PlaceCommand}"></MenuItem>
+                <MenuItem Header="Spawn" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.SpawnCommand}"></MenuItem>
+                <MenuItem Header="Toggle Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ToggleTargetedCommand}"></MenuItem>
+                <MenuItem Header="Move Camera to Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.TargetAndFollowCommand}"></MenuItem>
+                <MenuItem Header="Move Target to Camera" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.MoveTargetToCameraCommand}"></MenuItem>
+                <MenuItem Header="Maneuver with camera" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ToggleManeuverWithCameraCommand}"></MenuItem>
+                <MenuItem Header="Clear From Desktop" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ClearFromDesktopCommand}"></MenuItem>
+                <MenuItem Header="Reset Orientation" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ResetOrientationCommand}"></MenuItem>
+            </ContextMenu>
+            <ContextMenu x:Key="AreaAttackMenu">
+                <MenuItem Header="Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.AreaAttackTargetCommand}"></MenuItem>
+                <MenuItem Header="Target and Execute" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.AreaAttackTargetAndExecuteCommand}"></MenuItem>
+            </ContextMenu>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <WrapPanel>
+                <Button x:Name="btSave" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)" Command="{Binding SavePositionCommand}"/>
+                <Button x:Name="btPlace" Content="&#xf041;" ToolTip="Place (Ctrl+P)" Command="{Binding PlaceCommand}"/>
+                <Button x:Name="btSpawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)" Command="{Binding SpawnCommand}"/>
+                <Button x:Name="btTarget" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)" Command="{Binding ToggleTargetedCommand}"/>
+                <Button x:Name="btCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)" Command="{Binding ToggleManeuverWithCameraCommand}" />
+                <Button x:Name="btCycle" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)" Command="{Binding CycleCommandsThroughCrowdCommand}">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsCyclingCommandsThroughCrowd}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=IsCyclingCommandsThroughCrowd}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </WrapPanel>
+            <WrapPanel Grid.Row="1">
+                <Button x:Name="btMoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)" Command="{Binding TargetAndFollowCommand}"/>
+                <Button x:Name="btMoveTargetToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)" Command="{Binding MoveTargetToCameraCommand}"/>
+                <Button x:Name="btActivate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)" Command="{Binding ActivateCharacterCommand}" />
+                <Button x:Name="btClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)" Command="{Binding ClearFromDesktopCommand}" />
+                <Button x:Name="btResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" Command="{Binding ResetOrientationCommand}" />
+            </WrapPanel>
+        </Grid>
+        <library:MultiSelectListBox x:Name="RosterViewListBox" Grid.Row="1" ItemsSource="{Binding Source={StaticResource ResourceKey=ParticipantsView}}"
+                    AllowDrop="True" SelectionMode="Extended" Background="Transparent" TextElement.Foreground="White" Drop="RosterViewListBox_Drop" DragOver="RosterViewListBox_DragOver"
+                     SelectedItemsList="{Binding SelectedParticipants, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderBrush="Transparent" BorderThickness="0"
+                                    extensions:DragDropExtension.ScrollOnDragDrop="True">
+            <ListBox.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Grid>
+                                            <ToggleButton Name="toggleButton" Style="{StaticResource ToggleButtonSmallStyle}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 9 1 0" IsChecked="{Binding ElementName=ExpanderOptionGroup, Path=IsExpanded}" 
+                                                            Background="Transparent" BorderBrush="Transparent" Panel.ZIndex="10">
+                                            </ToggleButton>
+                                            <GroupBox Header="{Binding Name}" x:Name="grpBoxOptionGroup" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+                                                <GroupBox.HeaderTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock  Text="{Binding}" PreviewMouseDown="TextBlock_PreviewMouseDown"/>
+                                                    </DataTemplate>
+                                                </GroupBox.HeaderTemplate>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Expander Name="ExpanderOptionGroup" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource ExpanderWithoutToggleButtonStyle}"
+                                                      OverridesDefaultStyle="True" IsExpanded="True" VerticalAlignment="Top"
+                                                      >
+                                                        <ItemsPresenter PreviewMouseDown="ListViewItem_PreviewMouseDown"></ItemsPresenter>
+                                                    </Expander>
+                                                </Grid>
+                                            </GroupBox>
+                                        </Grid>
+                                        <!--<Expander IsExpanded="True" Background="Transparent" TextElement.Foreground="White" Style="{StaticResource ExpanderDefaultStyle}">
+                                            <Expander.Header>
+                                                <TextBlock Text="{Binding Name, Converter={StaticResource CrowdNameConverter}}" FontWeight="Bold" PreviewMouseDown="TextBlock_PreviewMouseDown"/>
+                                            </Expander.Header>
+                                            <ItemsPresenter PreviewMouseDown="ListViewItem_PreviewMouseDown"></ItemsPresenter>
+                                        </Expander>-->
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </ListBox.GroupStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid  HorizontalAlignment="Stretch">
+                        <Grid.Style>
+                            <Style TargetType="{x:Type Grid}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="True">
+                                        <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=AreaAttackMenu}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="False">
+                                        <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=RosterExplorerMenu}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition ></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Name="txtBlockCharacterName" Text="{Binding Name}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                        <Label Grid.Column="1" Foreground="Green"
+                               FontFamily="{StaticResource ResourceKey=FontFamily_FontAwesome}"
+                               FontSize="26" Content="&#xf00c;" VerticalAlignment="Center"
+                               >
+                            <Label.Style>
+                                <Style TargetType="Label">
+                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Value="true">
+                                            <DataTrigger.Binding>
+                                                <MultiBinding Converter="{StaticResource ResourceKey=characterComparer}">
+                                                    <Binding></Binding>
+                                                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}" Path="DataContext.ActiveCharacter"></Binding>
+                                                </MultiBinding>
+                                            </DataTrigger.Binding>
+                                            <Setter Property="Visibility" Value="Visible"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Label.Style>
+                        </Label>
+                        <!--<TextBlock Grid.Column="2" FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.AttackMode, Converter={StaticResource ActiveAttackModeToVisibilityConverter}}" Text="{Binding ActiveAttackConfiguration.AttackMode, Converter={StaticResource ActiveAttackModeToAnimationIconTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        </TextBlock>-->
+                        <!--<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.IsStunned, Converter={StaticResource BooleanToVisibilityConverter}}" Text="&#xf119;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext.ResetCharacterStateCommand}" CommandParameter="{Binding ElementName=txtBlockCharacterName, Path=Text}" MouseAction="LeftClick"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.IsUnconcious, Converter={StaticResource BooleanToVisibilityConverter}}" Text="&#xf236;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext.ResetCharacterStateCommand}" CommandParameter="{Binding ElementName=txtBlockCharacterName, Path=Text}" MouseAction="LeftClick"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.IsDying, Converter={StaticResource BooleanToVisibilityConverter}}" Text="&#xf0f9;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext.ResetCharacterStateCommand}" CommandParameter="{Binding ElementName=txtBlockCharacterName, Path=Text}" MouseAction="LeftClick"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.IsDead, Converter={StaticResource BooleanToVisibilityConverter}}" Text="&#xf011;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext.ResetCharacterStateCommand}" CommandParameter="{Binding ElementName=txtBlockCharacterName, Path=Text}" MouseAction="LeftClick"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.IsKnockedBack, Converter={StaticResource BooleanToVisibilityConverter}}" Text="&#xf263;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.InputBindings>
+                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext.ResetCharacterStateCommand}" CommandParameter="{Binding ElementName=txtBlockCharacterName, Path=Text}" MouseAction="LeftClick"/>
+                                </TextBlock.InputBindings>
+                            </TextBlock>
+                        </StackPanel>-->
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </library:MultiSelectListBox>
+    </Grid>
+</UserControl>

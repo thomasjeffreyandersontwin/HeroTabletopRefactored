@@ -9,6 +9,7 @@ using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Roster;
 
 namespace HeroUI
 {
@@ -49,9 +50,11 @@ namespace HeroUI
             container.Singleton<CrowdClipboard, CrowdClipboardImpl>();
             container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
             container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
+            container.Singleton<RosterExplorerViewModel, RosterExplorerViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();
+            container.Singleton<Roster, RosterImpl>();
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");

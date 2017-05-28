@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeroUI
+namespace HeroVirtualTabletop.Roster
 {
-    public interface HeroVirtualTabletopMainViewModel
+    public interface RosterExplorerViewModel
     {
-        event EventHandler ViewLoaded;
     }
 }

@@ -10,26 +10,27 @@ using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
+using System.Collections.ObjectModel;
+
 namespace HeroVirtualTabletop.Roster
 {
     public enum RosterCommandMode { Standard, CycleCharacter, OnRosterClick }
     public interface Roster 
     {
         string Name { get; set; }
-        RosterCommandMode ComandMode { get; set; }
+        RosterCommandMode CommandMode { get; set; }
         OrderedCollection<RosterGroup> Groups { get; }
-        List<CharacterCrowdMember> Participants { get; }
-        //Dictionary<string, RosterGroup> GroupsByName { get; }
-       // Dictionary<string, RosterParticipant> ParticipantsByName { get; }
-
-        // List<CharacterCrowdMember> Participants { get; set; }
+        ObservableCollection<CharacterCrowdMember> Participants { get; set; }
+        void AddCrowdMemberToRoster(CharacterCrowdMember characterCrowdMember, Crowd.Crowd parentCrowd);
         RosterSelection Selected { get; }
         void SelectParticipant(CharacterCrowdMember participant);
-        void UnsSelectParticipant(CharacterCrowdMember participant);
-        void AddCrowdMemberAsParticipant(CharacterCrowdMember participant);
+        void UnSelectParticipant(CharacterCrowdMember participant);
+        void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant);
         void RemoveParticipant(CharacterCrowdMember participant);
 
         void CreateGroupFromCrowd(Crowd.Crowd crowd);
+        void RenameRosterMember(CrowdMember crowdMember);
+        void RemoveRosterMember(CrowdMember deletedMember);
         void RemoveGroup(RosterGroup crowd);
         void SelectGroup(RosterGroup crowd);
         void UnSelectGroup(RosterGroup crowd);
@@ -58,7 +59,7 @@ namespace HeroVirtualTabletop.Roster
 
     public interface RosterParticipant: OrderedElement
     {
-        RosterGroup RosterParent { get; set; }
+        RosterParent RosterParent { get; set; }
         new string Name { get; set; }
     }
 
@@ -71,6 +72,13 @@ namespace HeroVirtualTabletop.Roster
 
         List<AnimatedCharacter> Attackers { get; }
         Dictionary<AnimatedCharacter, AttackInstructions> AttackerSpecificInstructions { get; }
+    }
+
+    public interface RosterParent
+    {
+        string Name { get; set; }
+        int Order { get; set; }
+        RosterGroup RosterGroup { get; set; }
     }
 
 }

@@ -2,6 +2,7 @@
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Roster;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -165,13 +166,28 @@ namespace HeroUI
             }
         }
 
+        private RosterExplorerViewModel rosterExplorerViewModel;
+        public RosterExplorerViewModel RosterExplorerViewModel
+        { 
+            get
+            {
+                return rosterExplorerViewModel;
+            }
+            set
+            {
+                rosterExplorerViewModel = value;
+                NotifyOfPropertyChange(() => RosterExplorerViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
-        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, IconInteractionUtility iconInteractionUtility, Camera camera)
+        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, RosterExplorerViewModel rosterExplorerViewModel, IconInteractionUtility iconInteractionUtility, Camera camera)
         {
             this.eventAggregator = eventAggregator;
             this.CrowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
+            this.RosterExplorerViewModel = rosterExplorerViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
@@ -188,42 +204,7 @@ namespace HeroUI
         #endregion
 
         #region Methods
-        public void LoadCharacterExplorer()
-        {
-            //CharacterExplorerView view = this.Container.Resolve<CharacterExplorerView>();
-            //OnViewLoaded(view, null);
-        }
-        //public void LoadRosterExplorer()
-        //{
-        //    RosterExplorerView view = this.Container.Resolve<RosterExplorerView>();
-        //    OnViewLoaded(view, null);
-        //}
-        //public void LoadCharacterEditor()
-        //{
-        //    CharacterEditorView view = this.Container.Resolve<CharacterEditorView>();
-        //    OnViewLoaded(view, null);
-        //}
-        //public void LoadIdentityEditor()
-        //{
-        //    IdentityEditorView view = this.Container.Resolve<IdentityEditorView>();
-        //    OnViewLoaded(view, null);
-        //}
-        //public void LoadAbilityEditor()
-        //{
-        //    AbilityEditorView view = this.Container.Resolve<AbilityEditorView>();
-        //    OnViewLoaded(view, null);
-        //}
-        //public void LoadMovementEditor()
-        //{
-        //    MovementEditorView view = this.Container.Resolve<MovementEditorView>();
-        //    OnViewLoaded(view, null);
-        //}
-        //public void LoadCrowdFromModelsView()
-        //{
-        //    CrowdFromModelsView view = this.Container.Resolve<CrowdFromModelsView>();
-        //    OnViewLoaded(view, null);
-        //}
-
+       
         private void CollapsePanel(object state)
         {
             switch (state.ToString())
@@ -251,6 +232,8 @@ namespace HeroUI
                     break;
             }
         }
+
+        #region Game Launch
 
         private void LaunchGame()
         {
@@ -305,6 +288,7 @@ namespace HeroUI
                 iconInteractionUtility.DoPostInitialization();
                 DoPostGameLaunchOperations();
                 gameInitializeTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                this.eventAggregator.PublishOnUIThread(new GameLaunchedEvent());
             }
             else
             {
@@ -489,6 +473,8 @@ namespace HeroUI
                 }
             }
         }
+
+        #endregion
 
         #endregion
     }

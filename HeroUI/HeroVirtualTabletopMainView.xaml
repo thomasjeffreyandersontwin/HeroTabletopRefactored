@@ -31,7 +31,6 @@
         <Expander Grid.Column="0" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Character Explorer"
-                  
                   IsExpanded="{Binding IsCharacterExplorerExpanded}"
                   >
             <GroupBox Header="Character Explorer" x:Name="grpBoxCharacterExplorer" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
@@ -69,11 +68,10 @@
                     <Grid x:Name="crowdFromModelsPanel" Width="Auto" Grid.Row="1"/>
                 </Grid>
             </GroupBox>
-        </Expander>
+        </Expander>-->
         <Expander Grid.Column="2" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Roster Explorer"
-                  Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
                   IsExpanded="{Binding IsRosterExplorerExpanded}"
                   >
 
@@ -86,11 +84,13 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsRosterExplorerExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="RosterExplorer">
                     </ToggleButton>
-                    <Grid x:Name="rosterExplorerPanel" Width="Auto" Grid.Row="1"/>
+                    <Grid x:Name="rosterExplorerPanel" Grid.Row="1">
+                        <ContentControl x:Name="RosterExplorerViewModel" />
+                    </Grid>
                 </Grid>
             </GroupBox>
         </Expander>
-        <Expander Grid.Column="3" Style="{StaticResource VerticalExpanderStyle}"
+        <!--<Expander Grid.Column="3" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Character Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
@@ -109,8 +109,8 @@
                     <Grid x:Name="charEditorPanel" Width="Auto" Grid.Row="1"/>
                 </Grid>
             </GroupBox>
-        </Expander>
-        <Expander Grid.Column="4" Style="{StaticResource VerticalExpanderStyle}"
+        </Expander>-->
+        <!--<Expander Grid.Column="4" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Identity Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
@@ -130,8 +130,8 @@
                     <Grid x:Name="identityEditorPanel" Width="Auto" Grid.Row="1"/>
                 </Grid>
             </GroupBox>
-        </Expander>
-        <Expander Grid.Column="5" Style="{StaticResource VerticalExpanderStyle}"
+        </Expander>-->
+        <!--<Expander Grid.Column="5" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Power Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
@@ -151,8 +151,8 @@
                     <Grid x:Name="abilityEditorPanel" Width="Auto" Grid.Row="1"/>
                 </Grid>
             </GroupBox>
-        </Expander>
-        <Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
+        </Expander>-->
+        <!--<Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Movement Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"

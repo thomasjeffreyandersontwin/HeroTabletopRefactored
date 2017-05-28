@@ -19,7 +19,7 @@ namespace HeroVirtualTabletop.Crowd
         DragDrop
     }
 
-    public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell
+    public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell, IHandle<GameLaunchedEvent>, IHandle<CrowdCollectionModifiedEvent>
     {
         #region Private Fields
 
@@ -138,6 +138,7 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanCutCrowdMember);
                 NotifyOfPropertyChange(() => CanLinkCrowdMember);
                 NotifyOfPropertyChange(() => CanPasteCrowdMember);
+                NotifyOfPropertyChange(() => CanAddToRoster);
             }
         }
 
@@ -157,6 +158,7 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanCloneCrowdMember);
                 NotifyOfPropertyChange(() => CanCutCrowdMember);
                 NotifyOfPropertyChange(() => CanLinkCrowdMember);
+                NotifyOfPropertyChange(() => CanAddToRoster);
             }
         }
 
@@ -197,6 +199,7 @@ namespace HeroVirtualTabletop.Crowd
             this.EventAggregator = eventAggregator;
             this.busyService = busyService;
             this.CrowdRepository.CrowdRepositoryPath = Path.Combine(HeroUI.Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_CROWD_REPOSITORY_FILENAME);
+            this.EventAggregator.Subscribe(this);
         }
 
         #endregion
@@ -250,9 +253,36 @@ namespace HeroVirtualTabletop.Crowd
 
         #region Add to Roster
 
-        public void AddCrowdMemberToRoster(CrowdMember member)
+        public void SyncCrowdMembersWithRoster()
         {
-            this.EventAggregator.Publish(new AddToRosterEvent(), null);
+            var rosterMembers = this.CrowdRepository.AllMembersCrowd.Members.Where(x => { return x is CharacterCrowdMember && (x as CharacterCrowdMember).RosterParent != null; }).Cast<CharacterCrowdMember>();
+            rosterMembers = rosterMembers.ToList();
+            foreach (var rosterMember in rosterMembers)
+            {
+                rosterMember.Parent = this.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == rosterMember.RosterParent.Name) as Crowd;
+            }
+            this.EventAggregator.Publish(new SyncWithRosterEvent(rosterMembers.ToList()), action => System.Windows.Application.Current.Dispatcher.BeginInvoke(action));
+        }
+
+        public bool CanAddToRoster
+        {
+            get
+            {
+                return !(this.SelectedCharacterCrowdMember == null && this.SelectedCrowdMember == null);
+            }
+            
+        }
+
+        public void AddToRoster()
+        {
+            this.LockTreeUpdate(true);
+            AddToRoster(SelectedCharacterCrowdMember, SelectedCrowdMember);
+            this.LockTreeUpdate(false);
+        }
+        
+        private void AddToRoster(CharacterCrowdMember characterCrowdMember, Crowd rosterCrowd)
+        {
+            this.EventAggregator.PublishOnUIThread(new AddToRosterEvent(characterCrowdMember, rosterCrowd));
         }
 
         #endregion
@@ -301,12 +331,12 @@ namespace HeroVirtualTabletop.Crowd
         {
             // Lock character crowd Tree from updating;
             this.LockTreeUpdate(true);
-            CrowdMember rosterMember = null;
+            CrowdMember deletedMember = null;
             // Determine if Character or Crowd is to be deleted
             if (SelectedCharacterCrowdMember != null) // Delete Character
             {
                 if (SelectedCharacterCrowdMember.RosterParent != null && SelectedCharacterCrowdMember.RosterParent.Name == SelectedCrowdMember.Name)
-                    rosterMember = SelectedCharacterCrowdMember;
+                    deletedMember = SelectedCharacterCrowdMember;
                 // Delete the Character from all occurances of this crowd
                 SelectedCrowdMember.RemoveMember(SelectedCharacterCrowdMember);
             }
@@ -320,7 +350,7 @@ namespace HeroVirtualTabletop.Crowd
                 else // Delete it from the repo altogether
                 {
                     this.CrowdRepository.RemoveCrowd(SelectedCrowdMember);
-                    rosterMember = SelectedCrowdMember;
+                    deletedMember = SelectedCrowdMember;
                 }
             }
 
@@ -332,8 +362,9 @@ namespace HeroVirtualTabletop.Crowd
                 this.SetSelectedCrowdMember(lastCharacterCrowdStateToUpdate);
                 this.lastCharacterCrowdStateToUpdate = null;
             }
-            //if (rosterMember != null)
-            //    this.eventAggregator.GetEvent<DeleteCrowdMemberEvent>().Publish(rosterMember);
+            // Fire event so that roster and char editor can update themselves
+            if (deletedMember != null)
+                this.EventAggregator.PublishOnUIThread(new DeleteCrowdMemberEvent(deletedMember));
             if (this.SelectedCrowdMember != null)
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowdMember, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Delete });
@@ -355,6 +386,17 @@ namespace HeroVirtualTabletop.Crowd
         #endregion
 
         #region Load/Save Crowds
+
+        public async void Handle(GameLaunchedEvent message)
+        {
+            await this.LoadCrowdCollectionAsync();
+            this.SyncCrowdMembersWithRoster();
+        }
+
+        public async void Handle(CrowdCollectionModifiedEvent message)
+        {
+            await this.SaveCrowdCollectionAsync();
+        }
 
         public async Task LoadCrowdCollectionAsync()
         {
@@ -479,6 +521,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public void RenameCrowdMember(string updatedName)
         {
+            CrowdMember renamedMember = null;
             if (this.OriginalName == updatedName)
             {
                 OriginalName = null;
@@ -491,6 +534,7 @@ namespace HeroVirtualTabletop.Crowd
                     return;
                 }
                 SelectedCharacterCrowdMember.Rename(updatedName);
+                renamedMember = SelectedCharacterCrowdMember;
                 this.SelectedCrowdMember.SortMembers();
                 this.OriginalName = null;
             }
@@ -501,12 +545,11 @@ namespace HeroVirtualTabletop.Crowd
                     return;
                 }
                 SelectedCrowdMember.Rename(updatedName);
+                renamedMember = SelectedCrowdMember;
                 this.CrowdRepository.SortCrowds();
                 this.OriginalName = null;
             }
-            
-            List<CrowdMember> rosterCharacters = new List<CrowdMember>();
-            //eventAggregator.GetEvent<AddToRosterEvent>().Publish(rosterCharacters); // sending empty list so that roster sorts its elements
+            this.EventAggregator.PublishOnUIThread(new RenameCrowdMemberEvent(renamedMember));
         }
         #endregion
 

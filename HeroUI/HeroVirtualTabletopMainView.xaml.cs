@@ -103,8 +103,6 @@ namespace HeroUI
         {
             this.viewModel = this.DataContext as HeroVirtualTabletopMainViewModel;
             this.viewModel.ViewLoaded += viewModel_ViewLoaded;
-
-            this.viewModel.LoadCharacterExplorer();
         }
     }
 }

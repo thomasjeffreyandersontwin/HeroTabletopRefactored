@@ -695,6 +695,10 @@ namespace HeroVirtualTabletop.Crowd
                     typeof(CrowdClipboardImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
+                    typeof(RosterParent),
+                    typeof(RosterParentImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
                     typeof(IEventAggregator),
                     typeof(EventAggregator)));
             
