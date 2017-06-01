@@ -36,8 +36,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         public override void Target(bool completeEvent = true)
-        {
-
+        { 
             base.Target();
             NotifyPropertyChanged();
         }

@@ -1,41 +1,104 @@
-﻿namespace HeroVirtualTabletop.Desktop
+﻿using System;
+using System.Text;
+
+namespace HeroVirtualTabletop.Desktop
 {
-    internal class DesktopMemoryCharacterImpl : DesktopMemoryCharacter
+    public class DesktopMemoryCharacterImpl : DesktopMemoryCharacter
     {
-        public Position Position { get; set; }
-        public string Label { get; set; }
+
+        public string Label
+        {
+            get
+            {
+                try
+                {
+                    return MemoryManager?.GetAttributeAsString(12740, Encoding.UTF8);
+                }
+                catch(Exception ex)
+                {
+                    return string.Empty;
+                }
+            }
+            set
+            {
+                try
+                {
+                    MemoryManager?.SetTargetAttribute(12740, value, Encoding.UTF8);
+                }
+                catch { }
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                string label = Label;
+                int start = 7;
+                int end = 1 + label.IndexOf("]", start);
+                return label.Substring(start, end - start);
+            }
+        }
         public float MemoryAddress { get; set; }
+
+        public bool IsReal
+        {
+            get
+            {
+                return (this.MemoryManager?.Pointer != 0);
+            }
+        }
+
+        public MemoryManager MemoryManager { get; set; }
+
+        public Position Position
+        {
+            get
+            {
+                return new PositionImpl();
+            }
+
+            set
+            {
+                
+            }
+        }
+
+        public DesktopMemoryCharacterImpl(MemoryManager manager)
+        {
+            this.MemoryManager = manager;
+        }
+
+        public DesktopMemoryCharacterImpl()
+        {
+            this.MemoryManager = new MemoryManagerImpl();
+        }
 
         public void Target()
         {
+            MemoryManager?.WriteCurrentTargetToGameMemory();
         }
 
-        public MemoryManager memoryManager { get; set; }
-
-        public dynamic GetAttributeFromAdress(float address, string varType)
+        public void UnTarget()
         {
-            return null;
+            MemoryManager?.WriteToMemory((uint)0);
         }
+    }
 
-        public void SetTargetAttribute(float offset, dynamic value, string varType)
+    public class DesktopCharacterTargeterImpl : DesktopCharacterTargeter
+    {
+        private DesktopMemoryCharacter targetedInstance;
+        public DesktopMemoryCharacter TargetedInstance
         {
-        }
-
-        public DesktopMemoryCharacter WaitUntilTargetIsRegistered()
-        {
-            var w = 0;
-            var currentTarget = new DesktopMemoryCharacterImpl();
-            while (Label != currentTarget.Label)
+            get
             {
-                w++;
-                currentTarget = new DesktopMemoryCharacterImpl();
-                if (w > 5)
-                {
-                    currentTarget = null;
-                    break;
-                }
+                targetedInstance = new DesktopMemoryCharacterImpl();
+                return targetedInstance;
             }
-            return currentTarget;
+            set
+            {
+                targetedInstance = value;
+            }
         }
     }
 }

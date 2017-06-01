@@ -38,7 +38,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void TargetAndMoveCameraToCharacter(bool completeEvent = true);
         void Follow(bool completeEvent = true);
         void UnFollow(bool completeEvent = true);
-
+        void SyncWithGame();
         void ToggleManueveringWithCamera();
     }
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Common;
+using Newtonsoft.Json;
+
 namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class CharacterActionListImpl<T> : OrderedCollectionImpl<T> , CharacterActionList<T> where T : CharacterAction
@@ -37,7 +39,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     }
                     else
                     {
-                        if (Count > 1)
+                        if (Count > 0)
                             _active = Values.First();
                     }
                 return _active;
@@ -144,7 +146,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
         }
 
+        [JsonIgnore]
         public string KeyboardShortcut { get; set; }
+        [JsonIgnore]
         public virtual KeyBindCommandGenerator Generator { get; set; }
 
         public virtual string Name { get; set; }

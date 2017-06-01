@@ -143,7 +143,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(characterUnderTest.Generator);
-            string[] para = {"model_statesmen", characterUnderTest.Name + " [" + characterUnderTest.DesktopLabel + "]"};
+            string[] para = {"model_statesmen", characterUnderTest.DesktopLabel};
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, para));
         }
 
@@ -629,6 +629,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             StandardizedFixture.Inject(MockCharacterProgressBarStats);
 
             //map interfaces to classes 
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopCharacterTargeter),
+                    typeof(DesktopCharacterTargeterImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopCharacterTargeter),
+                    typeof(DesktopCharacterTargeterImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(DesktopMemoryCharacter),

@@ -2,6 +2,7 @@
 using HeroVirtualTabletop.Movement;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace HeroVirtualTabletop.Desktop
 {
@@ -100,27 +101,33 @@ namespace HeroVirtualTabletop.Desktop
         Dictionary<PositionBodyLocation, PositionLocationPart> BodyLocations { get; }
     }
 
-    public interface DesktopMemoryCharacter
+    public interface DesktopMemoryCharacter // Former MemoryElement
     {
         Position Position { get; set; }
         string Label { get; set; }
-        float MemoryAddress { get; set; }
-        MemoryManager memoryManager { get; }
+        string Name { get; }
+        bool IsReal { get; }
+        MemoryManager MemoryManager { get; }
         void Target();
-        dynamic GetAttributeFromAdress(float address, string varType);
-        void SetTargetAttribute(float offset, dynamic value, string varType);
-
-        DesktopMemoryCharacter WaitUntilTargetIsRegistered();
+        void UnTarget();
     }
     public interface DesktopCharacterTargeter
     {
         DesktopMemoryCharacter TargetedInstance { get; set; }
     }
-    public interface MemoryManager
+    public interface MemoryManager // Former MemoryInstance
     {
-        MemoryManager Instance { get; }
-        dynamic GetTargetAttribute(float address, string varType);
-        void SetTargetAttribute(float address, dynamic value, string varType);
+        uint Pointer { get; }
+
+        void InitFromCurrentTarget();
+        string GetAttributeAsString(int offset);
+        string GetAttributeAsString(int offset, Encoding encoding);
+        float GetAttributeAsFloat(int offset);
+        void SetTargetAttribute(int offset, string value);
+        void SetTargetAttribute(int offset, float value);
+        void SetTargetAttribute(int offset, string value, Encoding encoding);
+        void WriteToMemory<T>(T obj);
+        void WriteCurrentTargetToGameMemory();
     }
 
     public class Collision

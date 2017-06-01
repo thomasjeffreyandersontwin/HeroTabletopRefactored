@@ -31,9 +31,23 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
         }
 
-        public DesktopMemoryCharacter MemoryInstance { get; set; }
-        public DesktopCharacterTargeter Targeter { get; set; }
-        public KeyBindCommandGenerator Generator { get; set; }
+        public DesktopMemoryCharacter MemoryInstance
+        {
+            get;
+            set;
+        }
+        public DesktopCharacterTargeter Targeter
+        {
+            get;
+            set;
+        }
+        [JsonIgnore]
+        public KeyBindCommandGenerator Generator
+        {
+            get;
+            set;
+        }
+        [JsonIgnore]
         public Camera Camera { get; set; }
 
         public Position Position => MemoryInstance.Position;
@@ -68,25 +82,25 @@ namespace HeroVirtualTabletop.ManagedCharacter
             else
                 Target();
         }
-        public virtual bool IsTargeted
+        public bool IsTargeted
         {
             get
             {
                 var targetedInstance = Targeter.TargetedInstance;
-                if (MemoryInstance?.MemoryAddress == targetedInstance.MemoryAddress)
+                if (this.DesktopLabel == targetedInstance.Label)
                     return true;
-                return false;
+                else
+                    return false;
             }
             set
             {
-                if (value)
+                if (value && !IsTargeted)
                 {
                     Target();
                 }
-                else
+                else if (!value && IsTargeted)
                 {
-                    if (value == false)
-                        UnTarget();
+                    UnTarget();
                 }
             }
         }
@@ -95,16 +109,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (MemoryInstance != null)
             {
                 MemoryInstance.Target();
-                MemoryInstance.WaitUntilTargetIsRegistered();
+                WaitUntilTargetIsRegistered();
             }
             else
             {
-                Generator.GenerateDesktopCommandText(DesktopCommand.TargetName, Name + " [" + DesktopLabel + "]");
+                Generator.GenerateDesktopCommandText(DesktopCommand.TargetName, DesktopLabel);
                 if (completeEvent)
                 {
                     Generator.CompleteEvent();
-                    MemoryInstance = Targeter.TargetedInstance;
-                    MemoryInstance = MemoryInstance.WaitUntilTargetIsRegistered();
+                    MemoryInstance = WaitUntilTargetIsRegistered();
                 }
             }
         }
@@ -128,6 +141,23 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                 }
             }
+        }
+
+        private DesktopMemoryCharacter WaitUntilTargetIsRegistered()
+        {
+            var w = 0;
+            var currentTarget = Targeter.TargetedInstance;
+            while (DesktopLabel != currentTarget.Label)
+            {
+                w++;
+                currentTarget = Targeter.TargetedInstance;
+                if (w > 5)
+                {
+                    currentTarget = null;
+                    break;
+                }
+            }
+            return currentTarget;
         }
 
         public bool IsFollowed { get; set; }
@@ -230,14 +260,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 newId.Name = Name;
                 newId.Type = SurfaceType.Costume;
                 newId.Surface = Name;
+                newId.Generator = this.Generator;
                 Identities.Active = newId;
             }
             var spawnText = Name;
-            if (DesktopLabel != null || DesktopLabel != "")
-                spawnText = Name + " [" + DesktopLabel + "]";
+            if (DesktopLabel != null && DesktopLabel != "")
+                spawnText = DesktopLabel;
 
             var active = Identities.Active;
-            Generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, "model_statesmen", spawnText);
+            Generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, "model_statesman", spawnText);
             active?.Play();
         }
         public void ClearFromDesktop(bool completeEvent = true)
@@ -255,6 +286,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Target();
             Generator.GenerateDesktopCommandText(DesktopCommand.MoveNPC);
             Generator.CompleteEvent();
+        }
+
+        public void SyncWithGame()
+        {
+            var oldTarget = Targeter.TargetedInstance;
+            Target();
+            if (this.IsTargeted)
+                this.IsSpawned = true;
+            try
+            {
+                oldTarget.Target();
+            }
+            catch { }
         }
 
         public CharacterProgressBarStats ProgressBar { get; set; }

@@ -55,8 +55,8 @@ namespace HeroVirtualTabletop.Roster
             set
             {
                 selectedParticipants = value;
-                //synchSelectionWithGame();
                 UpdateRosterSelection();
+                TargetFirstParticipant();
                 NotifyOfPropertyChange(() => SelectedParticipants);
             }
         }
@@ -87,7 +87,7 @@ namespace HeroVirtualTabletop.Roster
                 if (!Roster.Participants.Contains(crowdMember))
                 {
                     Roster.AddCharacterCrowdMemberAsParticipant(crowdMember);
-                    //CheckIfCharacterExistsInGame(member);
+                    Roster.SyncParticipantWithGame(crowdMember);
                 }
             }
             //Participants.Sort(ListSortDirection.Ascending, new RosterCrowdMemberModelComparer());
@@ -114,11 +114,65 @@ namespace HeroVirtualTabletop.Roster
 
         private void UpdateRosterSelection()
         {
-            foreach(var selectedParticipant in this.SelectedParticipants)
+            this.Roster.ClearAllSelections();
+            foreach (var selectedParticipant in this.SelectedParticipants)
             {
                 CharacterCrowdMember member = selectedParticipant as CharacterCrowdMember;
                 this.Roster.SelectParticipant(member);
             }
+        }
+
+        private void TargetFirstParticipant()
+        {
+            this.Roster.Selected?.Participants[0].Target();
+        }
+
+        public void Spawn()
+        {
+            this.Roster.Selected?.SpawnToDesktop();
+        }
+        public void ClearFromDesktop()
+        {
+            this.Roster.Selected?.ClearFromDesktop();
+        }
+        public void MoveToCamera()
+        {
+            this.Roster.Selected?.MoveCharacterToCamera();
+        }
+
+        public void SavePosition()
+        {
+            this.Roster.Selected?.SaveCurrentTableTopPosition();
+        }
+
+        public void Place()
+        {
+            this.Roster.Selected?.PlaceOnTableTop();
+        }
+
+        public void ToggleTargeted()
+        {
+            this.Roster.Selected?.Participants[0].ToggleTargeted();
+        }
+
+        public void ToggleManueverWithCamera()
+        {
+            this.Roster.Selected?.Participants[0].ToggleManueveringWithCamera();
+        }
+
+        public void MoveCameraToTarget()
+        {
+            this.Roster.Selected.Participants[0].TargetAndMoveCameraToCharacter();
+        }
+
+        public void Activate()
+        {
+            this.Roster.Selected.Activate();
+        }
+
+        public void ResetOrientation()
+        {
+            //this.Roster.Selected.Participants[0].ResetOrientation();
         }
     }
 }

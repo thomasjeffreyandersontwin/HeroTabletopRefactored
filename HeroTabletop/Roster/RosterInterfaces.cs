@@ -27,7 +27,7 @@ namespace HeroVirtualTabletop.Roster
         void UnSelectParticipant(CharacterCrowdMember participant);
         void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant);
         void RemoveParticipant(CharacterCrowdMember participant);
-
+        void SyncParticipantWithGame(CharacterCrowdMember participant);
         void CreateGroupFromCrowd(Crowd.Crowd crowd);
         void RenameRosterMember(CrowdMember crowdMember);
         void RemoveRosterMember(CrowdMember deletedMember);

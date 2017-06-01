@@ -80,6 +80,14 @@ namespace HeroVirtualTabletop.Roster
         {
             Selected.Participants.Remove((CharacterCrowdMember)participant);
         }
+
+        public void SyncParticipantWithGame(CharacterCrowdMember participant)
+        {
+            //StopListeningForTargetChanged();
+            participant.SyncWithGame();
+            //StartListeningForTargetChanged();
+        }
+
         public void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant)
         {
             var group = createRosterGroup(participant.Parent);
@@ -285,11 +293,7 @@ namespace HeroVirtualTabletop.Roster
         }
         public void ClearAllSelections()
         {
-            List<CharacterCrowdMember> sel = Selected.Participants.ToList();
-            foreach (var p in sel)
-            {
-                UnSelectParticipant(p);
-            }
+            Selected.Participants.Clear();
         }
         public void SelectAllParticipants()
         {
@@ -343,7 +347,7 @@ namespace HeroVirtualTabletop.Roster
                 {
                     if (AttackingCharacter == characterThatChanged)
                     {
-                        if(characterThatChanged.ActiveAttack != null)
+                        if (characterThatChanged.ActiveAttack != null)
                             characterThatChanged.ActiveAttack = null;
                         AttackingCharacter = null;
                     }
@@ -417,8 +421,8 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                if (targetedCharacter == null)
-                    targetedCharacter = Participants.FirstOrDefault(p => p.IsTargeted);
+                //if (targetedCharacter == null)
+                //    targetedCharacter = Participants.FirstOrDefault(p => p.IsTargeted);
                 return targetedCharacter;
             }
             set
@@ -426,12 +430,21 @@ namespace HeroVirtualTabletop.Roster
                 targetedCharacter = value;
             }
         }
+        private CharacterCrowdMember lastSelectedCharacter;
         public CharacterCrowdMember LastSelectedCharacter
         {
-            get { return Selected.Participants.LastOrDefault(); }
+            get
+            {
+                if(lastSelectedCharacter == null)
+                    lastSelectedCharacter = Selected.Participants.LastOrDefault();
+
+                return lastSelectedCharacter;
+            }
             set
             {
-                SelectParticipant(value);
+                //if(value != null)
+                //    SelectParticipant(value);
+                lastSelectedCharacter = value;
             }
         }
 

@@ -67,7 +67,7 @@
             <WrapPanel>
                 <Button x:Name="btSave" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)" Command="{Binding SavePositionCommand}"/>
                 <Button x:Name="btPlace" Content="&#xf041;" ToolTip="Place (Ctrl+P)" Command="{Binding PlaceCommand}"/>
-                <Button x:Name="btSpawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)" Command="{Binding SpawnCommand}"/>
+                <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)" Command="{Binding SpawnCommand}"/>
                 <Button x:Name="btTarget" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)" Command="{Binding ToggleTargetedCommand}"/>
                 <Button x:Name="btCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)" Command="{Binding ToggleManeuverWithCameraCommand}" />
                 <Button x:Name="btCycle" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)" Command="{Binding CycleCommandsThroughCrowdCommand}">

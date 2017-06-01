@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Threading;
+using System.Runtime.Serialization;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
 namespace HeroVirtualTabletop.Crowd
@@ -37,7 +38,6 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdRepositoryImpl()
         {
             Crowds = new ObservableCollection<Crowd>();
-            //createAllmembersCrowd();
         }
 
         public Crowd NewCrowdInstance { get; set; } //for DI to insert
@@ -93,11 +93,14 @@ namespace HeroVirtualTabletop.Crowd
         {
             if (name == "Character") name = "Crowd";
             var newCrowd = NewCrowdInstance;
-            if (!UsingDependencyInjection)
+            try
             {
-                newCrowd = new CrowdImpl(this) {Name = "Crowd"};
+                newCrowd = IoC.Get<Crowd>();
             }
-
+            catch // for tests
+            {
+                newCrowd = new CrowdImpl(this) { Name = "Crowd" };
+            }
             
             if (parent != null)
             { 
@@ -114,14 +117,13 @@ namespace HeroVirtualTabletop.Crowd
         {
             var newCharacter = NewCharacterCrowdMemberInstance;
 
-            if (!UsingDependencyInjection)
+            try
+            {
+                newCharacter = new CharacterCrowdMemberImpl(parent, IoC.Get<DesktopCharacterTargeter>(), IoC.Get<KeyBindCommandGenerator>(), IoC.Get<Camera>(), null, IoC.Get<CrowdRepository>());
+            }
+            catch
             {
                 newCharacter = new CharacterCrowdMemberImpl(parent, null, null, null, null, this);
-            }
-            else
-            {
-                newCharacter.Parent = parent;
-                newCharacter.CrowdRepository = this;
             }
 
             newCharacter.Name = CreateUniqueName(name, AllMembersCrowd.Members);
@@ -906,6 +908,18 @@ namespace HeroVirtualTabletop.Crowd
             this.MatchesFilter = true;
         }
 
+        [OnDeserialized]
+        private void AfterDeserialized(StreamingContext stream)
+        {
+            if(Identities != null && Identities.Count > 0)
+            {
+                foreach(var identity in Identities)
+                {
+                    identity.Value.Generator = this.Generator;
+                }
+            }
+        }
+
         public bool IsExpanded
         {
             get { return isExpanded; }
@@ -1011,7 +1025,23 @@ namespace HeroVirtualTabletop.Crowd
         {
         }
 
-        public override string DesktopLabel => MemoryInstance?.Label;
+        public override string DesktopLabel
+        {
+            get
+            {
+                if (MemoryInstance != null && MemoryInstance.IsReal)
+                    return MemoryInstance.Label;
+                else
+                {
+                    string crowdLabel = string.Empty;
+                    if (RosterParent != null)
+                    {
+                        crowdLabel = " [" + RosterParent.Name + "]";
+                    }
+                    return Name + crowdLabel;
+                }
+            }
+        }
 
         public bool MatchesFilter
         {

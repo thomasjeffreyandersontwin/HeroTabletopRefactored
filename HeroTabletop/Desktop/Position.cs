@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 namespace HeroVirtualTabletop.Desktop
 
 {
-    public class PositionImpl : Position
+    public class PositionImpl : Position // IA NEED TO HAVE MEMORY INSTANCE TO GET ROT MATRIX ELEMENTS, SHOULD PROBABLY INHERIT FROM DESKTOPMEMORYCHARACTERIMPL
     {
         
         public PositionImpl(Vector3 vector)
@@ -493,7 +493,7 @@ namespace HeroVirtualTabletop.Desktop
 
         public override bool Equals(Object other)
         {
-            Position otherPosition = (Position) other;
+            Position otherPosition = (Position)other;
             if (X == otherPosition.X && Y == otherPosition.Y && Z == otherPosition.Z)
             {
                 return true;

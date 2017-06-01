@@ -55,7 +55,11 @@ namespace HeroUI
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();
             container.Singleton<Roster, RosterImpl>();
+            container.PerRequest<Crowd, CrowdImpl>();
+            //container.PerRequest<CharacterCrowdMember, CharacterCrowdMemberImpl>();//PROBLEM
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
+            container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
+            //container.PerRequest<DesktopMemoryCharacter, DesktopMemoryCharacterImpl>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }

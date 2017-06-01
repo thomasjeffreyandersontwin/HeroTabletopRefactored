@@ -229,6 +229,7 @@ namespace HeroVirtualTabletop.Roster
             ()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
+            
             Crowd.Crowd crowd = r.SaveAsCrowd();
             int crowdCounter = 0;
             foreach (var g in r.Groups.Values)
@@ -261,7 +262,7 @@ namespace HeroVirtualTabletop.Roster
             c.Target();
 
             //assert
-            Assert.AreEqual(c, r.TargetedCharacter);
+            Assert.AreEqual(c, r.LastSelectedCharacter);
         }
 
         [TestMethod]
@@ -291,7 +292,7 @@ namespace HeroVirtualTabletop.Roster
             CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
 
             //act
-            c.IsSelected = true;
+            r.SelectParticipant(c);
 
             //assert
             Assert.IsTrue(r.Selected.Participants.Contains(c));
