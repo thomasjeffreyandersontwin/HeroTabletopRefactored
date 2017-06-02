@@ -56,7 +56,7 @@ namespace HeroVirtualTabletop.Roster
             {
                 selectedParticipants = value;
                 UpdateRosterSelection();
-                TargetFirstParticipant();
+                Target();
                 NotifyOfPropertyChange(() => SelectedParticipants);
             }
         }
@@ -122,14 +122,15 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        private void TargetFirstParticipant()
+        private void Target()
         {
-            this.Roster.Selected?.Participants[0].Target();
+            this.Roster.Selected?.Target();
         }
 
         public void Spawn()
         {
             this.Roster.Selected?.SpawnToDesktop();
+            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent()); // save needed due to possible identity change
         }
         public void ClearFromDesktop()
         {
@@ -152,22 +153,22 @@ namespace HeroVirtualTabletop.Roster
 
         public void ToggleTargeted()
         {
-            this.Roster.Selected?.Participants[0].ToggleTargeted();
+            this.Roster.Selected?.ToggleTargeted();
         }
 
         public void ToggleManueverWithCamera()
         {
-            this.Roster.Selected?.Participants[0].ToggleManueveringWithCamera();
+            this.Roster.Selected?.ToggleManueveringWithCamera();
         }
 
         public void MoveCameraToTarget()
         {
-            this.Roster.Selected.Participants[0].TargetAndMoveCameraToCharacter();
+            this.Roster.Selected?.TargetAndMoveCameraToCharacter();
         }
 
         public void Activate()
         {
-            this.Roster.Selected.Activate();
+            this.Roster.Selected?.Activate();
         }
 
         public void ResetOrientation()

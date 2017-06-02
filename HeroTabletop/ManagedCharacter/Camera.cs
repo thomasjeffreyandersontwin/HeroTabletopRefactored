@@ -28,12 +28,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             set
             {
+                if (_manueveringCharacter != null)
+                {
+                    ActivateCameraIdentity();
+                    _manueveringCharacter.SpawnToDesktop();
+                    _manueveringCharacter = null;
+                }
                 if (value != null)
                 {
                     _manueveringCharacter = value;
                     _manueveringCharacter.Target(false);
                     MoveToTarget();
-
+                    if(Position == null)
+                        RefreshPosition();
                     float dist = 13.23f, calculatedDistance;
                     var maxRecalculationCount = 5;
                         // We will allow the same distance to be calculated 5 times at max. After this we'll assume that the camera is stuck.
@@ -56,13 +63,18 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     }
                     distanceTable.Clear();
 
-                    _manueveringCharacter.ClearFromDesktop();
+                    _manueveringCharacter.ClearFromDesktop(true, false);
                     Identity = value.Identities.Active;
                     Identity.Play();
                 }
             }
         }
-
+        public void RefreshPosition()
+        {
+            MemoryManager memoryManager = new MemoryManagerImpl(false, 1696336);
+            DesktopMemoryCharacter desktopChar = new DesktopMemoryCharacterImpl(memoryManager);
+            Position = new PositionImpl(desktopChar);
+        }
         public void MoveToTarget(bool completeEvent = true)
         {
             Generator.GenerateDesktopCommandText(DesktopCommand.Follow, "");
@@ -73,6 +85,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void ActivateCameraIdentity()
         {
             //We need to untarget everything before loading camera skin
+            this.Identity = new IdentityImpl(null, "Camera", "V_Arachnos_Security_Camera", SurfaceType.Model, Generator, null);
             Generator.GenerateDesktopCommandText(DesktopCommand.TargetEnemyNear);
             Identity.Play(true);
         }

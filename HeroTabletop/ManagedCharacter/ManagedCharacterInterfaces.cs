@@ -7,10 +7,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         string Name { get; set; }
         void SpawnToDesktop(bool completeEvent = true);
-        void ClearFromDesktop(bool completeEvent = true);
+        void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true);
         void MoveCharacterToCamera(bool completeEvent = true);
         Dictionary<string, Identity> IdentitiesList { get; }
         Identity DefaultIdentity { get; }
+        void ToggleTargeted();
+
+        void UnTarget(bool completeEvent = true);
+        void Target(bool completeEvent = true);
+        void TargetAndMoveCameraToCharacter(bool completeEvent = true);
+        void Follow(bool completeEvent = true);
+        void UnFollow(bool completeEvent = true);
+        void SyncWithGame();
+        void ToggleManueveringWithCamera();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
@@ -30,16 +39,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
         KeyBindCommandGenerator Generator { get; set; }
         CharacterProgressBarStats ProgressBar { get; set; }
         Camera Camera { get; set; }
-
-        void ToggleTargeted();
-
-        void UnTarget(bool completeEvent = true);
-        void Target(bool completeEvent = true);
-        void TargetAndMoveCameraToCharacter(bool completeEvent = true);
-        void Follow(bool completeEvent = true);
-        void UnFollow(bool completeEvent = true);
-        void SyncWithGame();
-        void ToggleManueveringWithCamera();
     }
 
     public enum CharacterActionType
@@ -89,7 +88,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void MoveToTarget(bool completeEvent = true);
         void ActivateCameraIdentity();
         void ActivateManueveringCharacterIdentity();
-
+        void RefreshPosition();
         void DisableMovement();
     }
 

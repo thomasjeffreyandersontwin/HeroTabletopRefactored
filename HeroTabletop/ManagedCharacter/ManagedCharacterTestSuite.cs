@@ -23,7 +23,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             //arrange
             var character = TestObjectsFactory.CharacterUnderTest;
-            string[] parameters = {character.Name + " [" + character.Name + "]"};
+            string[] parameters = {character.Name};
             var generator = TestObjectsFactory.GetMockKeyBindCommandGeneratorForCommand(DesktopCommand.TargetName,
                 parameters);
             character.Generator = generator;
@@ -143,7 +143,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(characterUnderTest.Generator);
-            string[] para = {"model_statesmen", characterUnderTest.DesktopLabel};
+            string[] para = {"model_statesman", characterUnderTest.DesktopLabel};
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, para));
         }
 
@@ -288,9 +288,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
-        public void
-            ManueverCharacter_ContinuesToWaitForCameraToGetToDestinationUntilWithinMinimumDistanceBeforeBecomingCharacter
-            ()
+        public void ManueverCharacter_ContinuesToWaitForCameraToGetToDestinationUntilWithinMinimumDistanceBeforeBecomingCharacter()
         {
             //arrange
             var character = TestObjectsFactory.MockFixture.Create<ManagedCharacter>();
@@ -311,6 +309,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     return true;
                 }
             );
+            cameraUnderTest.Position = mocker.Object;
             //act
             cameraUnderTest.ManueveringCharacter = character;
             //assert -did the camera stop calling invoke once distance got to 0?

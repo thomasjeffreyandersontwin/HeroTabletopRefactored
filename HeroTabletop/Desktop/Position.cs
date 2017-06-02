@@ -9,22 +9,22 @@ namespace HeroVirtualTabletop.Desktop
 {
     public class PositionImpl : Position // IA NEED TO HAVE MEMORY INSTANCE TO GET ROT MATRIX ELEMENTS, SHOULD PROBABLY INHERIT FROM DESKTOPMEMORYCHARACTERIMPL
     {
-        
-        public PositionImpl(Vector3 vector)
+        private DesktopMemoryCharacter desktopMemoryCharacter;
+        public PositionImpl(Vector3 vector):this()
         {
             X = vector.X;
             Y = vector.Y;
             Z = vector.Z;
         }
-        public PositionImpl()
+        public PositionImpl():this(new DesktopMemoryCharacterImpl())
         {
-            _bodyParts= new Dictionary<PositionBodyLocation, PositionLocationPart>();
-            _bodyParts[PositionBodyLocation.Bottom] = new PositionLocationPartImpl(PositionBodyLocation.Bottom, this);
-            _bodyParts[PositionBodyLocation.BottomSemiMiddle] = new PositionLocationPartImpl(PositionBodyLocation.BottomSemiMiddle, this);
-            _bodyParts[PositionBodyLocation.BottomMiddle] = new PositionLocationPartImpl(PositionBodyLocation.BottomMiddle, this);
-            _bodyParts[PositionBodyLocation.Middle] = new PositionLocationPartImpl(PositionBodyLocation.Middle, this);
-            _bodyParts[PositionBodyLocation.TopMiddle] = new PositionLocationPartImpl(PositionBodyLocation.TopMiddle, this);
-            _bodyParts[PositionBodyLocation.Top] = new PositionLocationPartImpl(PositionBodyLocation.Top, this);
+            
+        }
+
+        public PositionImpl(DesktopMemoryCharacter memoryCharacter)
+        {
+            this.desktopMemoryCharacter = memoryCharacter;
+            InitializeBodyParts();
         }
 
        
@@ -110,8 +110,52 @@ namespace HeroVirtualTabletop.Desktop
                 RotationMatrix = matrix;
             }
         }
-        public Matrix RotationMatrix { get; set; }
-        
+        private Matrix rotationMatrix = new Matrix();
+        public Matrix RotationMatrix
+        {
+            get
+            {
+                return GetRotationMatrix();
+            }
+            set
+            {
+                SetRotationMatrix(value);
+            }
+        }
+
+        public Matrix GetRotationMatrix()
+        {
+            if (this.desktopMemoryCharacter.IsReal)
+            {
+                rotationMatrix = new Matrix(
+                    this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(56), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(60), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(64), 0,
+                    this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(68), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(72), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(76), 0,
+                    this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(80), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(84), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(88), 0,
+                    this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(92), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(96), this.desktopMemoryCharacter.MemoryManager.GetAttributeAsFloat(100), 0
+                    );
+            }
+            return rotationMatrix;
+        }
+
+        public void SetRotationMatrix(Matrix matrix)
+        {
+            if (this.desktopMemoryCharacter.IsReal)
+            {
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(56, matrix.M11);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(60, matrix.M12);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(64, matrix.M13);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(68, matrix.M21);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(72, matrix.M22);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(76, matrix.M23);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(80, matrix.M31);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(84, matrix.M32);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(88, matrix.M33);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(92, matrix.M41);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(96, matrix.M42);
+                this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(100, matrix.M43);
+            }
+        }
+
         public Vector3 Vector
         {
             get { return new Vector3(X, Y, Z); }
@@ -155,6 +199,17 @@ namespace HeroVirtualTabletop.Desktop
             Y = destination.Y;
             Z = destination.Z;
         }
+        private void InitializeBodyParts()
+        {
+            _bodyParts = new Dictionary<PositionBodyLocation, PositionLocationPart>();
+            _bodyParts[PositionBodyLocation.Bottom] = new PositionLocationPartImpl(PositionBodyLocation.Bottom, this);
+            _bodyParts[PositionBodyLocation.BottomSemiMiddle] = new PositionLocationPartImpl(PositionBodyLocation.BottomSemiMiddle, this);
+            _bodyParts[PositionBodyLocation.BottomMiddle] = new PositionLocationPartImpl(PositionBodyLocation.BottomMiddle, this);
+            _bodyParts[PositionBodyLocation.Middle] = new PositionLocationPartImpl(PositionBodyLocation.Middle, this);
+            _bodyParts[PositionBodyLocation.TopMiddle] = new PositionLocationPartImpl(PositionBodyLocation.TopMiddle, this);
+            _bodyParts[PositionBodyLocation.Top] = new PositionLocationPartImpl(PositionBodyLocation.Top, this);
+        }
+
         public void MoveTo(Position destination)
         {
             X = destination.X;

@@ -65,12 +65,12 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <WrapPanel>
-                <Button x:Name="btSave" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)" Command="{Binding SavePositionCommand}"/>
-                <Button x:Name="btPlace" Content="&#xf041;" ToolTip="Place (Ctrl+P)" Command="{Binding PlaceCommand}"/>
-                <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)" Command="{Binding SpawnCommand}"/>
-                <Button x:Name="btTarget" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)" Command="{Binding ToggleTargetedCommand}"/>
-                <Button x:Name="btCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)" Command="{Binding ToggleManeuverWithCameraCommand}" />
-                <Button x:Name="btCycle" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)" Command="{Binding CycleCommandsThroughCrowdCommand}">
+                <Button x:Name="btSave" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)"/>
+                <Button x:Name="btPlace" Content="&#xf041;" ToolTip="Place (Ctrl+P)"/>
+                <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)"/>
+                <Button x:Name="ToggleTargeted" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)"/>
+                <Button x:Name="ToggleManueverWithCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)"/>
+                <Button x:Name="btCycle" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
@@ -86,11 +86,11 @@
                 </Button>
             </WrapPanel>
             <WrapPanel Grid.Row="1">
-                <Button x:Name="btMoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)" Command="{Binding TargetAndFollowCommand}"/>
-                <Button x:Name="btMoveTargetToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)" Command="{Binding MoveTargetToCameraCommand}"/>
-                <Button x:Name="btActivate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)" Command="{Binding ActivateCharacterCommand}" />
-                <Button x:Name="btClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)" Command="{Binding ClearFromDesktopCommand}" />
-                <Button x:Name="btResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" Command="{Binding ResetOrientationCommand}" />
+                <Button x:Name="btMoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
+                <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
+                <Button x:Name="btActivate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
+                <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>
+                <Button x:Name="btResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
             </WrapPanel>
         </Grid>
         <library:MultiSelectListBox x:Name="RosterViewListBox" Grid.Row="1" ItemsSource="{Binding Source={StaticResource ResourceKey=ParticipantsView}}"

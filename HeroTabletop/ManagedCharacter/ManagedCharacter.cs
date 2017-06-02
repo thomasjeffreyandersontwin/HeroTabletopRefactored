@@ -251,6 +251,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 //No operation, let the game untarget whatever it has targeted
 
             IsSpawned = true;
+            var spawnText = Name;
+            if (DesktopLabel != null && DesktopLabel != "")
+                spawnText = DesktopLabel;
             if (Identities == null)
                 Identities = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
             if (Identities.Count == 0 && Identities.Active == null)
@@ -263,21 +266,26 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 newId.Generator = this.Generator;
                 Identities.Active = newId;
             }
-            var spawnText = Name;
-            if (DesktopLabel != null && DesktopLabel != "")
-                spawnText = DesktopLabel;
-
             var active = Identities.Active;
-            Generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, "model_statesman", spawnText);
+            string model = "model_statesman";
+            if (active.Type == SurfaceType.Model)
+            {
+                model = active.Surface;
+            }
+            Generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, model, spawnText);
+            Target(false);
             active?.Play();
         }
-        public void ClearFromDesktop(bool completeEvent = true)
+        public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
         {
             Target();
             Generator.GenerateDesktopCommandText(DesktopCommand.DeleteNPC);
+            if (completeEvent)
+                Generator.CompleteEvent();
             IsSpawned = false;
             IsTargeted = false;
-            IsManueveringWithCamera = false;
+            if(clearManueveringWithCamera)
+                IsManueveringWithCamera = false;
             IsFollowed = false;
             MemoryInstance = null;
         }

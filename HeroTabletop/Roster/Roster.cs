@@ -252,7 +252,7 @@ namespace HeroVirtualTabletop.Roster
         {
             if (deletedMember is CharacterCrowdMember)
             {
-                //(deletedMember as CharacterCrowdMember).ClearFromDesktop();
+                (deletedMember as CharacterCrowdMember).ClearFromDesktop();
                 this.RemoveParticipant(deletedMember as CharacterCrowdMember);
             }
             else if (deletedMember is Crowd.Crowd)
@@ -261,8 +261,7 @@ namespace HeroVirtualTabletop.Roster
                 List<string> deletedParticipantNames = new List<string>();
                 foreach (var participant in participants)
                 {
-                    //this.SelectedParticipants.Add(participant);
-                    //participant.ClearFromDesktop();
+                    participant.ClearFromDesktop();
                     deletedParticipantNames.Add(participant.Name);
                 }
                 foreach (var name in deletedParticipantNames)
@@ -435,7 +434,7 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                if(lastSelectedCharacter == null)
+                if (lastSelectedCharacter == null)
                     lastSelectedCharacter = Selected.Participants.LastOrDefault();
 
                 return lastSelectedCharacter;
@@ -489,6 +488,14 @@ namespace HeroVirtualTabletop.Roster
                 return lists;
 
 
+            }
+        }
+
+        public CharacterCrowdMember FirstSpawnedCharacter
+        {
+            get
+            {
+                return Participants?.FirstOrDefault(p => p.IsSpawned);
             }
         }
         private Dictionary<string, CharacterAction> getCommonCharacterActionsForSelectedParticipants(CharacterActionType type)
@@ -602,34 +609,7 @@ namespace HeroVirtualTabletop.Roster
 
             }
         }
-        public void SpawnToDesktop(bool completeEvent = true)
-        {
-            foreach (var part in Participants)
-            {
-                part.SpawnToDesktop(completeEvent);
-            }
-        }
-        public void ClearFromDesktop(bool completeEvent = true)
-        {
-            foreach (var crowdMember in Participants)
-                crowdMember.ClearFromDesktop(completeEvent);
-        }
-        public void MoveCharacterToCamera(bool completeEvent = true)
-        {
-            foreach (var crowdMember in Participants)
-                crowdMember.MoveCharacterToCamera(completeEvent);
-        }
-
-        public void Activate()
-        {
-            foreach (var crowdMember in Participants)
-                crowdMember.Activate();
-        }
-        public void DeActivate()
-        {
-            foreach (var crowdMember in Participants)
-                crowdMember.DeActivate();
-        }
+       
         public Dictionary<string, AnimatedAbility.AnimatedAbility> AbilitiesList
         {
             get
@@ -677,7 +657,35 @@ namespace HeroVirtualTabletop.Roster
             }
 
         }
+        public void SpawnToDesktop(bool completeEvent = true)
+        {
+            foreach (var part in Participants)
+            {
+                part.SpawnToDesktop(completeEvent);
+            }
+        }
+        public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
+        {
+            foreach (var crowdMember in Participants)
+                crowdMember.ClearFromDesktop(completeEvent, clearManueveringWithCamera);
+        }
+        public void MoveCharacterToCamera(bool completeEvent = true)
+        {
+            foreach (var crowdMember in Participants)
+                crowdMember.MoveCharacterToCamera(completeEvent);
+        }
 
+        public void Activate()
+        {
+            foreach (var crowdMember in Participants)
+                crowdMember.Activate();
+        }
+        public void DeActivate()
+        {
+            foreach (var crowdMember in Participants)
+                crowdMember.DeActivate();
+        }
+        
         public void SaveCurrentTableTopPosition()
         {
             foreach (var crowdMember in Participants)
@@ -692,6 +700,44 @@ namespace HeroVirtualTabletop.Roster
         {
             foreach (var crowdMember in Participants)
                 crowdMember.PlaceOnTableTopUsingRelativePos();
+        }
+        public void Target(bool completeEvent = true)
+        {
+            FirstSpawnedCharacter?.Target(completeEvent);
+        }
+        public void ToggleTargeted()
+        {
+            FirstSpawnedCharacter?.ToggleTargeted();
+        }
+
+        public void ToggleManueveringWithCamera()
+        {
+            if(Participants.Count > 0)
+                Participants[0].ToggleManueveringWithCamera();
+        }
+
+        public void TargetAndMoveCameraToCharacter(bool completeEvent = true)
+        {
+            FirstSpawnedCharacter?.TargetAndMoveCameraToCharacter(completeEvent);
+        }
+        public void UnTarget(bool completeEvent = true)
+        {
+            FirstSpawnedCharacter?.UnTarget(completeEvent);
+        }
+
+        public void Follow(bool completeEvent = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UnFollow(bool completeEvent = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SyncWithGame()
+        {
+            throw new NotImplementedException();
         }
 
         public string Name
@@ -743,7 +789,6 @@ namespace HeroVirtualTabletop.Roster
             }
             return rootName;
         }
-
     }
     class RosterSelectionCharacterActionsWrapper : CharacterActionImpl
     {

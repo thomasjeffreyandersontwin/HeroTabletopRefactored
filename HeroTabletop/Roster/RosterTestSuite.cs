@@ -385,7 +385,7 @@ namespace HeroVirtualTabletop.Roster
 
             r.Selected.ClearFromDesktop();
             r.Selected.Participants.ForEach(
-                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(true)));
+                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(true, true)));
 
             r.Selected.MoveCharacterToCamera();
             r.Selected.Participants.ForEach(

@@ -53,25 +53,17 @@ namespace HeroVirtualTabletop.Desktop
 
         public Position Position
         {
-            get
-            {
-                return new PositionImpl();
-            }
-
-            set
-            {
-                
-            }
+            get;set;
         }
 
         public DesktopMemoryCharacterImpl(MemoryManager manager)
         {
             this.MemoryManager = manager;
+            this.Position = new PositionImpl(this);
         }
 
-        public DesktopMemoryCharacterImpl()
+        public DesktopMemoryCharacterImpl():this(new MemoryManagerImpl())
         {
-            this.MemoryManager = new MemoryManagerImpl();
         }
 
         public void Target()

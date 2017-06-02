@@ -23,12 +23,13 @@ namespace HeroVirtualTabletop.Desktop
             }
         }
 
-        public MemoryManagerImpl()
+        public MemoryManagerImpl(bool initFromCurrentTarget = true, uint targetPointer = 0)
         {
-            this.targetPointer = 0;
+            this.targetPointer = targetPointer;
             this.targetMemoryAddress = new IntPtr(0x00F14FB0);
             this.InitializeGameInMemory();
-            InitFromCurrentTarget();
+            if(initFromCurrentTarget)
+                InitFromCurrentTarget();
         }
 
         private void InitializeGameInMemory()

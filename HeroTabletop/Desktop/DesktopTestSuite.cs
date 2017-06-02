@@ -231,18 +231,11 @@ namespace HeroVirtualTabletop.Desktop
         public void DistanceFrom_ReturnsCorrectDistanceBetweenTwoPositions()
         {
             Position startPosition = TestObjectsFactory.PositionUnderTest;
-            startPosition.Vector = Vector3.Zero;
+            startPosition.Vector = new Vector3(1, 2, 3);
             Position finishPosition = TestObjectsFactory.PositionUnderTest;
-            finishPosition.Vector = Vector3.Zero;
-            finishPosition.X = 10;
+            finishPosition.Vector = new Vector3(4, 5, 6);
             float distance = startPosition.DistanceFrom(finishPosition);
-
-           
-
-
-
-
-            Assert.AreEqual(distance, 10);
+            Assert.AreEqual(distance, Vector3.Distance(startPosition.Vector, finishPosition.Vector));
         }
 
         [TestMethod]
@@ -461,7 +454,7 @@ namespace HeroVirtualTabletop.Desktop
             //assert - distance should be from the top vector
             float expectedDistance = Vector3.Distance(movingTopBodyLocation, collision);
             float actualDistance = Vector3.Distance(movingStart, moving.Vector);
-;
+
             Assert.AreEqual(expectedDistance, actualDistance);
             //assert sumthin with bodypart offsets and direction trvelled
             Assert.AreEqual(moving.X, collision.X - collisionOffSet.X);
