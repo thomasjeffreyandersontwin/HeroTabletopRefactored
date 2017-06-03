@@ -1018,7 +1018,9 @@ namespace HeroVirtualTabletop.Crowd
         {
             if (!IsSpawned)
                 SpawnToDesktop();
-            Position.MoveTo(position ?? _loadedParentMembership.SavedPosition);
+            var destPosition = position ?? _loadedParentMembership.SavedPosition;
+            if(destPosition != null)
+                Position.MoveTo(destPosition);
         }
 
         public void PlaceOnTableTopUsingRelativePos()

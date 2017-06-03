@@ -21,6 +21,10 @@ namespace HeroVirtualTabletop.Desktop
             {
                 return targetPointer;
             }
+            set
+            {
+                targetPointer = value;
+            }
         }
 
         public MemoryManagerImpl(bool initFromCurrentTarget = true, uint targetPointer = 0)
@@ -37,14 +41,6 @@ namespace HeroVirtualTabletop.Desktop
             Process[] processes = Process.GetProcessesByName(GAME_PROCESSNAME);
             if (processes.Count() > 0)
                 this.gameMemory = new MemorySharp(processes[0]);
-        }
-
-        public uint TargetPointer
-        {
-            get
-            {
-                return targetPointer;
-            }
         }
        
 

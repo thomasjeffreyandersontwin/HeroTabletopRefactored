@@ -61,7 +61,7 @@ namespace HeroVirtualTabletop.Desktop
     }
 
     public interface Position
-    {   
+    {
         float X { get; set; }
         float Y { get; set; }
         float Z { get; set; }
@@ -72,7 +72,7 @@ namespace HeroVirtualTabletop.Desktop
         Vector3 Vector { get; set; }
 
         Position JustMissedPosition { get; set; }
-        Position Duplicate();
+        Position Duplicate(uint targetPointer = 0);
         bool IsWithin(float dist, Position position, out float calculatedDistance);
         //void MoveTo(Position destination);
         float DistanceFrom(Position targetPos);
@@ -117,7 +117,7 @@ namespace HeroVirtualTabletop.Desktop
     }
     public interface MemoryManager // Former MemoryInstance
     {
-        uint Pointer { get; }
+        uint Pointer { get; set; }
 
         void InitFromCurrentTarget();
         string GetAttributeAsString(int offset);

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 //using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace HeroVirtualTabletop.Desktop
 
 {
-    public class PositionImpl : Position // IA NEED TO HAVE MEMORY INSTANCE TO GET ROT MATRIX ELEMENTS, SHOULD PROBABLY INHERIT FROM DESKTOPMEMORYCHARACTERIMPL
+    public class PositionImpl : Position 
     {
-        private DesktopMemoryCharacter desktopMemoryCharacter;
+        private DesktopMemoryCharacter desktopMemoryCharacter { get; set; }
         public PositionImpl(Vector3 vector):this()
         {
             X = vector.X;
@@ -27,7 +28,7 @@ namespace HeroVirtualTabletop.Desktop
             InitializeBodyParts();
         }
 
-       
+        [JsonIgnore]
         public double Yaw
         {
             get
@@ -50,6 +51,7 @@ namespace HeroVirtualTabletop.Desktop
                 }
             }
         }
+        [JsonIgnore]
         public double Pitch
         {
             get
@@ -72,45 +74,80 @@ namespace HeroVirtualTabletop.Desktop
                 }
             }
         }
+        [JsonIgnore]
         public float Roll { get; set; }
+        [JsonIgnore]
         public float Unit { get; set; }
+        private float x, y, z = 0;
+
         public float X
         {
-            get { return RotationMatrix.M41; }
-            set
-            {
-                Matrix matrix = RotationMatrix;
-                matrix.M41 = value;
-                RotationMatrix = matrix;
-            }
-        }
-        public float Y {
             get
             {
-                return RotationMatrix.M42; 
-                
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    x = RotationMatrix.M41;
+                }
+                return x;
             }
             set
             {
-                Matrix matrix = RotationMatrix;
-                matrix.M42 = value;
-                RotationMatrix = matrix;
+                x = value;
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    Matrix matrix = RotationMatrix;
+                    matrix.M41 = value;
+                    RotationMatrix = matrix;
+                }
             }
         }
-        public float Z {
-            get
-            {
-                return RotationMatrix.M43;
 
+        public float Y
+        {
+            get
+            {
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    
+                    y = RotationMatrix.M42;
+                }
+                return y;
             }
             set
             {
-                Matrix matrix = RotationMatrix;
-                matrix.M43 = value;
-                RotationMatrix = matrix;
+                y = value;
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    Matrix matrix = RotationMatrix;
+                    matrix.M42 = value;
+                    RotationMatrix = matrix;
+                }
+            }
+        }
+
+        public float Z
+        {
+            get
+            {
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    z = RotationMatrix.M43;
+                }
+                return z;
+            }
+            set
+            {
+                z = value;
+                if (this.desktopMemoryCharacter.IsReal)
+                {
+                    Matrix matrix = RotationMatrix;
+                    matrix.M43 = value;
+                    RotationMatrix = matrix;
+                }
             }
         }
         private Matrix rotationMatrix = new Matrix();
+        [JsonIgnore]
         public Matrix RotationMatrix
         {
             get
@@ -155,7 +192,7 @@ namespace HeroVirtualTabletop.Desktop
                 this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(100, matrix.M43);
             }
         }
-
+        [JsonIgnore]
         public Vector3 Vector
         {
             get { return new Vector3(X, Y, Z); }
@@ -168,6 +205,7 @@ namespace HeroVirtualTabletop.Desktop
             }
 
         }
+        [JsonIgnore]
         public Vector3 FacingVector
         {
             get
@@ -442,11 +480,12 @@ namespace HeroVirtualTabletop.Desktop
             calculatedDistance = Vector3.Distance(position.Vector, Vector);
             return calculatedDistance < dist;
         }
+        [JsonIgnore]
         public Position JustMissedPosition
         {
             get
             {
-                Position missed = new PositionImpl();
+                Position missed = this.Duplicate();
                 var rand = new Random();
                 var randomOffset = rand.Next(2, 7);
                 var multiplyOffset = rand.Next(11, 20);
@@ -548,17 +587,25 @@ namespace HeroVirtualTabletop.Desktop
 
         public override bool Equals(Object other)
         {
-            Position otherPosition = (Position)other;
-            if (X == otherPosition.X && Y == otherPosition.Y && Z == otherPosition.Z)
+            Position otherPosition = other as Position;
+            if (otherPosition != null && X == otherPosition.X && Y == otherPosition.Y && Z == otherPosition.Z)
             {
                 return true;
             }
             return false;
         }
 
-        public Position Duplicate()
+        public Position Duplicate(uint targetPointer = 0)
         {
-            return new PositionImpl(new Vector3(X, Y, Z));
+            MemoryManager memManager = new MemoryManagerImpl(false);
+            DesktopMemoryCharacter desktopMemChar = new DesktopMemoryCharacterImpl(memManager);
+            desktopMemChar.MemoryManager.Pointer = targetPointer;
+            Position clone = new PositionImpl(desktopMemChar);
+            clone.X = X;
+            clone.Y = Y;
+            clone.Z = Z;
+
+            return clone;
         }
 
         private int _size=6;
@@ -594,7 +641,8 @@ namespace HeroVirtualTabletop.Desktop
             set
             {
                 _parentPosition = value;
-                Size = _parentPosition.Size;
+                if(value != null)
+                    Size = _parentPosition.Size;
             }
         }
 

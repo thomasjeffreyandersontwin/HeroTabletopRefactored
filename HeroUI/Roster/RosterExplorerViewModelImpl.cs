@@ -58,6 +58,13 @@ namespace HeroVirtualTabletop.Roster
                 UpdateRosterSelection();
                 Target();
                 NotifyOfPropertyChange(() => SelectedParticipants);
+                NotifyOfPropertyChange(() => CanClearFromDesktop);
+                NotifyOfPropertyChange(() => CanMoveToCamera);
+                NotifyOfPropertyChange(() => CanSavePosition);
+                NotifyOfPropertyChange(() => CanPlace);
+                NotifyOfPropertyChange(() => CanToggleTargeted);
+                NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
+                NotifyOfPropertyChange(() => CanMoveCameraToTarget);
             }
         }
 
@@ -132,35 +139,94 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.SpawnToDesktop();
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent()); // save needed due to possible identity change
         }
+
+        public bool CanClearFromDesktop
+        {
+            get
+            {
+                return SelectedParticipants != null && SelectedParticipants.Count > 0;
+            }
+        }
         public void ClearFromDesktop()
         {
-            this.Roster.Selected?.ClearFromDesktop();
+            List<CharacterCrowdMember> membersToDelete = new List<CharacterCrowdMember>();
+            foreach (var selectedParticipant in this.SelectedParticipants)
+            {
+                CharacterCrowdMember member = selectedParticipant as CharacterCrowdMember;
+                membersToDelete.Add(member);
+            }
+            foreach (var member in membersToDelete)
+            {
+                this.Roster.RemoveRosterMember(member);
+            }
+            this.SelectedParticipants.Clear();
+            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
+        }
+        public bool CanMoveToCamera
+        {
+            get
+            {
+                return SelectedParticipants.Cast<CharacterCrowdMember>().Any(c => c.IsSpawned);
+            }
         }
         public void MoveToCamera()
         {
             this.Roster.Selected?.MoveCharacterToCamera();
         }
 
+        public bool CanSavePosition
+        {
+            get
+            {
+                return SelectedParticipants.Cast<CharacterCrowdMember>().Any(c => c.IsSpawned);
+            }
+        }
         public void SavePosition()
         {
             this.Roster.Selected?.SaveCurrentTableTopPosition();
+            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
-
+        public bool CanPlace
+        {
+            get
+            {
+                return SelectedParticipants != null && SelectedParticipants.Count > 0;
+            }
+        }
         public void Place()
         {
             this.Roster.Selected?.PlaceOnTableTop();
         }
-
+        public bool CanToggleTargeted
+        {
+            get
+            {
+                return SelectedParticipants.Cast<CharacterCrowdMember>().Any(c => c.IsSpawned);
+            }
+        }
         public void ToggleTargeted()
         {
             this.Roster.Selected?.ToggleTargeted();
         }
-
+        public bool CanToggleManueverWithCamera
+        {
+            get
+            {
+                return this.SelectedParticipants != null && SelectedParticipants.Count == 1
+                    && ((SelectedParticipants[0] as CharacterCrowdMember).IsSpawned || (SelectedParticipants[0] as CharacterCrowdMember).IsManueveringWithCamera);
+            }
+        }
         public void ToggleManueverWithCamera()
         {
             this.Roster.Selected?.ToggleManueveringWithCamera();
         }
-
+        public bool CanMoveCameraToTarget
+        {
+            get
+            {
+                return SelectedParticipants.Cast<CharacterCrowdMember>().Any(c => c.IsSpawned);
+            }
+        }
         public void MoveCameraToTarget()
         {
             this.Roster.Selected?.TargetAndMoveCameraToCharacter();

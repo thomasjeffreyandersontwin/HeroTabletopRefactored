@@ -65,8 +65,8 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <WrapPanel>
-                <Button x:Name="btSave" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)"/>
-                <Button x:Name="btPlace" Content="&#xf041;" ToolTip="Place (Ctrl+P)"/>
+                <Button x:Name="SavePosition" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)"/>
+                <Button x:Name="Place" Content="&#xf041;" ToolTip="Place (Ctrl+P)"/>
                 <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)"/>
                 <Button x:Name="ToggleTargeted" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)"/>
                 <Button x:Name="ToggleManueverWithCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)"/>
@@ -86,7 +86,7 @@
                 </Button>
             </WrapPanel>
             <WrapPanel Grid.Row="1">
-                <Button x:Name="btMoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
+                <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
                 <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
                 <Button x:Name="btActivate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
                 <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>

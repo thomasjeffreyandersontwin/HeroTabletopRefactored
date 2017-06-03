@@ -197,6 +197,7 @@ namespace HeroVirtualTabletop.Roster
                 group.RemoveElement(participant);
                 Participants.Remove(participant);
                 participant.PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                participant.RosterParent = null;
             }
         }
 
