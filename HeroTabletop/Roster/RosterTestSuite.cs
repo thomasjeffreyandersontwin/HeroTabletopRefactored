@@ -554,6 +554,9 @@ namespace HeroVirtualTabletop.Roster
             .Without(x => x.Participants)
             .Create();
 
+        public Roster MockRoster => CustomizedMockFixture.Create<Roster>();
+        public RosterSelection MockRosterSelection => CustomizedMockFixture.Create<RosterSelection>();
+
         public Crowd.Crowd NestedCrowdCharacterGraph
         {
             get

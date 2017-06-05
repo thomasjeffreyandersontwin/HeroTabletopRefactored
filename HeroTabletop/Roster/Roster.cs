@@ -70,7 +70,7 @@ namespace HeroVirtualTabletop.Roster
         // public Dictionary<string, RosterGroup> GroupsByName { get; }
         // public Dictionary<string, CharacterCrowdMember> ParticipantsByName { get; }
 
-        public RosterSelection Selected { get; }
+        public RosterSelection Selected { get; set; }
         public void SelectParticipant(CharacterCrowdMember participant)
         {
             if (!Selected.Participants.Contains(participant))
@@ -767,7 +767,7 @@ namespace HeroVirtualTabletop.Roster
             }
             set
             {
-                throw new NotImplementedException();
+                
             }
         }
         private string getRootOfname(string name)

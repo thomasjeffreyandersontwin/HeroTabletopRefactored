@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace HeroVirtualTabletop.Roster
 {
     public interface RosterExplorerViewModel
     {
+        IEventAggregator EventAggregator { get; set; }
         Roster Roster { get; set; }
         IList SelectedParticipants { get; set; }
         void UpdateRosterSelection();

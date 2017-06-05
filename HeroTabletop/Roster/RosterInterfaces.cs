@@ -22,7 +22,7 @@ namespace HeroVirtualTabletop.Roster
         OrderedCollection<RosterGroup> Groups { get; }
         ObservableCollection<CharacterCrowdMember> Participants { get; set; }
         void AddCrowdMemberToRoster(CharacterCrowdMember characterCrowdMember, Crowd.Crowd parentCrowd);
-        RosterSelection Selected { get; }
+        RosterSelection Selected { get; set; }
         void SelectParticipant(CharacterCrowdMember participant);
         void UnSelectParticipant(CharacterCrowdMember participant);
         void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant);

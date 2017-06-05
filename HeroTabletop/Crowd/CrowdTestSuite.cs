@@ -12,6 +12,7 @@ using Ploeh.AutoFixture.Kernel;
 using Caliburn.Micro;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -697,6 +698,19 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(RosterParent),
                     typeof(RosterParentImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(RosterSelection),
+                    typeof(RosterSelectionImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(Roster.Roster),
+                    typeof(RosterImpl)));
+
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(IList),
+                    typeof(ArrayList)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(IEventAggregator),

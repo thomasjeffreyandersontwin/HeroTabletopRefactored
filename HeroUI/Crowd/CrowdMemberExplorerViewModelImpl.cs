@@ -267,7 +267,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 rosterMember.Parent = this.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == rosterMember.RosterParent.Name) as Crowd;
             }
-            this.EventAggregator.Publish(new SyncWithRosterEvent(rosterMembers.ToList()), action => System.Windows.Application.Current.Dispatcher.BeginInvoke(action));
+            this.EventAggregator.Publish(new SyncWithRosterEvent(rosterMembers.ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
         public bool CanAddToRoster

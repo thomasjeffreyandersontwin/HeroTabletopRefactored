@@ -57,19 +57,24 @@ namespace HeroVirtualTabletop.Roster
                 selectedParticipants = value;
                 UpdateRosterSelection();
                 Target();
-                NotifyOfPropertyChange(() => SelectedParticipants);
-                NotifyOfPropertyChange(() => CanClearFromDesktop);
-                NotifyOfPropertyChange(() => CanMoveToCamera);
-                NotifyOfPropertyChange(() => CanSavePosition);
-                NotifyOfPropertyChange(() => CanPlace);
-                NotifyOfPropertyChange(() => CanToggleTargeted);
-                NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
-                NotifyOfPropertyChange(() => CanMoveCameraToTarget);
+                RefreshRosterCommandsEligibility();
             }
         }
 
 
         #endregion
+
+        private void RefreshRosterCommandsEligibility()
+        {
+            NotifyOfPropertyChange(() => SelectedParticipants);
+            NotifyOfPropertyChange(() => CanClearFromDesktop);
+            NotifyOfPropertyChange(() => CanMoveToCamera);
+            NotifyOfPropertyChange(() => CanSavePosition);
+            NotifyOfPropertyChange(() => CanPlace);
+            NotifyOfPropertyChange(() => CanToggleTargeted);
+            NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
+            NotifyOfPropertyChange(() => CanMoveCameraToTarget);
+        }
 
         public RosterExplorerViewModelImpl(Roster roster, IEventAggregator eventAggregator)
         {
@@ -142,7 +147,8 @@ namespace HeroVirtualTabletop.Roster
         public void Spawn()
         {
             this.Roster.Selected?.SpawnToDesktop();
-            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent()); // save needed due to possible identity change
+            RefreshRosterCommandsEligibility();
+            this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action)); // save needed due to possible identity change
         }
 
         public bool CanClearFromDesktop
@@ -165,7 +171,7 @@ namespace HeroVirtualTabletop.Roster
                 this.Roster.RemoveRosterMember(member);
             }
             this.SelectedParticipants.Clear();
-            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
+            this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
         public bool CanMoveToCamera
         {
@@ -189,7 +195,7 @@ namespace HeroVirtualTabletop.Roster
         public void SavePosition()
         {
             this.Roster.Selected?.SaveCurrentTableTopPosition();
-            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
+            this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
         public bool CanPlace
         {
