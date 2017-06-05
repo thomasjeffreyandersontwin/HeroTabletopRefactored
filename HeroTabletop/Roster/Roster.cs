@@ -37,7 +37,18 @@ namespace HeroVirtualTabletop.Roster
         public CrowdClipboard CrowdClipboard { get; set; }
 
         public string Name { get; set; }
-        public RosterCommandMode CommandMode { get; set; }
+        private RosterCommandMode commandMode;
+        public RosterCommandMode CommandMode {
+            get
+            {
+                return commandMode;
+            }
+            set
+            {
+                commandMode = value;
+                NotifyOfPropertyChange(() => CommandMode);
+            }
+        }
 
         public OrderedCollection<RosterGroup> Groups { get; }
         private ObservableCollection<CharacterCrowdMember> participants;

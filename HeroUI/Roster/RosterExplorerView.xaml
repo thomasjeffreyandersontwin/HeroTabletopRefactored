@@ -70,14 +70,14 @@
                 <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)"/>
                 <Button x:Name="ToggleTargeted" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)"/>
                 <Button x:Name="ToggleManueverWithCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)"/>
-                <Button x:Name="btCycle" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)">
+                <Button x:Name="CycleCommandsThroughCrowd" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=IsCyclingCommandsThroughCrowd}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.CommandMode}" Value="Standard">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=IsCyclingCommandsThroughCrowd}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.CommandMode}" Value="CycleCharacter">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
