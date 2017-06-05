@@ -19,7 +19,8 @@ namespace HeroVirtualTabletop.Crowd
         DragDrop
     }
 
-    public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell, IHandle<GameLaunchedEvent>, IHandle<CrowdCollectionModifiedEvent>
+    public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell, 
+        IHandle<GameLaunchedEvent>, IHandle<CrowdCollectionModifiedEvent>, IHandle<ImportRosterCrowdMemberEvent>
     {
         #region Private Fields
 
@@ -252,6 +253,11 @@ namespace HeroVirtualTabletop.Crowd
         #endregion
 
         #region Add to Roster
+
+        public void Handle(ImportRosterCrowdMemberEvent message)
+        {
+            AddToRoster();
+        }
 
         public void SyncCrowdMembersWithRoster()
         {

@@ -119,7 +119,12 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
 
-        private void UpdateRosterSelection()
+        public void ImportRosterMemberFromCrowdExplorer()
+        {
+            this.EventAggregator.PublishOnUIThread(new ImportRosterCrowdMemberEvent());
+        }
+
+        public void UpdateRosterSelection()
         {
             this.Roster.ClearAllSelections();
             foreach (var selectedParticipant in this.SelectedParticipants)
@@ -129,7 +134,7 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        private void Target()
+        public void Target()
         {
             this.Roster.Selected?.Target();
         }

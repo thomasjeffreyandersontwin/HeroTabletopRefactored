@@ -18,6 +18,11 @@ namespace HeroVirtualTabletop.Roster
         }
     }
 
+    public class ImportRosterCrowdMemberEvent
+    {
+
+    }
+
     public class SyncWithRosterEvent
     {
         public List<CharacterCrowdMember> MembersToSync { get; set; }

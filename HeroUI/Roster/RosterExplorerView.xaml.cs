@@ -22,7 +22,7 @@ namespace HeroVirtualTabletop.Roster
     public partial class RosterExplorerView : UserControl
     {
         private RosterExplorerViewModelImpl viewModel;
-        private const string CROWD_MEMBER_DRAG_FROM_CHAR_XPLORER_KEY = "CrowdMemberDragFromCharacterExplorer";
+        private const string CROWD_MEMBER_DRAG_FROM_CROWD_XPLORER_KEY = "CrowdMemberDragFromCrowdExplorer";
 
         public RosterExplorerView()
         {
@@ -75,12 +75,12 @@ namespace HeroVirtualTabletop.Roster
 
         private void RosterViewListBox_Drop(object sender, DragEventArgs e)
         {
-            //this.viewModel.RaiseEventToImportRosterMember();
+            this.viewModel.ImportRosterMemberFromCrowdExplorer();
         }
 
         private void RosterViewListBox_DragOver(object sender, DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(CROWD_MEMBER_DRAG_FROM_CHAR_XPLORER_KEY))
+            if (!e.Data.GetDataPresent(CROWD_MEMBER_DRAG_FROM_CROWD_XPLORER_KEY))
             {
                 e.Effects = DragDropEffects.None;
                 e.Handled = true;
