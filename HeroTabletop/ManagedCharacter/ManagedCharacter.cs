@@ -8,27 +8,52 @@ using Caliburn.Micro;
 using Newtonsoft.Json;
 using System.Windows.Data;
 using System;
+using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class ManagedCharacterImpl : PropertyChangedBase, ManagedCharacter, CharacterActionContainer
     {
         private bool _maneuveringWithCamera;
+
+        private const string IDENTITY_ACTION_GROUP_NAME = "Identities";
         public ManagedCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera,
             CharacterActionList<Identity> identities)
         {
             Targeter = targeter;
             Generator = generator;
             Camera = camera;
-            if (Identities == null)
-                identities = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
-            Identities = identities;
-            foreach (var id in Identities.Values)
-                id.Owner = this;
         }
         public ManagedCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera)
             : this(targeter, generator, camera, null)
         {
+        }
+
+        public virtual void InitializeActionGroups()
+        {
+            if(this.CharacterActionGroups == null || this.CharacterActionGroups.Count == 0)
+            {
+                this.CharacterActionGroups = new ObservableCollection<CharacterActionGroup>();
+                CreateIdentityActionGroup();
+            }
+        }
+
+        private void CreateIdentityActionGroup()
+        {
+            var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
+            identitiesGroup.Name = IDENTITY_ACTION_GROUP_NAME;
+
+            //Identity newId = identitiesGroup.AddNew(new IdentityImpl()) as Identity;
+            IdentityImpl newId = new IdentityImpl();
+            newId.Owner = this;
+            newId.Name = Name;
+            newId.Type = SurfaceType.Costume;
+            newId.Surface = Name;
+            newId.Generator = this.Generator;
+            identitiesGroup.AddNew(newId);
+            identitiesGroup.Active = newId;
+
+            this.CharacterActionGroups.Add(identitiesGroup);
         }
 
         public DesktopMemoryCharacter MemoryInstance
@@ -205,15 +230,21 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        [JsonProperty(Order = 5)]
-        public CharacterActionList<Identity> Identities { get; private set; }
-        public virtual Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> CharacterActionGroups
+        
+        public CharacterActionList<Identity> Identities
+        {
+            get
+            {
+                return CharacterActionGroups.FirstOrDefault(ag => ag.Name == IDENTITY_ACTION_GROUP_NAME) as CharacterActionList<Identity>;
+            }
+        }
+        public virtual Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> StandardActionGroups
         {
             get
             {
                 Dictionary<string, CharacterAction> actions = new Dictionary<string, CharacterAction>();
                 //Identities.Values.ForEach(x => actions[x.Name] = x);
-                foreach (var x in Identities.Values)
+                foreach (var x in Identities)
                 {
                     actions[x.Name] = x;
                 }
@@ -223,13 +254,28 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 return actionsList;
             }
         }
+
+        private ObservableCollection<CharacterActionGroup> actionGroups;
+        [JsonProperty(Order = 1)]
+        public ObservableCollection<CharacterActionGroup> CharacterActionGroups
+        {
+            get
+            {
+                return actionGroups;
+            }
+            set
+            {
+                actionGroups = value;
+                NotifyOfPropertyChange(() => CharacterActionGroups);
+            }
+        }
         public Dictionary<string, Identity> IdentitiesList {
             get
             {
                 var i = new Dictionary<string, Identity>();
                 foreach (var x in Identities)
                 {
-                    i[x.Key] = x.Value;
+                    i[x.Name] = x;
                 }
                // Identities.ForEach(x => i[x.Key]= x.Value);
                 return i;
@@ -254,18 +300,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var spawnText = Name;
             if (DesktopLabel != null && DesktopLabel != "")
                 spawnText = DesktopLabel;
-            if (Identities == null)
-                Identities = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
-            if (Identities.Count == 0 && Identities.Active == null)
-            {
-                var newId = Identities.AddNew(new IdentityImpl());
-                newId.Owner = this;
-                newId.Name = Name;
-                newId.Type = SurfaceType.Costume;
-                newId.Surface = Name;
-                newId.Generator = this.Generator;
-                Identities.Active = newId;
-            }
+            
             var active = Identities.Active;
             string model = "model_statesman";
             if (active.Type == SurfaceType.Model)
@@ -309,6 +344,39 @@ namespace HeroVirtualTabletop.ManagedCharacter
             catch { }
         }
 
+        public void RemoveActionGroup(CharacterActionGroup actionGroup)
+        {
+            this.CharacterActionGroups.Remove(actionGroup);
+        }
+
+        public void RemoveActionGroupAt(int index)
+        {
+            this.CharacterActionGroups.RemoveAt(index);
+        }
+
+        public void AddActionGroup(CharacterActionGroup actionGroup)
+        {
+            this.CharacterActionGroups.Add(actionGroup);
+        }
+
+        public void InsertActionGroup(int index, CharacterActionGroup actionGroup)
+        {
+            this.CharacterActionGroups.Insert(index, actionGroup);
+        }
+
+        public string GetnewValidActionGroupName()
+        {
+            string baseName = "Custom Option Group";
+            string validName = baseName;
+            int i = 1;
+            while (this.CharacterActionGroups.FirstOrDefault(a => a.Name == validName) != null)
+            {
+                validName = string.Format("{0} ({1})", baseName, i++);
+            }
+
+            return validName;
+        }
+
         public CharacterProgressBarStats ProgressBar { get; set; }
         
     }
@@ -347,6 +415,24 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
 
             return retV;
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes,
+               object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException("Cannot convert back");
+        }
+    }
+
+    public class CharacterActionComparer : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType,
+               object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values.Length != 2)
+            {
+                return false;
+            }
+            return values[0] == values[1];
         }
         public object[] ConvertBack(object value, Type[] targetTypes,
                object parameter, System.Globalization.CultureInfo culture)

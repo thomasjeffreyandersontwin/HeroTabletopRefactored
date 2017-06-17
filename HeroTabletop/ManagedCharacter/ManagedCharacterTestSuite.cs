@@ -5,6 +5,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
+using System.Collections.ObjectModel;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -173,21 +175,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
             characterUnderTest.SpawnToDesktop();
             //assert
             Assert.AreEqual(characterUnderTest.IsManueveringWithCamera, false);
-        }
-
-        [TestMethod]
-        public void SpawnToDesktop__WithNoIdentityRendersCostumeWithNameOfCharacterAndCreatesDefaultIdentity()
-        {
-            //arrange
-            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
-            //act
-            characterUnderTest.SpawnToDesktop();
-            var newlyCreatedId = characterUnderTest.Identities.Active;
-            //assert
-            Assert.AreEqual(characterUnderTest.Name, newlyCreatedId.Name);
-            Assert.AreEqual(characterUnderTest.Name, newlyCreatedId.Surface);
-            Assert.AreEqual(newlyCreatedId.Type, SurfaceType.Costume);
-            Assert.AreEqual(newlyCreatedId.Owner, characterUnderTest);
         }
 
         [TestMethod]
@@ -389,7 +376,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public CharacterActionListTestSuite()
         {
             TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
-        }
+        } 
 
         [TestMethod]
         public void Active_ReturnsDefalultIfNotSet()
@@ -405,14 +392,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var idList = TestObjectsFactory.IdentityListUnderTest;
             idList.Deactivate();
             idList.Default = null;
-            Assert.AreEqual(idList.Default, idList[1]);
-            Assert.AreEqual(idList.Active, idList[1]);
+            Assert.AreEqual(idList.Default, idList[0]);
+            Assert.AreEqual(idList.Active, idList[0]);
         }
 
         [TestMethod]
-        public void
-            GetNewValidActionName_ReturnsGenericActionTypeWithNumberIfNoNamePassedInOrNamePlusUniqueNumberIfNamePassedIn
-            ()
+        public void GetNewValidActionName_ReturnsGenericActionTypeWithNumberIfNoNamePassedInOrNamePlusUniqueNumberIfNamePassedIn()
         {
             //arrange
             var idList = TestObjectsFactory.IdentityListUnderTest;
@@ -442,7 +427,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             idList.InsertElement(id);
             //assert
             Assert.AreEqual(idList.Owner, id.Owner);
-            Assert.AreEqual(idList[idList.Count], id);
+            Assert.AreEqual(idList[idList.Count() - 1], id);
             Assert.AreEqual(idList[id.Name], id);
         }
 
@@ -453,13 +438,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var idList = TestObjectsFactory.IdentityListUnderTest;
             var prevId = idList[2];
             var afterId = idList[3];
+            
             var idToAdd = TestObjectsFactory.ModelIdentityUnderTest;
             //act
             idList.InsertElementAfter(idToAdd, prevId);
 
             Assert.AreEqual(idToAdd.Order, prevId.Order + 1);
-            Assert.AreEqual(idList[prevId.Order + 1], idToAdd);
-            Assert.AreEqual(idList[idToAdd.Order + 1], afterId);
+            Assert.AreEqual(idList[prevId.Order], idToAdd);
+            Assert.AreEqual(idList[idToAdd.Order], afterId);
             Assert.AreEqual(idToAdd.Order + 1, afterId.Order);
             Assert.AreEqual(idList[idToAdd.Name], idToAdd);
         }
@@ -470,12 +456,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
             //arrange
             var idList = TestObjectsFactory.IdentityListUnderTest;
             var delId = idList[2];
-            var lastId = idList[idList.Count];
+            var lastId = idList[idList.Count() - 1];
             var lastOrder = lastId.Order;
             //act
             idList.RemoveElement(delId);
             //assert
-            Assert.IsFalse(idList.ContainsKey(delId.Name));
+            Assert.IsFalse(idList.Contains(delId));
             Assert.AreEqual(lastId.Order, lastOrder - 1);
         }
 
@@ -498,8 +484,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
             setupStandardizedFixture();
         }
 
-        public ManagedCharacter CharacterUnderTest => StandardizedFixture.Create<ManagedCharacter>();
-
+        public ManagedCharacter CharacterUnderTest
+        {
+            get
+            {
+                var managedChar = StandardizedFixture.Create<ManagedCharacter>();
+                managedChar.CharacterActionGroups = GetStandardCharacterActionGroup(managedChar);
+                return managedChar;
+            }
+        }
         public ManagedCharacter CharacterUnderTestWithIdentities
         {
             get
@@ -512,6 +505,38 @@ namespace HeroVirtualTabletop.ManagedCharacter
                         )
                     ).Create();
             }
+        }
+
+        public ObservableCollection<CharacterActionGroup> GetStandardCharacterActionGroup(ManagedCharacter character)
+        {
+            var actionGroup = new ObservableCollection<CharacterActionGroup>();
+
+                var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, character.Generator, character);
+        identitiesGroup.Name = "Identities";
+
+                //Identity newId = identitiesGroup.AddNew(new IdentityImpl()) as Identity;
+                IdentityImpl newId = new IdentityImpl();
+        newId.Owner = null;
+                newId.Name = "Identity";
+                newId.Type = SurfaceType.Costume;
+                newId.Surface = "Identity";
+                newId.Generator = character.Generator;
+                identitiesGroup.AddNew(newId);
+                identitiesGroup.Active = newId;
+
+                actionGroup.Add(identitiesGroup);
+
+                var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility.AnimatedAbility>(CharacterActionType.Ability, character.Generator, character);
+        abilitiesGroup.Name = "Powers";
+
+                actionGroup.Add(abilitiesGroup);
+
+                var movementsGroup = new CharacterActionListImpl<CharacterMovement>(CharacterActionType.Movement, character.Generator, character);
+        movementsGroup.Name = "Movements";
+
+                actionGroup.Add(movementsGroup);
+
+                return actionGroup;
         }
 
         public ManagedCharacter MockCharacter
@@ -531,7 +556,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 var identities = CustomizedMockFixture.Create<IEnumerable<Identity>>();
 
                 foreach (var id in identities)
-                    identityActionList.Add(id.Name, id);
+                    identityActionList.InsertElement(id);
 
                 //we want one active identity
                 var e = identities.GetEnumerator();
@@ -545,10 +570,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             get
             {
-                return StandardizedFixture.Build<CharacterActionListImpl<Identity>>()
+                var idList =  StandardizedFixture.Build<CharacterActionListImpl<Identity>>()
                     .With(x => x.Type, CharacterActionType.Identity)
                     .Do(x => x.InsertMany(StandardizedFixture.CreateMany<Identity>().ToList()))
                     .Create();
+                for (int i = 0; i < idList.Count(); i++)
+                {
+                    idList[i].Order = i + 1;
+                }
+                return idList;
             }
         }
 
@@ -581,6 +611,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         public CharacterProgressBarStats MockCharacterProgressBarStats => MockFixture.Create<CharacterProgressBarStats>();
+
+        public CharacterActionGroup MockActionGroup => MockFixture.Create<CharacterActionGroup>();
 
         public Identity Mockidentity
         {
@@ -626,6 +658,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             StandardizedFixture.Inject(MockMemoryInstance);
             StandardizedFixture.Inject(MockCamera);
             StandardizedFixture.Inject(MockCharacterProgressBarStats);
+            StandardizedFixture.Inject(MockActionGroup);
 
             //map interfaces to classes 
             StandardizedFixture.Customizations.Add(
@@ -644,6 +677,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 new TypeRelay(
                     typeof(ManagedCharacter),
                     typeof(ManagedCharacterImpl)));
+            //StandardizedFixture.Customizations.Add(
+            //    new TypeRelay(
+            //        typeof(CharacterActionGroup),
+            //        typeof(CharacterActionListImpl<Identity>)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(CharacterActionList<Identity>),

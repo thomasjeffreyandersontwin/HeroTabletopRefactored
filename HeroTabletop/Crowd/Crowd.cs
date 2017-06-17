@@ -95,7 +95,7 @@ namespace HeroVirtualTabletop.Crowd
             var newCrowd = NewCrowdInstance;
             try
             {
-                newCrowd = IoC.Get<Crowd>();
+                newCrowd = new CrowdImpl(IoC.Get<CrowdRepository>());
             }
             catch // for tests
             {
@@ -127,6 +127,7 @@ namespace HeroVirtualTabletop.Crowd
             }
 
             newCharacter.Name = CreateUniqueName(name, AllMembersCrowd.Members);
+            newCharacter.InitializeActionGroups();
             AllMembersCrowd.AddCrowdMember(newCharacter);
             parent?.AddCrowdMember(newCharacter);
             return newCharacter;
@@ -911,11 +912,11 @@ namespace HeroVirtualTabletop.Crowd
         [OnDeserialized]
         private void AfterDeserialized(StreamingContext stream)
         {
-            if(Identities != null && Identities.Count > 0)
+            if(Identities != null && Identities.Count() > 0)
             {
                 foreach(var identity in Identities)
                 {
-                    identity.Value.Generator = this.Generator;
+                    identity.Generator = this.Generator;
                 }
             }
         }
@@ -931,7 +932,7 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         public bool FilterApplied { get; set; }
-        [JsonProperty(Order = 1)]
+        [JsonProperty(Order = 2)]
         public List<CrowdMemberShip> AllCrowdMembershipParents { get; set; }
         private Crowd parent;
         public Crowd Parent
@@ -1082,7 +1083,7 @@ namespace HeroVirtualTabletop.Crowd
             var clone = (CharacterCrowdMemberImpl) CrowdRepository.NewCharacterCrowdMember();
 
             clone.Name = CrowdRepository.CreateUniqueName(Name, CrowdRepository.AllMembersCrowd.Members);
-            foreach (var id  in Identities.Values)
+            foreach (var id  in Identities)
                 clone.Identities.InsertElement((Identity) id.Clone());
 
             clone.Generator = Generator;
@@ -1097,6 +1098,8 @@ namespace HeroVirtualTabletop.Crowd
         {
             this.OldName = this.Name;
             this.Name = newName;
+            this.Identities.RenameAction(this.OldName, this.Name);
+            
         }
         [JsonProperty(Order=4)]
         public RosterParent RosterParent { get; set; }

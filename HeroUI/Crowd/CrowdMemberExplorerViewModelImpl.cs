@@ -8,6 +8,7 @@ using System.IO;
 using HeroUI;
 using System.Threading.Tasks;
 using HeroVirtualTabletop.Roster;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -160,6 +161,7 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanCutCrowdMember);
                 NotifyOfPropertyChange(() => CanLinkCrowdMember);
                 NotifyOfPropertyChange(() => CanAddToRoster);
+                NotifyOfPropertyChange(() => CanEditCharacterCrowd);
             }
         }
 
@@ -289,6 +291,23 @@ namespace HeroVirtualTabletop.Crowd
         private void AddToRoster(CharacterCrowdMember characterCrowdMember, Crowd rosterCrowd)
         {
             this.EventAggregator.PublishOnUIThread(new AddToRosterEvent(characterCrowdMember, rosterCrowd));
+        }
+
+        #endregion
+
+        #region Edit Character
+
+        public bool CanEditCharacterCrowd
+        {
+            get
+            {
+                return this.SelectedCharacterCrowdMember != null;
+            }
+        }
+
+        public void EditCharacterCrowd()
+        {
+            this.EventAggregator.Publish(new EditCharacterEvent(this.SelectedCharacterCrowdMember), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
         #endregion

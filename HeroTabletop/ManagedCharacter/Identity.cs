@@ -1,4 +1,5 @@
 ﻿using HeroVirtualTabletop.Desktop;
+using Newtonsoft.Json;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -10,12 +11,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Type = type;
             Surface = surface;
         }
-
+        [JsonConstructor]
         public IdentityImpl()
         {
         }
-
-        public string Surface { get; set; }
+        [JsonProperty]
+        public string Surface
+        { get;
+            set; }
         public SurfaceType Type { get; set; }
 
         public override void Play(bool completeEvent)

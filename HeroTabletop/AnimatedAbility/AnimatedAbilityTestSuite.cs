@@ -147,7 +147,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var element = TestObjectsFactory.FxElementUnderTestWithAnimatedCharacter;
             File.Create(element.CostumeFilePath).Close();
             var generator = element.Target.Generator;
-            element.Target.Identities.Active = element.Target.Identities.FirstOrDefault().Value;
+            element.Target.Identities.Active = element.Target.Identities.FirstOrDefault();
             //act
             element.Play();
 
@@ -752,7 +752,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var character = repo.CharacterByName["Custom"];
            
             //assert
-            foreach (var defaultAbility in repo.CharacterByName[DefaultAbilities.CharacterName].Abilities.Values)
+            foreach (var defaultAbility in repo.CharacterByName[DefaultAbilities.CharacterName].Abilities)
                 if (defaultAbility.Name == DefaultAbilities.Dodge)
                     Assert.AreNotEqual(defaultAbility, character.Abilities[defaultAbility.Name]);
                 else

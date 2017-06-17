@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="HeroVirtualTabletop.ManagedCharacter.CharacterEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter"
+             xmlns:crowd="clr-namespace:HeroVirtualTabletop.Crowd"
+             xmlns:behaviors="clr-namespace:Framework.WPF.Behaviors;assembly=Framework.WPF"
+             xmlns:extensions="clr-namespace:Framework.WPF.Extensions;assembly=Framework.WPF"
+             xmlns:local="clr-namespace:HeroUI"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             mc:Ignorable="d" Loaded="CharacterEditorView_Loaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Grid.Column="1" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0" Text="{Binding Path=EditedCharacter.Name, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"></TextBox>
+        </Grid>
+        <GridSplitter Grid.Row="1"></GridSplitter>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid HorizontalAlignment="Right" Margin="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource AddButtonStyle}" ToolTip="Add Action Group (Alt+Ctrl+Plus+O)" x:Name="AddActionGroup"/>
+                <Button Grid.Column="1" Style="{StaticResource RemoveButtonStyle}" ToolTip="Remove Action Group (Alt+Ctrl+Minus+O)" x:Name="RemoveActionGroup"/>
+            </Grid>
+            <ListView Grid.Row="1" x:Name="listViewOptionGroup"
+                    ItemsSource="{Binding CharacterActionGroups, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedValuePath="ActionGroup" AllowDrop="True" 
+                      PreviewMouseMove="ListView_PreviewMouseMove" PreviewDragOver="ListView_PreviewDragOver" PreviewDrop="ListView_PreviewDrop" PreviewMouseLeftButtonUp="ListView_PreviewMouseLeftButtonUp"
+                      extensions:DragDropExtension.ScrollOnDragDrop="True"
+                    SelectedValue="{Binding SelectedCharacterActionGroup, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemContainerStyle="{StaticResource ListViewtemStyleNoHighlighting}">
+                <ListView.Style>
+                    <Style TargetType="ListView">
+                        <Setter Property="Background" Value="Transparent"></Setter>
+                        <Setter Property="BorderThickness" Value="0"></Setter>
+                    </Style>
+                </ListView.Style>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <managedcharacter:CharacterActionGroupView ActionGroupWidth="300" ActionListBoxWidth="280" NumberOfActionsPerRow="6">
+
+                        </managedcharacter:CharacterActionGroupView>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+            </ListView>
+        </Grid>
+
+    </Grid>
+</UserControl>

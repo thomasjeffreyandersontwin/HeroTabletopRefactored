@@ -13,10 +13,26 @@ namespace HeroVirtualTabletop.Movement
 {
     public class MovableCharacterImpl : AnimatedCharacterImpl, MovableCharacter
     {
-        public MovableCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities, AnimatedCharacterRepository repo) : base(targeter, generator, camera, identities, repo)
+        private const string MOVEMENT_ACTION_GROUP_NAME = "Movements";
+        public MovableCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera, 
+            CharacterActionList<Identity> identities, AnimatedCharacterRepository repo) : base(targeter, generator, camera, identities, repo)
         {
+            
         }
 
+        public override void InitializeActionGroups()
+        {
+            base.InitializeActionGroups();
+            CreateMovementActionGroup();
+        }
+
+        private void CreateMovementActionGroup()
+        {
+            var movementsGroup = new CharacterActionListImpl<CharacterMovement>(CharacterActionType.Movement, Generator, this);
+            movementsGroup.Name = MOVEMENT_ACTION_GROUP_NAME;
+
+            this.CharacterActionGroups.Add(movementsGroup);
+        }
         public int MovementSpeed { get; set; }
         
         public void MoveByKeyPress(Key key)
@@ -46,8 +62,13 @@ namespace HeroVirtualTabletop.Movement
         }
        
         CharacterActionList<CharacterMovement> _movements;
-        public CharacterActionList<CharacterMovement> Movements => 
-            _movements ?? (_movements= new CharacterActionListImpl<CharacterMovement>(CharacterActionType.Movement, Generator, this));
+        public CharacterActionList<CharacterMovement> Movements
+        {
+            get
+            {
+                return CharacterActionGroups.FirstOrDefault(ag => ag.Name == MOVEMENT_ACTION_GROUP_NAME) as CharacterActionList<CharacterMovement>;
+            }
+        }
 
         public bool IsMoving { get; set; }
         public double Speed { get; set; }

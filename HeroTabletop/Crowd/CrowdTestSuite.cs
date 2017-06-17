@@ -597,7 +597,15 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
 
-        public CharacterCrowdMember CharacterCrowdMemberUnderTest => StandardizedFixture.Create<CharacterCrowdMember>();
+        public CharacterCrowdMember CharacterCrowdMemberUnderTest
+        {
+            get
+            {
+               var characterCrowdMember = StandardizedFixture.Create<CharacterCrowdMember>();
+                characterCrowdMember.CharacterActionGroups = GetStandardCharacterActionGroup(characterCrowdMember);
+                return characterCrowdMember;
+            }
+        }
         public CharacterCrowdMember CharacterCrowdMemberUnderTestWithNoParent
         {
             get
@@ -680,6 +688,14 @@ namespace HeroVirtualTabletop.Crowd
                     typeof(CrowdMemberShipImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
+                    typeof(CharacterAction),
+                    typeof(IdentityImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(CharacterActionGroup),
+                    typeof(CharacterActionListImpl<CharacterAction>)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
                     typeof(CharacterCrowdMember),
                     typeof(CharacterCrowdMemberImpl)));
             StandardizedFixture.Customizations.Add(
@@ -739,6 +755,7 @@ namespace HeroVirtualTabletop.Crowd
                 .Without(x => x.AllCrowdMembershipParents)
                 .Without(x => x.ActiveMovement)
                 .Without(x => x.DesktopNavigator)
+                .Without(x => x.CharacterActionGroups)
                 );
 
             var crowds = StandardizedFixture.CreateMany<Crowd>().ToList();
@@ -790,6 +807,7 @@ namespace HeroVirtualTabletop.Crowd
         {
             child = GetCharacterUnderTestWithMockDependenciesAnddOrphanedWithRepo(repo);
             child.Name = name;
+            child.CharacterActionGroups = GetStandardCharacterActionGroup(child);
             //repo.AllMembersCrowd.AddCrowdMember(child);
             parent.AddCrowdMember(child);
         }
@@ -814,6 +832,7 @@ namespace HeroVirtualTabletop.Crowd
             foreach (var grandchild in StandardizedFixture.CreateMany<CharacterCrowdMember>().ToList())
             {
                 grandchild.Name = nestedName + "." + count;
+                grandchild.CharacterActionGroups = GetStandardCharacterActionGroup(grandchild);
                 count++;
                 grandchild.Order = count;
                 //repo.AllMembersCrowd.AddCrowdMember(grandchild);

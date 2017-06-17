@@ -180,14 +180,29 @@ namespace HeroUI
             }
         }
 
+        private CharacterEditorViewModel characterEditorViewModel;
+        public CharacterEditorViewModel CharacterEditorViewModel
+        {
+            get
+            {
+                return characterEditorViewModel;
+            }
+            set
+            {
+                characterEditorViewModel = value;
+                NotifyOfPropertyChange(() => CharacterEditorViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
-        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, RosterExplorerViewModel rosterExplorerViewModel, IconInteractionUtility iconInteractionUtility, Camera camera)
+        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IconInteractionUtility iconInteractionUtility, Camera camera)
         {
             this.eventAggregator = eventAggregator;
             this.CrowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
             this.RosterExplorerViewModel = rosterExplorerViewModel;
+            this.CharacterEditorViewModel = characterEditorViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);

@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Common;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
+
 namespace HeroVirtualTabletop.ManagedCharacter
 {
     public interface ManagedCharacterCommands
@@ -20,6 +24,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void UnFollow(bool completeEvent = true);
         void SyncWithGame();
         void ToggleManueveringWithCamera();
+        void InitializeActionGroups();
+        void AddActionGroup(CharacterActionGroup actionGroup);
+        void InsertActionGroup(int index, CharacterActionGroup actionGroup);
+        void RemoveActionGroup(CharacterActionGroup actionGroup);
+        void RemoveActionGroupAt(int index);
+        string GetnewValidActionGroupName();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
@@ -43,39 +53,59 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
     public enum CharacterActionType
     {
-        Movement,
         Identity,
-        Ability
+        Ability,
+        Movement,
+        Mixed
     }
 
-    public interface CharacterAction : OrderedElement
+    public interface CharacterAction : OrderedElement // CharacterAction = Former CharacterOption
     {
- 
         CharacterActionContainer Owner { get; set; }
         KeyBindCommandGenerator Generator { get; set; }
         void Play(bool completeEvent=true);
         void Stop(bool completeEvent = true);
         CharacterAction Clone();
     }
-    public interface CharacterActionList<T> : OrderedCollection<T> where T : CharacterAction
+    /// <summary>
+    /// Purpose of this interface is to wrap all sorts of CharacterActionLists into a common interface so that we can add them in the same collection without
+    /// having to do custom casts or conversionsIt also makes it possible to bind to a common type in the 
+    /// character editor where we have to track the selected action group. Without this generalization it is impossible to track all different kinds 
+    /// of action lists into a single object. The interface groups the common properties of all different action lists.
+    /// </summary>
+    public interface CharacterActionGroup //CharacterActionGroup = Former IOptionGroup
     {
-        ManagedCharacter Owner { get; }
+        ManagedCharacter Owner { get; set; }
+        string Name { get; set; }
+        CharacterActionType Type { get; set; }
+        bool IsStandardActionGroup { get; }
+        void Rename(string newName);
+        bool CheckDuplicateName(string newName);
+    }
+    public interface CharacterActionList<T> : CharacterActionGroup, IEnumerable<T>, INotifyCollectionChanged, INotifyPropertyChanged where T : CharacterAction 
+    {
         T Active { get; set; }
         T Default { get; set; }
-        CharacterActionType Type { get; }
         void Deactivate();
         string GetNewValidActionName(string name = null);
-
-
+        void InsertElement(T action);
+        void InsertMany(List<T> actions);
+        void InsertElementAfter(T elementToAdd, T elementToAddAfter);
+        void RemoveElement(T element);
+        void ClearAll();
         T AddNew(T newItem);
         CharacterActionList<T> Clone();
         void PlayByKey(string key);
+        void RenameAction(string oldName, string newName);
+        T this[string key] { get; set; }
+        T this[int index] { get; set; }
+        T[] Actions { get; set; }
     }
 
     public interface CharacterActionContainer
     {
-        Dictionary<CharacterActionType, Dictionary<string,CharacterAction>> CharacterActionGroups { get; }
- 
+        Dictionary<CharacterActionType, Dictionary<string,CharacterAction>> StandardActionGroups { get; }
+        ObservableCollection<CharacterActionGroup> CharacterActionGroups { get; set; }
     }
 
     public interface Camera
@@ -83,7 +113,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
         KeyBindCommandGenerator Generator { get; }
         Position Position { get; set; }
         Identity Identity { get; }
-
         ManagedCharacter ManueveringCharacter { get; set; }
         void MoveToTarget(bool completeEvent = true);
         void ActivateCameraIdentity();

@@ -13,6 +13,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedCharacterImpl : ManagedCharacterImpl, AnimatedCharacter, INotifyPropertyChanged
     {
+        private const string ABILITY_ACTION_GROUP_NAME = "Powers";
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
@@ -29,12 +30,24 @@ namespace HeroVirtualTabletop.AnimatedAbility
             AnimatedCharacterRepository repo) : base(targeter, generator, camera, identities)
         {
             _loadedFXs = new List<FXElement>();
-            Abilities = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, generator, this);
-            loadDefaultAbilities();
+            //Abilities = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, generator, this);
+            //loadDefaultAbilities();
             _repo = repo;
-
         }
 
+        public override void InitializeActionGroups()
+        {
+            base.InitializeActionGroups();
+            CreateAbilityActionGroup();
+        }
+
+        private void CreateAbilityActionGroup()
+        {
+            var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, Generator, this);
+            abilitiesGroup.Name = ABILITY_ACTION_GROUP_NAME;
+
+            this.CharacterActionGroups.Add(abilitiesGroup);
+        }
         public override void Target(bool completeEvent = true)
         { 
             base.Target();
@@ -53,7 +66,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set { _repo = value; }
         }
 
-        public CharacterActionList<AnimatedAbility> Abilities { get; }
+        public CharacterActionList<AnimatedAbility> Abilities
+        {
+            get
+            {
+                return CharacterActionGroups.FirstOrDefault(ag => ag.Name == ABILITY_ACTION_GROUP_NAME) as CharacterActionList<AnimatedAbility>;
+            }
+        }
         public AnimatedAbility DefaultAbility => Abilities.Default;
         public List<AnimatedAbility> ActivePersistentAbilities
         {
@@ -65,9 +84,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CharacterName))
                 {
                     var defaultCharacter = Repository.CharacterByName[DefaultAbilities.CharacterName];
-                    foreach (var defaultAbility in defaultCharacter.Abilities.Values)
-                        if (Abilities.ContainsKey(defaultAbility.Name) == false)
-                            if (defaultCharacter.Abilities.ContainsKey(defaultAbility.Name))
+                    foreach (var defaultAbility in defaultCharacter.Abilities)
+                        if (Abilities.Contains(defaultAbility) == false)
+                            if (defaultCharacter.Abilities.Contains(defaultAbility))
                                 Abilities[defaultAbility.Name] = defaultCharacter.Abilities[defaultAbility.Name];
 
                     //to do load the rest of the default abilities
@@ -77,18 +96,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             throw new NotImplementedException();
         }
-        public override Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> CharacterActionGroups
+        public override Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> StandardActionGroups
         {
             get
             {
                 var actions = new Dictionary<string, CharacterAction>();
-                foreach (var x in Abilities.Values)
+                foreach (var x in Abilities)
                 {
                     actions[x.Name] = x;
                 }
                 //Abilities.Values.ForEach(x => actions[x.Name] = x);
                 var actionsList
-                    = base.CharacterActionGroups;
+                    = base.StandardActionGroups;
                 actionsList.Add(CharacterActionType.Ability, actions);
                 return actionsList;
             }
@@ -101,7 +120,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 //Abilities.ForEach(x => i[x.Key] = x.Value);
                 foreach (var x in Abilities)
                 {
-                    i[x.Key] = x.Value;
+                    i[x.Name] = x;
 
 
                 }

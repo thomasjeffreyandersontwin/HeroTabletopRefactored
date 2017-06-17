@@ -490,7 +490,7 @@ namespace HeroVirtualTabletop.Roster
             Participants = new List<CharacterCrowdMember>();
         }
 
-        public Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> CharacterActionGroups
+        public Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> StandardActionGroups
         {
             get
             {
@@ -518,9 +518,9 @@ namespace HeroVirtualTabletop.Roster
             //get collection of actions from first participant based on character action type
             var actionPropertyName = getActionCollectionPropertyNameForType(type);
             PropertyInfo actionProperty = participant.GetType().GetProperty(actionPropertyName);
-            System.Collections.IDictionary participantActions = (IDictionary)actionProperty.GetValue(participant);
+            System.Collections.IEnumerable participantActions = (IEnumerable)actionProperty.GetValue(participant);
 
-            foreach (CharacterAction action in participantActions.Values)
+            foreach (CharacterAction action in participantActions)
             {
                 var commonActions = getActionsWithSameNameAcrossAllParticioants(action, actionPropertyName);
                 RosterSelectionCharacterActionsWrapper rosterSelectionWrapper;
@@ -554,9 +554,10 @@ namespace HeroVirtualTabletop.Roster
         private List<CharacterAction> getActionsWithSameNameAcrossAllParticioants(CharacterAction action, string actionPropertyName)
         {
             PropertyInfo actionProperty = Participants.FirstOrDefault().GetType().GetProperty(actionPropertyName);
+            var type = action.GetType();
             //check the other particpatns to see if they also have the action
             List<CharacterCrowdMember> participantsWithCommonAction = Participants.Where(
-                x => ((IDictionary)actionProperty.GetValue(x)).Contains(action.Name)).ToList();
+                x => ((IEnumerable<CharacterAction>)actionProperty.GetValue(x)).Contains(action)).ToList();
 
             //add the matching action from each particpant to a wrapper class
             List<CharacterAction> withCommonName = new List<CharacterAction>();
@@ -565,8 +566,8 @@ namespace HeroVirtualTabletop.Roster
                 CharacterCrowdMember c = (CharacterCrowdMember)x;
 
                 actionProperty = c.GetType().GetProperty(actionPropertyName);
-                System.Collections.IDictionary potentialActions = (IDictionary)actionProperty.GetValue(c);
-                CharacterAction commonAction = (CharacterAction)potentialActions[action.Name];
+                IEnumerable<CharacterAction> potentialActions = (IEnumerable<CharacterAction>)actionProperty.GetValue(c);
+                CharacterAction commonAction = (CharacterAction)potentialActions.FirstOrDefault(a => a.Name == action.Name);
 
                 if (commonAction != null)
                 {
@@ -599,7 +600,7 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 var i = new Dictionary<string, Identity>();
-                var actions = CharacterActionGroups[CharacterActionType.Identity];
+                var actions = StandardActionGroups[CharacterActionType.Identity];
                 foreach (var characterAction in actions.Values)
                 {
                     var id = (Identity)characterAction;
@@ -627,7 +628,7 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 var i = new Dictionary<string, AnimatedAbility.AnimatedAbility>();
-                var actions = CharacterActionGroups[CharacterActionType.Ability];
+                var actions = StandardActionGroups[CharacterActionType.Ability];
                 foreach (var characterAction in actions.Values)
                 {
                     var id = (AnimatedAbility.AnimatedAbility)characterAction;
@@ -781,6 +782,20 @@ namespace HeroVirtualTabletop.Roster
                 
             }
         }
+
+        public ObservableCollection<CharacterActionGroup> CharacterActionGroups
+        {
+            get
+            {
+                return Participants[0]?.CharacterActionGroups;
+            }
+
+            set
+            {
+                
+            }
+        }
+
         private string getRootOfname(string name)
         {
             var suffix = string.Empty;
@@ -800,6 +815,36 @@ namespace HeroVirtualTabletop.Roster
                 }
             }
             return rootName;
+        }
+
+        public void InitializeActionGroups()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddActionGroup(CharacterActionGroup actionGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void InsertActionGroup(int index, CharacterActionGroup actionGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveActionGroup(CharacterActionGroup actionGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveActionGroupAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetnewValidActionGroupName()
+        {
+            throw new NotImplementedException();
         }
     }
     class RosterSelectionCharacterActionsWrapper : CharacterActionImpl

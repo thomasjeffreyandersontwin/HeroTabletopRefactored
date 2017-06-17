@@ -140,7 +140,7 @@ namespace HeroVirtualTabletop.Roster
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
             CharacterCrowdMember selected = r.Participants[0];
-
+            r.ClearAllSelections();
             r.SelectParticipant(selected);
             Assert.AreEqual(r.Selected.Participants[0], selected);
         }
@@ -165,7 +165,7 @@ namespace HeroVirtualTabletop.Roster
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
             RosterGroup selected = r.Groups[1];
-
+            r.ClearAllSelections();
             r.SelectGroup(selected);
             int counter = 0;
             foreach (var p in selected.Values)
@@ -249,24 +249,6 @@ namespace HeroVirtualTabletop.Roster
 
         [TestMethod]
         [TestCategory("Roster")]
-        public void TargetingCharacter_RosterReturnsLastTargetedCharacter()
-        {
-            //arrange
-            Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
-            RosterParticipant activeParticipant = r.Participants[2];
-            (activeParticipant as ManagedCharacter.ManagedCharacter).Targeter.TargetedInstance =
-                (activeParticipant as ManagedCharacter.ManagedCharacter).MemoryInstance;
-            CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
-
-            //act
-            c.Target();
-
-            //assert
-            Assert.AreEqual(c, r.LastSelectedCharacter);
-        }
-
-        [TestMethod]
-        [TestCategory("Roster")]
         public void UnTargetingCharacter_TargetedCharacterIsRemovedFromRoster()
         {
             //arange
@@ -326,7 +308,7 @@ namespace HeroVirtualTabletop.Roster
         {
             //arrange
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWhereTwoHaveCommonIdNames;
-
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             ManagedCharacterCommands selected = r.Selected;
             string identityNameofSelected = selected?.IdentitiesList?.FirstOrDefault().Value?.Name;
@@ -349,7 +331,7 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_CanInvokeAbilititesWhereSelectedHasAbilitieswithCommonName()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWhereTwoHaveCommonAbilityNames;
-
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             AnimatedCharacterCommands selected = r.Selected;
             string abilityName = selected.AbilitiesList.FirstOrDefault().Value.Name;
@@ -377,6 +359,7 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_CanInvokeManagedCharacterCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
 
             r.Selected.SpawnToDesktop();
@@ -399,6 +382,7 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_CanInvokAnimatedCharacterCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
 
             r.Selected.Activate();
@@ -416,6 +400,7 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_CanInvokAnimatedCrowdCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
 
             r.Selected.SaveCurrentTableTopPosition();
@@ -469,22 +454,20 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_DefaultCharacterActionsWillPlayDefaultsAcrossSelectedCharacters()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWithDefaultActions;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             r.Selected.DefaultAbility.Play();
             r.Selected.DefaultIdentity.Play();
             r.Selected.Participants.ForEach(
                 participant =>
                     Mock.Get<AnimatedAbility.AnimatedAbility>(participant.DefaultAbility).Verify(x => x.Play(true)));
-
-            r.Selected.Participants.ForEach(
-               participant =>
-                   Mock.Get<Identity>(participant.DefaultIdentity).Verify(x => x.Play(true)));
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanRemoveStatesWhereSelectedHasCommonStates()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             string stateName = "any";
 
@@ -501,6 +484,7 @@ namespace HeroVirtualTabletop.Roster
         {
             //arrange
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTestWithAttacksWithSameName;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             //act
             AnimatedAttack attack = (AnimatedAttack) r.Selected.AbilitiesList.FirstOrDefault().Value;
@@ -536,6 +520,7 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_AccessStateReturnsStateWrapper()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsWithCommonState;
+            r.ClearAllSelections();
             r.SelectAllParticipants();
             string stateName = r.Selected.Participants.FirstOrDefault().ActiveStates.FirstOrDefault().StateName;
 
@@ -610,6 +595,7 @@ namespace HeroVirtualTabletop.Roster
             {
                 Roster rosterUnderTest = RosterUnderTestWithThreeParticipantsUnderTest;
                 CharacterCrowdMember c = rosterUnderTest.Participants[0] as CharacterCrowdMember;
+                c.Identities.ClearAll();
                 Identity i = Mockidentity;
                 String n = i.Name;
                 c.Identities.AddNew(i);
@@ -670,10 +656,10 @@ namespace HeroVirtualTabletop.Roster
                 {
                     CharacterCrowdMember c = (CharacterCrowdMember) rosterParticipant;
                     c.Abilities.InsertElement(MockAnimatedAbility);
-                    c.Abilities.Default = c.Abilities.FirstOrDefault().Value;
+                    c.Abilities.Default = c.Abilities.FirstOrDefault();
 
                     c.Identities.InsertElement(Mockidentity);
-                    c.Identities.Default = c.Identities.FirstOrDefault().Value;
+                    c.Identities.Default = c.Identities.FirstOrDefault();
                 }
                 return rosterUnderTest;
             }

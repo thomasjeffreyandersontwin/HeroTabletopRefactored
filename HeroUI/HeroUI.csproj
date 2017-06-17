@@ -124,6 +124,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ManagedCharacter\ActionListBoxControl.cs" />
+    <Compile Include="ManagedCharacter\CharacterActionGroupView.xaml.cs">
+      <DependentUpon>CharacterActionGroupView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ManagedCharacter\CharacterActionGroupViewModel.cs" />
+    <Compile Include="ManagedCharacter\CharacterActionGroupViewModelImpl.cs" />
+    <Compile Include="ManagedCharacter\CharacterEditorView.xaml.cs">
+      <DependentUpon>CharacterEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ManagedCharacter\CharacterEditorViewModel.cs" />
+    <Compile Include="ManagedCharacter\CharacterEditorViewModelImpl.cs" />
+    <Compile Include="ManagedCharacter\ManagedCharacterEvents.cs" />
     <Compile Include="Roster\RosterEvents.cs" />
     <Compile Include="Roster\RosterExplorerTestSuite.cs" />
     <Compile Include="Roster\RosterExplorerView.xaml.cs">
@@ -180,6 +192,14 @@
       <DependentUpon>HeroSystemsShellView.xaml</DependentUpon>
     </Compile>
     <Compile Include="HeroSystemsShellViewModel.cs" />
+    <Page Include="ManagedCharacter\CharacterActionGroupView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ManagedCharacter\CharacterEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Roster\RosterExplorerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -233,6 +253,7 @@
   <ItemGroup>
     <Resource Include="Images\Search.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -140,6 +140,7 @@
     <Compile Include="Attack\AttackDistanceDelayManager.cs" />
     <Compile Include="Attack\AttackIntefaces.cs" />
     <Compile Include="Attack\AttackTestsuite.cs" />
+    <Compile Include="Common\AsyncDelegateExecuter.cs" />
     <Compile Include="Desktop\MemoryManager.cs" />
     <Compile Include="ManagedCharacter\Camera.cs" />
     <Compile Include="ManagedCharacter\CharacterActionList.cs" />

@@ -10,6 +10,8 @@ using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Roster;
+using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroUI
 {
@@ -51,15 +53,18 @@ namespace HeroUI
             container.Singleton<HeroVirtualTabletopMainViewModel, HeroVirtualTabletopMainViewModelImpl>();
             container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
             container.Singleton<RosterExplorerViewModel, RosterExplorerViewModelImpl>();
+            container.Singleton<CharacterEditorViewModel, CharacterEditorViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();
             container.Singleton<Roster, RosterImpl>();
-            container.PerRequest<Crowd, CrowdImpl>();
-            //container.PerRequest<CharacterCrowdMember, CharacterCrowdMemberImpl>();//PROBLEM
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
             container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
-            //container.PerRequest<DesktopMemoryCharacter, DesktopMemoryCharacterImpl>();
+
+            container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
+            container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();
+            container.PerRequest<CharacterActionGroupViewModelImpl<CharacterMovement>, CharacterActionGroupViewModelImpl<CharacterMovement>>();
+            container.PerRequest<CharacterActionGroupViewModelImpl<CharacterAction>, CharacterActionGroupViewModelImpl<CharacterAction>>();
 
             ViewLocator.NameTransformer.AddRule("ModelImpl$", "");
         }

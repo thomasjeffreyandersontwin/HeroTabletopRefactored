@@ -90,10 +90,9 @@
                 </Grid>
             </GroupBox>
         </Expander>
-        <!--<Expander Grid.Column="3" Style="{StaticResource VerticalExpanderStyle}"
+        <Expander Grid.Column="3" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Character Editor"
-                  Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
                   IsExpanded="{Binding IsCharacterEditorExpanded}"
                   >
 
@@ -106,10 +105,12 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="ChracterEditor">
                     </ToggleButton>
-                    <Grid x:Name="charEditorPanel" Width="Auto" Grid.Row="1"/>
+                    <Grid x:Name="charEditorPanel" Grid.Row="1">
+                        <ContentControl x:Name="CharacterEditorViewModel" />
+                    </Grid>
                 </Grid>
             </GroupBox>
-        </Expander>-->
+        </Expander>
         <!--<Expander Grid.Column="4" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Identity Editor"

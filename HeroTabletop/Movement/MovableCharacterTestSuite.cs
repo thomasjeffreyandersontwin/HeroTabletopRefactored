@@ -28,7 +28,7 @@ namespace HeroVirtualTabletop.Movement
             //act
             character.AddMovement(mov);
             //assert
-            Assert.AreEqual(character.Movements.FirstOrDefault().Value.Movement, mov);
+            Assert.AreEqual(character.Movements.FirstOrDefault().Movement, mov);
         }
         [TestMethod]
         public void MovementCommands_DelegateToActiveMovement()
@@ -36,20 +36,20 @@ namespace HeroVirtualTabletop.Movement
             //arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestwithCharacterMovement;
             //act
-            character.Movements.FirstOrDefault().Value.Play();
+            character.Movements.FirstOrDefault().Play();
             character.Move(Direction.Right);
             character.Move(Direction.Forward);
             //assert
-            var mocker = Mock.Get<Movement>(character.Movements.FirstOrDefault().Value.Movement);
-            mocker.Verify(x => x.Move(character, Direction.Forward, null, character.Movements.FirstOrDefault().Value.Speed));
-            mocker.Verify(x => x.Move(character, Direction.Right, null, character.Movements.FirstOrDefault().Value.Speed));
+            var mocker = Mock.Get<Movement>(character.Movements.FirstOrDefault().Movement);
+            mocker.Verify(x => x.Move(character, Direction.Forward, null, character.Movements.FirstOrDefault().Speed));
+            mocker.Verify(x => x.Move(character, Direction.Right, null, character.Movements.FirstOrDefault().Speed));
         }
         [TestMethod]
         public void CharacterMovementSpeedIsNotSet_IsTakenFromMovement()
         {
             //arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestwithCharacterMovement;
-            CharacterMovement movement = character.Movements.FirstOrDefault().Value;
+            CharacterMovement movement = character.Movements.FirstOrDefault();
             movement.Speed = 0f;
 
             //act
