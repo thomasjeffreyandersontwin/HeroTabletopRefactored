@@ -590,7 +590,7 @@ namespace HeroVirtualTabletop.Attack
         {
             var ability = MockAnimatedAbility;
             ability.Name = name;
-            character.Abilities.InsertElement(ability);
+            character.Abilities.InsertAction(ability);
         }
     }
 }

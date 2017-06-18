@@ -989,19 +989,19 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
                 var defaultAbility = MockAnimatedAbility;
                 defaultAbility.Name = DefaultAbilities.Dodge;
-                defaultCharacter.Abilities.InsertElement(defaultAbility);
+                defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
                 defaultAbility.Name = DefaultAbilities.Strike;
-                defaultCharacter.Abilities.InsertElement(defaultAbility);
+                defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
                 defaultAbility.Name = DefaultAbilities.Miss;
-                defaultCharacter.Abilities.InsertElement(defaultAbility);
+                defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
                 defaultAbility.Name = DefaultAbilities.UnderAttack;
-                defaultCharacter.Abilities.InsertElement(defaultAbility);
+                defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 repo.Characters.Add(defaultCharacter);
 

@@ -87,11 +87,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
         T Active { get; set; }
         T Default { get; set; }
         void Deactivate();
+        T GetNewAction();
         string GetNewValidActionName(string name = null);
-        void InsertElement(T action);
+        void InsertAction(T action);
+        void InsertAction(T action, int index);
         void InsertMany(List<T> actions);
-        void InsertElementAfter(T elementToAdd, T elementToAddAfter);
-        void RemoveElement(T element);
+        void InsertActionAfter(T elementToAdd, T elementToAddAfter);
+        void RemoveAction(T element);
+        void RemoveActionAt(int index);
         void ClearAll();
         T AddNew(T newItem);
         CharacterActionList<T> Clone();

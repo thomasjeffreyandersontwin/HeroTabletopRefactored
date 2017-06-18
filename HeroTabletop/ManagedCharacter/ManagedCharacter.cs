@@ -42,8 +42,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
             identitiesGroup.Name = IDENTITY_ACTION_GROUP_NAME;
-
-            //Identity newId = identitiesGroup.AddNew(new IdentityImpl()) as Identity;
+            
             IdentityImpl newId = new IdentityImpl();
             newId.Owner = this;
             newId.Name = Name;

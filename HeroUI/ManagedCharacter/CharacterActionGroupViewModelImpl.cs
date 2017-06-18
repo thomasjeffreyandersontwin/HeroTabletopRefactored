@@ -56,6 +56,24 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        private T selectedAction;
+        public T SelectedAction
+        {
+            get
+            {
+                return selectedAction;
+            }
+            set
+            {
+                SetSelectedAction(value);
+                NotifyOfPropertyChange(() => SelectedAction);
+                //Notify CanExecutes
+                NotifyOfPropertyChange(() => CanRemoveAction);
+            }
+        }
+
+        public CharacterActionList<T> CharacterActionList => this.ActionGroup as CharacterActionList<T>;
+
         private bool isReadOnly;
         public bool IsReadOnly
         {
@@ -84,30 +102,30 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        private string addOptionTooltip;
-        public string AddOptionTooltip
+        private string addActionTooltip;
+        public string AddActionTooltip
         {
             get
             {
-                return addOptionTooltip;
+                return addActionTooltip;
             }
             set
             {
-                addOptionTooltip = value;
-                NotifyOfPropertyChange(() => AddOptionTooltip);
+                addActionTooltip = value;
+                NotifyOfPropertyChange(() => AddActionTooltip);
             }
         }
-        private string removeOptionTooltip;
-        public string RemoveOptionTooltip
+        private string removeActionTooltip;
+        public string RemoveActionTooltip
         {
             get
             {
-                return removeOptionTooltip;
+                return removeActionTooltip;
             }
             set
             {
-                removeOptionTooltip = value;
-                NotifyOfPropertyChange(() => RemoveOptionTooltip);
+                removeActionTooltip = value;
+                NotifyOfPropertyChange(() => RemoveActionTooltip);
             }
         }
         public bool NewActionGroupAdded { get; set; }
@@ -143,20 +161,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
             switch (this.ActionGroup.Type)
             {
                 case CharacterActionType.Ability:
-                    this.AddOptionTooltip = "Add Power (Alt+Ctrl+Plus+A)";
-                    this.RemoveOptionTooltip = "Remove Power (Alt+Ctrl+Minus+A)";
+                    this.AddActionTooltip = "Add Power (Alt+Ctrl+Plus+A)";
+                    this.RemoveActionTooltip = "Remove Power (Alt+Ctrl+Minus+A)";
                     break;
                 case CharacterActionType.Identity:
-                    this.AddOptionTooltip = "Add Identity (Alt+Ctrl+Plus+I)";
-                    this.RemoveOptionTooltip = "Remove Identity (Alt+Ctrl+Minus+I)";
+                    this.AddActionTooltip = "Add Identity (Alt+Ctrl+Plus+I)";
+                    this.RemoveActionTooltip = "Remove Identity (Alt+Ctrl+Minus+I)";
                     break;
                 case CharacterActionType.Movement:
-                    this.AddOptionTooltip = "Add Movement (Alt+Ctrl+Plus+M)";
-                    this.RemoveOptionTooltip = "Remove Movement (Alt+Ctrl+Minus+M)";
+                    this.AddActionTooltip = "Add Movement (Alt+Ctrl+Plus+M)";
+                    this.RemoveActionTooltip = "Remove Movement (Alt+Ctrl+Minus+M)";
                     break;
                 case CharacterActionType.Mixed:
-                    this.AddOptionTooltip = "Add Custom Action"; // Not needed
-                    this.RemoveOptionTooltip = "Remove Custom Action (Alt+Ctrl+Minus+X)";
+                    this.AddActionTooltip = "Add Custom Action"; // Not needed
+                    this.RemoveActionTooltip = "Remove Custom Action (Alt+Ctrl+Minus+X)";
                     break;
             }
         }
@@ -164,7 +182,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         #endregion
 
 
-        #region Rename Option Group
+        #region Rename Action Group
 
         public void EnterEditMode(object state)
         {
@@ -208,7 +226,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     this.ActionGroup.Rename(updatedName);
                     originalName = null;
                     OnEditModeLeave(state, null);
-                    this.SaveCharacterActionGroup();
+                    this.SaveActionGroup();
                 }
                 else
                 {
@@ -220,30 +238,114 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #endregion
 
-        #region Insert/Remove Character Action
+        #region Add/Remove Character Action
 
-        public void InsertCharacterAction(int index, CharacterAction action)
+        public void AddAction()
         {
-            
+            T newAction = this.CharacterActionList.GetNewAction();
+            this.CharacterActionList.AddNew(newAction);
+            this.SaveActionGroup();
         }
 
-        public void RemoveCharacterAction(int index)
+        public bool CanRemoveAction
         {
-            
+            get
+            {
+                return this.SelectedAction != null;
+            }
+        }
+
+        public void RemoveAction()
+        {
+            this.CharacterActionList.RemoveAction(this.SelectedAction);
+            //if (this.IsStandardOptionGroup)
+            //{
+            //    this.eventAggregator.GetEvent<RemoveOptionEvent>().Publish(optionToRemove);
+            //}
+            this.SaveActionGroup();
+        }
+
+        public void InsertAction(CharacterAction action, int index)
+        {
+            CharacterActionList.InsertAction((T)action, index);
+            this.SaveActionGroup();
+        }
+
+        public void RemoveAction(int index)
+        {
+            CharacterActionList.RemoveActionAt(index);
+            this.SaveActionGroup();
+        }
+
+        #endregion
+
+        #region Set Default
+
+        public void SetDefaultAction()
+        {
+            this.CharacterActionList.Default = this.SelectedAction;
         }
 
         #endregion
 
         #region Save/Unload Character Action Group
 
-        public void SaveCharacterActionGroup()
+        public void SaveActionGroup()
         {
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
-        public void UnloadCharacterActionGroup()
+        public void UnloadActionGroup()
         {
             
+        }
+
+        #endregion
+
+        #region Manage Selections and sync Active Action with Current Selection
+
+        private void SetSelectedAction(T value)
+        {
+            //if (selectedAction != null && selectedAction is AnimatedAbility)
+            //{
+            //    if (selectedAction as AnimatedAbility != value as AnimatedAbility)
+            //    {
+            //        AnimatedAbility ability = selectedOption as AnimatedAbility;
+            //        if (ability.IsActive && !ability.Persistent)
+            //            ability.Stop();
+            //    }
+            //}
+            selectedAction = value;
+            //if (!this.ActionGroup.Owner.IsSpawned)
+            //    this.ActionGroup.Owner.SpawnToDesktop();
+            this.CharacterActionList.Active = value;
+        }
+
+        #endregion
+
+        #region Edit Action
+
+        public void EditAction()
+        {
+
+        }
+
+        #endregion
+
+        #region Play Action
+
+        public void Play()
+        {
+
+        }
+
+        #endregion
+
+        #region Stop Action
+
+        public void Stop()
+        {
+
         }
 
         #endregion

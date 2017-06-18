@@ -26,7 +26,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         private const string OPTION_DRAG_KEY = "CharacterOptionDrag";
 
         public static Point OptionGroupDragStartPoint;
-        public static string DraggingOptionGroupName = "";
+        public static string DraggingOptionGroupName;
 
         public CharacterEditorView()
         {

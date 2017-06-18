@@ -1084,7 +1084,7 @@ namespace HeroVirtualTabletop.Crowd
 
             clone.Name = CrowdRepository.CreateUniqueName(Name, CrowdRepository.AllMembersCrowd.Members);
             foreach (var id  in Identities)
-                clone.Identities.InsertElement((Identity) id.Clone());
+                clone.Identities.InsertAction((Identity) id.Clone());
 
             clone.Generator = Generator;
             clone.Targeter = Targeter;

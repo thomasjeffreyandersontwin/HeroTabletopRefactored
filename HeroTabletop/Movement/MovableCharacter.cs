@@ -75,7 +75,7 @@ namespace HeroVirtualTabletop.Movement
         public void AddMovement(Movement movement)
         {
             CharacterMovement characterMovement = new CharacterMovementImpl(movement);
-            Movements.InsertElement(characterMovement);
+            Movements.InsertAction(characterMovement);
         }
 
         public CharacterMovement ActiveMovement { get; set; }
@@ -89,11 +89,22 @@ namespace HeroVirtualTabletop.Movement
             Movement = movement;
            
         }
-        public MovableCharacter Character => Owner as MovableCharacter;
-        public override string Name {
-            get { return Movement.Name; }
-            set { Movement.Name = value; }
+
+        public CharacterMovementImpl()
+        {
+
         }
+
+        public MovableCharacter Character => Owner as MovableCharacter;
+
+        //public override string Name {
+        //    get {
+        //        //return Movement?.Name; 
+        //    }
+        //    set {
+        //        //Movement.Name = value; 
+        //    }
+        //}
         public override CharacterAction Clone()
         {
             throw new NotImplementedException();

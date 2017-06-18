@@ -22,10 +22,10 @@
             </ResourceDictionary.MergedDictionaries>
             <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=managedcharacter:CharacterActionGroupView}, Path=DataContext}"/>
             <ContextMenu x:Key="optionListBoxMenu">
-                <MenuItem Header="Set as Default" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.SetDefaultOptionCommand}"></MenuItem>
-                <MenuItem Header="Edit" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.EditOptionCommand}"></MenuItem>
-                <MenuItem Header="Play" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.PlayOptionCommand}"></MenuItem>
-                <MenuItem Header="Stop" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.StopOptionCommand}"></MenuItem>
+                <MenuItem Header="Set as Default" cal:Message.Attach="SetDefaultAction" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Edit" cal:Message.Attach="EditAction" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Play" cal:Message.Attach="PlayAction" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Stop" cal:Message.Attach="StopAction" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
             </ContextMenu>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -103,8 +103,8 @@
                   >
                         <Grid VerticalAlignment="Top">
                             <local:ActionListBoxControl x:Name="optionListBox" ItemsSource="{Binding Path=ActionGroup}" SelectedItem="{Binding Path=SelectedAction}"
-                            DefaultAction="{Binding Path=DefaultAction}"
-                            ActiveAction="{Binding Path=ActiveAction}"
+                            DefaultAction="{Binding Path=CharacterActionList.Default}"
+                            ActiveAction="{Binding Path=CharacterActionList.Active}"
                             HorizontalAlignment="Left" VerticalAlignment="Center"
                             SelectionMode="Single"  
                             MinHeight="30"
@@ -153,7 +153,7 @@
                                                             <DataTrigger Value="True">
                                                                 <DataTrigger.Binding>
                                                                     <MultiBinding Converter="{StaticResource ResourceKey=CharActionComparer}">
-                                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ActionListBoxControl}}" Path="DefaultOption"></Binding>
+                                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ActionListBoxControl}}" Path="DefaultAction"></Binding>
                                                                         <Binding RelativeSource="{RelativeSource Self}" Path="DataContext"></Binding>
                                                                     </MultiBinding>
                                                                 </DataTrigger.Binding>
@@ -172,7 +172,7 @@
                                                             <DataTrigger Value="True">
                                                                 <DataTrigger.Binding>
                                                                     <MultiBinding Converter="{StaticResource ResourceKey=CharActionComparer}">
-                                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ActionListBoxControl}}" Path="ActiveOption"></Binding>
+                                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ActionListBoxControl}}" Path="ActiveAction"></Binding>
                                                                         <Binding RelativeSource="{RelativeSource Self}" Path="DataContext"></Binding>
                                                                     </MultiBinding>
                                                                 </DataTrigger.Binding>
@@ -199,9 +199,9 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </local:ActionListBoxControl>
-                            <StackPanel Visibility="{Binding IsReadOnlyMode, Converter={StaticResource BooleanToVisibilityInvertConverter}}" HorizontalAlignment="Right" Margin="0,15,0,0" Height="Auto" VerticalAlignment="Top">
-                                <Button Visibility="{Binding IsStandardOptionGroup, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource AddButtonStyle}" ToolTip="{Binding AddOptionTooltip}" Command="{Binding AddOptionCommand}"/>
-                                <Button  Style="{StaticResource RemoveButtonStyle}" ToolTip="{Binding RemoveOptionTooltip}" Command="{Binding RemoveOptionCommand}"/>
+                            <StackPanel Visibility="{Binding IsReadOnly, Converter={StaticResource BooleanToVisibilityInvertConverter}}" HorizontalAlignment="Right" Margin="0,15,0,0" Height="Auto" VerticalAlignment="Top">
+                                <Button Visibility="{Binding ActionGroup.IsStandardActionGroup, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource AddButtonStyle}" ToolTip="{Binding AddActionTooltip}" cal:Message.Attach="AddAction"/>
+                                <Button Style="{StaticResource RemoveButtonStyle}" ToolTip="{Binding RemoveActionTooltip}" cal:Message.Attach="RemoveAction"/>
                             </StackPanel>
                         </Grid>
                         <behaviors:CommandBehaviorCollection.Behaviors>

@@ -15,12 +15,13 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         bool IsReadOnly { get; set; }
         bool NewActionGroupAdded { get; set; }
-
-        void RemoveCharacterAction(int index);
-        void InsertCharacterAction(int index, CharacterAction action);
+        void AddAction();
+        void RemoveAction();
+        void RemoveAction(int index);
+        void InsertAction(CharacterAction action, int index);
         void RenameActionGroup();
-        void SaveCharacterActionGroup();
-        void UnloadCharacterActionGroup();
+        void SaveActionGroup();
+        void UnloadActionGroup();
         IEventAggregator EventAggregator { get; set; }
     }
 

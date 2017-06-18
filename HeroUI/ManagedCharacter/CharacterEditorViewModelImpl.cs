@@ -86,9 +86,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     switch (group.Type)
                     {
                         case CharacterActionType.Ability:
-                            var abilityActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<AnimatedAbility.AnimatedAbility>>();
-                            abilityActionGroup.ActionGroup = group;
-                            this.CharacterActionGroups.Add(abilityActionGroup);
+                            var abilityActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<AnimatedAbility.AnimatedAbility>>();
+                            abilityActionGroupViewModel.ActionGroup = group;
+                            this.CharacterActionGroups.Add(abilityActionGroupViewModel);
                             //OptionGroups.Add(this.Container.Resolve<OptionGroupViewModel<AnimatedAbility>>(
                             //new ParameterOverride("optionGroup", group),
                             //new ParameterOverride("owner", character),
@@ -96,9 +96,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                             //));
                             break;
                         case CharacterActionType.Identity:
-                            var identityActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<Identity>>();
-                            identityActionGroup.ActionGroup = group;
-                            this.CharacterActionGroups.Add(identityActionGroup);
+                            var identityActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<Identity>>();
+                            identityActionGroupViewModel.ActionGroup = group;
+                            this.CharacterActionGroups.Add(identityActionGroupViewModel);
                             //OptionGroups.Add(this.Container.Resolve<OptionGroupViewModel<Identity>>(
                             //new ParameterOverride("optionGroup", group),
                             //new ParameterOverride("owner", character),
@@ -106,9 +106,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                             //));
                             break;
                         case CharacterActionType.Movement:
-                            var movementActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<CharacterMovement>>();
-                            movementActionGroup.ActionGroup = group;
-                            this.CharacterActionGroups.Add(movementActionGroup);
+                            var movementActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<CharacterMovement>>();
+                            movementActionGroupViewModel.ActionGroup = group;
+                            this.CharacterActionGroups.Add(movementActionGroupViewModel);
                             //OptionGroups.Add(this.Container.Resolve<OptionGroupViewModel<CharacterMovement>>(
                             //new ParameterOverride("optionGroup", group),
                             //new ParameterOverride("owner", character),
@@ -116,9 +116,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                             //));
                             break;
                         case CharacterActionType.Mixed:
-                            var mixedActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<CharacterAction>>();
-                            mixedActionGroup.ActionGroup = group;
-                            this.CharacterActionGroups.Add(mixedActionGroup);
+                            var mixedActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<CharacterAction>>();
+                            mixedActionGroupViewModel.ActionGroup = group;
+                            this.CharacterActionGroups.Add(mixedActionGroupViewModel);
                             //OptionGroups.Add(this.Container.Resolve<OptionGroupViewModel<CharacterOption>>(
                             //new ParameterOverride("optionGroup", group),
                             //new ParameterOverride("owner", character),

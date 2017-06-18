@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using Caliburn.Micro;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -73,6 +75,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 if (value != null)
                     _active = value;
+                OnPropertyChanged("Active");
             }
         }
 
@@ -95,8 +98,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                // if (value != null)
                     if (this.Contains(value))
                         _default = value;
-                    //else
-                      //  throw new ArgumentException("action cant be set to default it doesnt exist for character");
+
+                OnPropertyChanged("Default");
             }
         }
         private string _name;
@@ -129,7 +132,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     if(!existing.Equals(value))
                     {
                         this.Remove(existing);
-                        this.InsertElement(value);
+                        this.InsertAction(value);
                     }
                 }
             }
@@ -172,6 +175,27 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        #region Add/Insert
+
+        public T GetNewAction()
+        {
+            T action = default(T);
+            if (Type == CharacterActionType.Identity)
+            {
+                action = (T)GetNewIdentity();
+            }
+            else if (Type == CharacterActionType.Ability)
+            {
+                action = (T)GetNewAbility();
+            }
+            else if (Type == CharacterActionType.Movement)
+            {
+                action = (T)GetNewMovement();
+            }
+            
+            return action;
+        }
+
         public string GetNewValidActionName(string name = null)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -191,12 +215,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
             return $"{name}{suffix}".Trim();
         }
 
-        public void ClearAll()
-        {
-            this.Clear();
-        }
-
-        public void InsertElement(T action)
+       
+        public void InsertAction(T action)
         {
             action.Owner = Owner;
             action.Generator = Generator;
@@ -204,11 +224,24 @@ namespace HeroVirtualTabletop.ManagedCharacter
             FixOrders();
         }
 
+        public void InsertAction(T action, int index)
+        {
+            var existingIndex = this.IndexOf((T)action);
+            if (existingIndex >= 0)
+            {
+                this.RemoveAt(existingIndex);
+                if (index > 0 && index >= this.Count)
+                    index -= 1;
+            }
+            this.Insert(index, (T)action);
+            FixOrders();
+        }
+
         public void InsertMany(List<T> actions)
         {
             foreach(T action in actions)
             {
-                InsertElement(action);
+                InsertAction(action);
             }
         }
 
@@ -222,7 +255,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             return newAction;
         }
 
-        public void InsertElementAfter(T elementToAdd, T elementToAddAfter)
+        public void InsertActionAfter(T elementToAdd, T elementToAddAfter)
         {
             var index = this.IndexOf(elementToAddAfter);
             if(index >= 0)
@@ -233,12 +266,59 @@ namespace HeroVirtualTabletop.ManagedCharacter
             FixOrders();
         }
 
-        public void RemoveElement(T element)
+        public bool CheckDuplicateName(string newName)
         {
-            if (this.Contains(element))
-                this.Remove(element);
+            bool isDuplicate = this.Name != newName && this.Owner.CharacterActionGroups.FirstOrDefault(a => a.Name == newName) != null;
+            return isDuplicate;
+        }
+
+        private Identity GetNewIdentity()
+        {
+            IdentityImpl identity = new IdentityImpl();
+            identity.Name = GetNewValidActionName();
+            identity.Type = SurfaceType.Costume;
+            identity.Surface = identity.Name;
+
+            return identity;
+        }
+
+        private AnimatedAbility.AnimatedAbility GetNewAbility()
+        {
+            AnimatedAbility.AnimatedAbility ability = new AreaEffectAttackImpl();
+            return ability;
+        }
+
+        private CharacterMovement GetNewMovement()
+        {
+            CharacterMovement characterMovement = new CharacterMovementImpl();
+            return characterMovement;
+        }
+
+        #endregion
+
+        #region Remove/Clear
+
+        public void RemoveAction(T action)
+        {
+            if (this.Contains(action))
+                this.Remove(action);
             FixOrders();
         }
+
+        public void RemoveActionAt(int index)
+        {
+            this.RemoveAt(index);
+            FixOrders();
+        }
+
+        public void ClearAll()
+        {
+            this.Clear();
+        }
+
+        #endregion
+
+        #region Clone
 
         public CharacterActionList<T> Clone()
         {
@@ -246,14 +326,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             foreach (var anAction in this)
             {
                 var clone = (T) anAction.Clone();
-                cloneList.InsertElement(clone);
+                cloneList.InsertAction(clone);
             }
             return cloneList;
         }
 
-        public void PlayByKey(string shortcut)
-        {
-        }
+        #endregion
+
+        #region Rename
 
         public void RenameAction(string oldName, string newName)
         {
@@ -270,12 +350,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.Name = newName;
             }
         }
-        public bool CheckDuplicateName(string newName)
-        {
-            bool isDuplicate = this.Name != newName && this.Owner.CharacterActionGroups.FirstOrDefault(a => a.Name == newName) != null;
-            return isDuplicate;
-        }
 
+        #endregion
+
+        public void PlayByKey(string shortcut)
+        {
+        }
         private void FixOrders()
         {
             for (int i = 0; i < this.Count; i++)

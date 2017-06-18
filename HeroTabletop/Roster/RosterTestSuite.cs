@@ -655,10 +655,10 @@ namespace HeroVirtualTabletop.Roster
                 foreach (var rosterParticipant in rosterUnderTest.Participants)
                 {
                     CharacterCrowdMember c = (CharacterCrowdMember) rosterParticipant;
-                    c.Abilities.InsertElement(MockAnimatedAbility);
+                    c.Abilities.InsertAction(MockAnimatedAbility);
                     c.Abilities.Default = c.Abilities.FirstOrDefault();
 
-                    c.Identities.InsertElement(Mockidentity);
+                    c.Identities.InsertAction(Mockidentity);
                     c.Identities.Default = c.Identities.FirstOrDefault();
                 }
                 return rosterUnderTest;

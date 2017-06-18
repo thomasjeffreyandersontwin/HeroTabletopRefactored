@@ -228,10 +228,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     }
                     if (sourceViewModel != null && sourceIndex >= 0)
                     {
-                        sourceViewModel.RemoveCharacterAction(sourceIndex);
+                        sourceViewModel.RemoveAction(sourceIndex);
                     }
-                    this.viewModel.InsertCharacterAction(targetIndex, option);
-                    this.viewModel.SaveCharacterActionGroup();
+                    this.viewModel.InsertAction(option, targetIndex);
+                    this.viewModel.SaveActionGroup();
                 }
             }
         }

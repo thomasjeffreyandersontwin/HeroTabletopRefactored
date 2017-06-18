@@ -424,7 +424,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var idList = TestObjectsFactory.IdentityListUnderTest;
             var id = TestObjectsFactory.ModelIdentityUnderTest;
             //act
-            idList.InsertElement(id);
+            idList.InsertAction(id);
             //assert
             Assert.AreEqual(idList.Owner, id.Owner);
             Assert.AreEqual(idList[idList.Count() - 1], id);
@@ -441,7 +441,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             
             var idToAdd = TestObjectsFactory.ModelIdentityUnderTest;
             //act
-            idList.InsertElementAfter(idToAdd, prevId);
+            idList.InsertActionAfter(idToAdd, prevId);
 
             Assert.AreEqual(idToAdd.Order, prevId.Order + 1);
             Assert.AreEqual(idList[prevId.Order], idToAdd);
@@ -459,7 +459,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var lastId = idList[idList.Count() - 1];
             var lastOrder = lastId.Order;
             //act
-            idList.RemoveElement(delId);
+            idList.RemoveAction(delId);
             //assert
             Assert.IsFalse(idList.Contains(delId));
             Assert.AreEqual(lastId.Order, lastOrder - 1);
@@ -556,7 +556,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 var identities = CustomizedMockFixture.Create<IEnumerable<Identity>>();
 
                 foreach (var id in identities)
-                    identityActionList.InsertElement(id);
+                    identityActionList.InsertAction(id);
 
                 //we want one active identity
                 var e = identities.GetEnumerator();
