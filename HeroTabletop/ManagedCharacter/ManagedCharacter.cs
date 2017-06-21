@@ -282,6 +282,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         public Identity DefaultIdentity => Identities.Default;
+        public Identity ActiveIdentity => Identities.Active;
 
         public bool IsSpawned { get; set; }
         public void SpawnToDesktop(bool completeEvent = true)

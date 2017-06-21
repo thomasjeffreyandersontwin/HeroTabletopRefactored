@@ -10,9 +10,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
     public interface CharacterActionGroupViewModel
     {
         CharacterActionGroup ActionGroup { get; }
+        CharacterAction SelectedAction { get; set; }
         event EventHandler EditModeEnter;
         event EventHandler EditModeLeave;
-
         bool IsReadOnly { get; set; }
         bool NewActionGroupAdded { get; set; }
         void AddAction();
@@ -20,7 +20,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveAction(int index);
         void InsertAction(CharacterAction action, int index);
         void RenameActionGroup();
+        void SetDefaultAction();
         void SaveActionGroup();
+        void EditAction();
+        void PlayAction();
+        void StopAction();
+        void TogglePlayAction(object obj);
         void UnloadActionGroup();
         IEventAggregator EventAggregator { get; set; }
     }

@@ -16,4 +16,23 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.EditedCharacter = editedMemher;
         }
     }
+
+    public class EditIdentityEvent
+    {
+        public Identity EditedIdentity { get; set; }
+
+        public EditIdentityEvent(Identity editedIdentity)
+        {
+            this.EditedIdentity = editedIdentity;
+        }
+    }
+
+    public class RemoveActionEvent
+    {
+        public CharacterAction RemovedAction { get; set; }
+        public RemoveActionEvent(CharacterAction removedAction)
+        {
+            this.RemovedAction = removedAction;
+        }
+    }
 }

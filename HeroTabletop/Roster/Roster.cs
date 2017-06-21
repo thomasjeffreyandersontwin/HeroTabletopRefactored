@@ -622,7 +622,18 @@ namespace HeroVirtualTabletop.Roster
 
             }
         }
-       
+
+        public Identity ActiveIdentity
+        {
+            get
+            {
+                List<CharacterAction> iList = new List<CharacterAction>();
+                Participants.ForEach(x => iList.Add(((ManagedCharacter.ManagedCharacter)x).ActiveIdentity));
+                return new RosterSelectionIdentityWrapper(null, iList);
+
+            }
+        }
+
         public Dictionary<string, AnimatedAbility.AnimatedAbility> AbilitiesList
         {
             get

@@ -15,11 +15,36 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public IdentityImpl()
         {
         }
+        
+        private string surface;
         [JsonProperty]
         public string Surface
-        { get;
-            set; }
-        public SurfaceType Type { get; set; }
+        {
+            get
+            {
+                return surface;
+            }
+            set
+            {
+                surface = value;
+                NotifyOfPropertyChange(() => Surface);
+            }
+        }
+        
+        private SurfaceType type;
+        [JsonProperty]
+        public SurfaceType Type
+        {
+            get
+            {
+                return type;
+            }
+            set
+            {
+                type = value;
+                NotifyOfPropertyChange(() => Type);
+            }
+        }
 
         public override void Play(bool completeEvent)
         {

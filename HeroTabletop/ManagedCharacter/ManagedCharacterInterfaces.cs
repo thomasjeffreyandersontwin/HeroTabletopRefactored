@@ -15,6 +15,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void MoveCharacterToCamera(bool completeEvent = true);
         Dictionary<string, Identity> IdentitiesList { get; }
         Identity DefaultIdentity { get; }
+        Identity ActiveIdentity { get; }
         void ToggleTargeted();
 
         void UnTarget(bool completeEvent = true);
@@ -98,6 +99,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void ClearAll();
         T AddNew(T newItem);
         CharacterActionList<T> Clone();
+        bool CheckDuplicateNameForActions(string oldName, string newName);
         void PlayByKey(string key);
         void RenameAction(string oldName, string newName);
         T this[string key] { get; set; }
@@ -130,7 +132,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         Costume = 2
     }
 
-    public interface Identity : CharacterAction
+    public interface Identity : CharacterAction, INotifyPropertyChanged
     {
         string Surface { get; set; }
         SurfaceType Type { get; set; }

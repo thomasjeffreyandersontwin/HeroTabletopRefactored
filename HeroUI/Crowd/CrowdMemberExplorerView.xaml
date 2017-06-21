@@ -68,7 +68,7 @@
                     <MenuItem Header="Paste" cal:Message.Attach="PasteCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Add Character" cal:Message.Attach="AddCharacterCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Add Crowd"  cal:Message.Attach="AddCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
-                    <MenuItem Header="Edit Character" cal:Message.Attach="EditCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                    <MenuItem Header="Edit Character" cal:Message.Attach="EditCharacterCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Remove" cal:Message.Attach="DeleteCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Add Crowd From Models" cal:Message.Attach="AddCrowdFromModels" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 </ContextMenu>

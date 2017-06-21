@@ -54,6 +54,7 @@ namespace HeroUI
             container.Singleton<CrowdMemberExplorerViewModel, CrowdMemberExplorerViewModelImpl>();
             container.Singleton<RosterExplorerViewModel, RosterExplorerViewModelImpl>();
             container.Singleton<CharacterEditorViewModel, CharacterEditorViewModelImpl>();
+            container.Singleton<IdentityEditorViewModel, IdentityEditorViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();

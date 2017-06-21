@@ -15,6 +15,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         CharacterCrowdMember EditedCharacter { get; set; }
         ObservableCollection<CharacterActionGroupViewModel> CharacterActionGroups { get; set; }
         CharacterActionGroup SelectedCharacterActionGroup { get; set; }
+        void AddActionGroup();
+        void RemoveActionGroup();
         void ReOrderActionGroups(int sourceIndex, int targetIndex);
         IEventAggregator EventAggregator { get; set; }
     }

@@ -124,6 +124,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnimatedAbility\AnimatedAbilityEvents.cs" />
     <Compile Include="ManagedCharacter\ActionListBoxControl.cs" />
     <Compile Include="ManagedCharacter\CharacterActionGroupView.xaml.cs">
       <DependentUpon>CharacterActionGroupView.xaml</DependentUpon>
@@ -135,6 +136,11 @@
     </Compile>
     <Compile Include="ManagedCharacter\CharacterEditorViewModel.cs" />
     <Compile Include="ManagedCharacter\CharacterEditorViewModelImpl.cs" />
+    <Compile Include="ManagedCharacter\IdentityEditorView.xaml.cs">
+      <DependentUpon>IdentityEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ManagedCharacter\IdentityEditorViewModel.cs" />
+    <Compile Include="ManagedCharacter\IdentityEditorViewModelImpl.cs" />
     <Compile Include="ManagedCharacter\ManagedCharacterEvents.cs" />
     <Compile Include="Roster\RosterEvents.cs" />
     <Compile Include="Roster\RosterExplorerTestSuite.cs" />
@@ -197,6 +203,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ManagedCharacter\CharacterEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ManagedCharacter\IdentityEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

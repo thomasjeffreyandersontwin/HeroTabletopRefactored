@@ -2,6 +2,8 @@
 using HeroUI;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Movement;
+using HeroVirtualTabletop.Roster;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
-    public class CharacterActionGroupViewModelImpl<T> : PropertyChangedBase, CharacterActionGroupViewModel where T : CharacterAction
+    public class CharacterActionGroupViewModelImpl<T> : PropertyChangedBase, IHandle<RemoveActionEvent>, CharacterActionGroupViewModel where T : CharacterAction
     {
         #region Private Fields
 
@@ -56,8 +58,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        private T selectedAction;
-        public T SelectedAction
+        private CharacterAction selectedAction;
+        public CharacterAction SelectedAction
         {
             get
             {
@@ -65,7 +67,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             set
             {
-                SetSelectedAction(value);
+                SetSelectedAction((T)value);
                 NotifyOfPropertyChange(() => SelectedAction);
                 //Notify CanExecutes
                 NotifyOfPropertyChange(() => CanRemoveAction);
@@ -137,6 +139,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public CharacterActionGroupViewModelImpl(IEventAggregator eventAggregator)
         {
             this.EventAggregator = eventAggregator;
+            this.EventAggregator.Subscribe(this);
+
             //this.Owner.PropertyChanged += Owner_PropertyChanged;
             //this.eventAggregator.GetEvent<AttackInitiatedEvent>().Subscribe(this.AttackInitiated);
             //this.eventAggregator.GetEvent<CloseActiveAttackEvent>().Subscribe(this.StopAttack);
@@ -257,11 +261,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void RemoveAction()
         {
-            this.CharacterActionList.RemoveAction(this.SelectedAction);
-            //if (this.IsStandardOptionGroup)
-            //{
-            //    this.eventAggregator.GetEvent<RemoveOptionEvent>().Publish(optionToRemove);
-            //}
+            CharacterAction removedAction = this.SelectedAction;
+            this.CharacterActionList.RemoveAction((T)removedAction);
+            if (this.ActionGroup.IsStandardActionGroup)
+            {
+                this.EventAggregator.Publish(new RemoveActionEvent(removedAction), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
             this.SaveActionGroup();
         }
 
@@ -277,13 +282,23 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.SaveActionGroup();
         }
 
+        public void Handle(RemoveActionEvent message)
+        {
+            if (!this.ActionGroup.IsStandardActionGroup)
+            {
+                this.CharacterActionList.RemoveAction((T)message.RemovedAction);
+                this.SaveActionGroup();
+            }
+        }
+
         #endregion
 
         #region Set Default
 
         public void SetDefaultAction()
         {
-            this.CharacterActionList.Default = this.SelectedAction;
+            this.CharacterActionList.Default = (T)this.SelectedAction;
+            this.SaveActionGroup();
         }
 
         #endregion
@@ -316,9 +331,30 @@ namespace HeroVirtualTabletop.ManagedCharacter
             //    }
             //}
             selectedAction = value;
-            //if (!this.ActionGroup.Owner.IsSpawned)
-            //    this.ActionGroup.Owner.SpawnToDesktop();
             this.CharacterActionList.Active = value;
+            this.SpawnAndTargetOwnerCharacter();
+            if(value is Identity)
+            {
+                this.CharacterActionList.Active.Play();
+            }
+        }
+
+        private void SpawnAndTargetOwnerCharacter()
+        {
+            CharacterCrowdMember member = this.ActionGroup.Owner as CharacterCrowdMember;
+            if (!member.IsSpawned)
+            {
+                
+                Crowd.Crowd parent = null;
+                if (member.RosterParent == null)
+                    parent = member.AllCrowdMembershipParents.FirstOrDefault(membership => membership.ParentCrowd != null && membership.ParentCrowd.Name != member.CrowdRepository.AllMembersCrowd.Name)?.ParentCrowd;
+                else
+                    parent = member.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == member.RosterParent.Name) as Crowd.Crowd;
+
+                this.EventAggregator.PublishOnUIThread(new AddToRosterEvent(member, parent));
+                member.SpawnToDesktop(false);
+            }
+            member.Target();
         }
 
         #endregion
@@ -327,14 +363,25 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void EditAction()
         {
-
+            if (SelectedAction is Identity)
+            {
+                EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
+            //else if (SelectedAction is AnimatedAbility.AnimatedAbility)
+            //{
+            //    EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            //}
+            //else if (SelectedAction is CharacterMovement)
+            //{
+            //    EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            //}
         }
 
         #endregion
 
         #region Play Action
 
-        public void Play()
+        public void PlayAction()
         {
 
         }
@@ -343,9 +390,50 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Stop Action
 
-        public void Stop()
+        public void StopAction()
         {
 
+        }
+
+        #endregion
+
+        #region Toggle Play Option
+
+        public void TogglePlayAction(object obj)
+        {
+            if (SelectedAction != null && SelectedAction is AnimatedAbility.AnimatedAbility && !(obj is AnimatedAbility.AnimatedAbility))
+            {
+                //StopOption(SelectedAction);
+            }
+
+            //SelectedOption = (T)obj;
+            if (SelectedAction is AnimatedAbility.AnimatedAbility)
+            {
+                AnimatedAbility.AnimatedAbility ability = obj as AnimatedAbility.AnimatedAbility;
+                // If it's not persistent- play
+                // If it's persistent but hasn't been played yet - play
+                // If it's persistent and has been played already - stop
+                if (!(ability.Persistant && (ability.Owner as AnimatedAbility.AnimatedCharacter).ActiveStates.FirstOrDefault(state => state.Ability == ability && state.AbilityAlreadyPlayed) != null))
+                {
+                    //PlayOption(obj);
+                }
+                else
+                {
+                    //StopOption(obj);
+                }
+            }
+            else if (SelectedAction is CharacterMovement)
+            {
+                CharacterMovement characterMovement = obj as CharacterMovement;
+                if (!characterMovement.IsActive)
+                {
+                    //PlayOption(obj);
+                }
+                else
+                {
+                    //StopOption(obj);
+                }
+            }
         }
 
         #endregion

@@ -112,6 +112,7 @@ namespace HeroVirtualTabletop.Movement
         public override void Play(bool completeEvent = true)
         {
             ((MovableCharacter) Owner).IsMoving = true;
+            this.IsActive = true;
             ((MovableCharacter) Owner).ActiveMovement = this;
         }
 
@@ -277,6 +278,7 @@ namespace HeroVirtualTabletop.Movement
         }
         public void Start(MovableCharacter character)
         {
+            
             throw new NotImplementedException();
         }
 

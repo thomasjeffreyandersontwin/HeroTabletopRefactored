@@ -17,7 +17,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [JsonObject]
-    public class CharacterActionListImpl<T> : ObservableCollection<T> , CharacterActionList<T> where T : CharacterAction
+    public class CharacterActionListImpl<T> : ObservableCollection<T>, CharacterActionList<T> where T : CharacterAction
     {
         private T _active;
         private T _default;
@@ -40,7 +40,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         }
         [JsonIgnore]
-        public KeyBindCommandGenerator Generator { get; set; }        
+        public KeyBindCommandGenerator Generator { get; set; }
         [JsonProperty]
         public virtual ManagedCharacter Owner
         {
@@ -95,15 +95,27 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             set
             {
-               // if (value != null)
-                    if (this.Contains(value))
-                        _default = value;
+                // if set to another action - set provided value
+                // if set to null - set the next available action in the list as default
+                if (this.Contains(value))
+                    _default = value;
+                else if (value == null && Count > 0)
+                {
+                    if(_default != null && _default.Equals(this.First()))
+                    {
+                            var nextAvailable = this.FirstOrDefault(a => !a.Equals(_default));
+                            if (nextAvailable != null)
+                                _default = nextAvailable;
+                    }
+                    else
+                        _default = this.First();
+                }
 
                 OnPropertyChanged("Default");
             }
         }
         private string _name;
-        [JsonProperty(Order =0)]
+        [JsonProperty(Order = 0)]
         public string Name
         {
             get
@@ -126,10 +138,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             set
             {
-                if(value.Name == key)
+                if (value.Name == key)
                 {
                     var existing = this.FirstOrDefault(a => a.Name == key);
-                    if(!existing.Equals(value))
+                    if (!existing.Equals(value))
                     {
                         this.Remove(existing);
                         this.InsertAction(value);
@@ -152,7 +164,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        [JsonProperty(Order =1)]
+        [JsonProperty(Order = 1)]
         public T[] Actions
         {
             get
@@ -192,7 +204,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 action = (T)GetNewMovement();
             }
-            
+
             return action;
         }
 
@@ -215,7 +227,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             return $"{name}{suffix}".Trim();
         }
 
-       
+
         public void InsertAction(T action)
         {
             action.Owner = Owner;
@@ -239,7 +251,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void InsertMany(List<T> actions)
         {
-            foreach(T action in actions)
+            foreach (T action in actions)
             {
                 InsertAction(action);
             }
@@ -258,7 +270,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void InsertActionAfter(T elementToAdd, T elementToAddAfter)
         {
             var index = this.IndexOf(elementToAddAfter);
-            if(index >= 0)
+            if (index >= 0)
             {
                 var position = index + 1;
                 this.Insert(position, elementToAdd);
@@ -270,6 +282,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             bool isDuplicate = this.Name != newName && this.Owner.CharacterActionGroups.FirstOrDefault(a => a.Name == newName) != null;
             return isDuplicate;
+        }
+
+        public bool CheckDuplicateNameForActions(string oldName, string newName)
+        {
+            return !(oldName != newName && this.FirstOrDefault(a => a.Name == oldName) != null && this.FirstOrDefault(a => a.Name == newName) == null);
         }
 
         private Identity GetNewIdentity()
@@ -325,7 +342,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var cloneList = new CharacterActionListImpl<T>(Type, Generator, Owner);
             foreach (var anAction in this)
             {
-                var clone = (T) anAction.Clone();
+                var clone = (T)anAction.Clone();
                 cloneList.InsertAction(clone);
             }
             return cloneList;
@@ -345,7 +362,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void Rename(string newName)
         {
-            if(Name != newName)
+            if (Name != newName)
             {
                 this.Name = newName;
             }
@@ -416,10 +433,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
         public virtual int Order { get; set; }
-        
+
 
         public abstract CharacterAction Clone();
-        public abstract void Play(bool completeEvent=true);
+        public abstract void Play(bool completeEvent = true);
         public virtual void Stop(bool completeEvent = true)
         {
             throw new NotImplementedException();

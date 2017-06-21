@@ -119,7 +119,7 @@
                                     <DataTemplate>
                                         <Grid Name="optGrid" 
                             ContextMenu="{StaticResource optionListBoxMenu}">
-                                            <Ellipse Name="optionEllipse"  Width="40" Height="40" ToolTip="{Binding Name}" 
+                                            <Ellipse Name="optionEllipse"  Width="40" Height="40" ToolTip="{Binding Name}" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                                      behaviors:CommandBehavior.Event="MouseLeftButtonUp" behaviors:CommandBehavior.Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=managedcharacter:CharacterActionGroupView}, Path=DataContext.TogglePlayOptionCommand}" behaviors:CommandBehavior.CommandParameter="{Binding ElementName=optionEllipse, Path=DataContext}">
                                                 <Ellipse.Style>
                                                     <Style TargetType="{x:Type Ellipse}">
@@ -139,10 +139,15 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Ellipse.Style>
-                                                <Ellipse.InputBindings>
-                                                    <!--<MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=local:OptionGroupView}, Path=DataContext.TogglePlayOptionCommand}" CommandParameter="{Binding ElementName=optionEllipse, Path=DataContext}" MouseAction="LeftClick"/>-->
-                                                    <MouseBinding Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=managedcharacter:CharacterActionGroupView}, Path=DataContext.EditOptionCommand}" MouseAction="LeftDoubleClick"/>
-                                                </Ellipse.InputBindings>
+                                                <i:Interaction.Triggers>
+                                                        <local:InputBindingTrigger>
+                                                            <local:InputBindingTrigger.InputBinding>
+                                                                <MouseBinding MouseAction="LeftDoubleClick"/>
+                                                            </local:InputBindingTrigger.InputBinding>
+                                                        <cal:ActionMessage MethodName="EditAction">
+                                                        </cal:ActionMessage>
+                                                        </local:InputBindingTrigger>
+                                                    </i:Interaction.Triggers>
                                             </Ellipse>
 
                                             <Ellipse Name="silverEllipse" Width="40" Height="40" StrokeThickness="2" Stroke="Silver">

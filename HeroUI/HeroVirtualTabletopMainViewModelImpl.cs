@@ -16,7 +16,8 @@ using System.Windows;
 
 namespace HeroUI
 {
-    public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell
+    public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
+        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
@@ -64,7 +65,7 @@ namespace HeroUI
             set
             {
                 isCharacterExplorerExpanded = value;
-                NotifyOfPropertyChange("IsCharacterExplorerExpanded");
+                NotifyOfPropertyChange(() => IsCharacterExplorerExpanded);
             }
         }
 
@@ -78,7 +79,7 @@ namespace HeroUI
             set
             {
                 isRosterExplorerExpanded = value;
-                NotifyOfPropertyChange("IsRosterExplorerExpanded");
+                NotifyOfPropertyChange(() => IsRosterExplorerExpanded);
             }
         }
 
@@ -92,7 +93,7 @@ namespace HeroUI
             set
             {
                 isCharacterEditorExpanded = value;
-                NotifyOfPropertyChange("IsCharacterEditorExpanded");
+                NotifyOfPropertyChange(() => IsCharacterEditorExpanded);
             }
         }
 
@@ -106,7 +107,7 @@ namespace HeroUI
             set
             {
                 isIdentityEditorExpanded = value;
-                NotifyOfPropertyChange("IsIdentityEditorExpanded");
+                NotifyOfPropertyChange(() => IsIdentityEditorExpanded);
             }
         }
 
@@ -120,7 +121,7 @@ namespace HeroUI
             set
             {
                 isAbilityEditorExpanded = value;
-                NotifyOfPropertyChange("IsAbilityEditorExpanded");
+                NotifyOfPropertyChange(() => IsAbilityEditorExpanded);
             }
         }
 
@@ -134,7 +135,7 @@ namespace HeroUI
             set
             {
                 isMovementEditorExpanded = value;
-                NotifyOfPropertyChange("IsMovementEditorExpanded");
+                NotifyOfPropertyChange(() => IsMovementEditorExpanded);
             }
         }
 
@@ -148,7 +149,7 @@ namespace HeroUI
             set
             {
                 isCrowdFromModelsExpanded = value;
-                NotifyOfPropertyChange("IsCrowdFromModelsExpanded");
+                NotifyOfPropertyChange(() => IsCrowdFromModelsExpanded);
             }
         }
 
@@ -194,19 +195,37 @@ namespace HeroUI
             }
         }
 
+        private IdentityEditorViewModel identityEditorViewModel;
+        public IdentityEditorViewModel IdentityEditorViewModel
+        {
+            get
+            {
+                return identityEditorViewModel;
+            }
+            set
+            {
+                identityEditorViewModel = value;
+                NotifyOfPropertyChange(() => IdentityEditorViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
-        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IconInteractionUtility iconInteractionUtility, Camera camera)
+        public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
+            RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
+            IconInteractionUtility iconInteractionUtility, Camera camera)
         {
             this.eventAggregator = eventAggregator;
             this.CrowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
             this.RosterExplorerViewModel = rosterExplorerViewModel;
             this.CharacterEditorViewModel = characterEditorViewModel;
+            this.IdentityEditorViewModel = identityEditorViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             LaunchGame();
+            this.eventAggregator.Subscribe(this);
             //this.eventAggregator.GetEvent<AddToRosterEvent>().Subscribe((IEnumerable<CrowdMemberModel> models) => { this.IsRosterExplorerExpanded = true; });
             //this.eventAggregator.GetEvent<EditCharacterEvent>().Subscribe((Tuple<ICrowdMemberModel, IEnumerable<ICrowdMemberModel>> tuple) => { this.IsCharacterEditorExpanded = true; });
             //this.eventAggregator.GetEvent<EditIdentityEvent>().Subscribe((Tuple<Identity, Character> tuple) => { this.IsIdentityEditorExpanded = true; });
@@ -487,6 +506,20 @@ namespace HeroUI
                     file.Delete();
                 }
             }
+        }
+
+        #endregion
+
+        #region Open Editors
+
+        public void Handle(EditIdentityEvent message)
+        {
+            this.IsIdentityEditorExpanded = true;
+        }
+
+        public void Handle(EditCharacterEvent message)
+        {
+            this.IsCharacterEditorExpanded = true;
         }
 
         #endregion
