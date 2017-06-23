@@ -136,6 +136,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         string Surface { get; set; }
         SurfaceType Type { get; set; }
+        AnimatedAbility.AnimatedAbility AnimationOnLoad { get; set; }
     }
 
     public interface CharacterProgressBarStats

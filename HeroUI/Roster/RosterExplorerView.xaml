@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:roster="clr-namespace:HeroVirtualTabletop.Roster"
              xmlns:local="clr-namespace:HeroUI"
+             xmlns:cal="http://www.caliburnproject.org"
              xmlns:characters="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
              xmlns:behaviors="clr-namespace:Framework.WPF.Behaviors;assembly=Framework.WPF"
              xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
@@ -33,17 +34,17 @@
             </CollectionViewSource>
             <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext}"/>
             <ContextMenu x:Key="RosterExplorerMenu">
-                <MenuItem Header="Activate Character" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ActivateCharacterCommand}"></MenuItem>
-                <MenuItem Header="Edit Character" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.EditCharacterCommand}"></MenuItem>
-                <MenuItem Header="Save Position" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.SavePositionCommand}"></MenuItem>
-                <MenuItem Header="Place" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.PlaceCommand}"></MenuItem>
-                <MenuItem Header="Spawn" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.SpawnCommand}"></MenuItem>
-                <MenuItem Header="Toggle Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ToggleTargetedCommand}"></MenuItem>
-                <MenuItem Header="Move Camera to Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.TargetAndFollowCommand}"></MenuItem>
-                <MenuItem Header="Move Target to Camera" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.MoveTargetToCameraCommand}"></MenuItem>
-                <MenuItem Header="Maneuver with camera" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ToggleManeuverWithCameraCommand}"></MenuItem>
-                <MenuItem Header="Clear From Desktop" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ClearFromDesktopCommand}"></MenuItem>
-                <MenuItem Header="Reset Orientation" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ResetOrientationCommand}"></MenuItem>
+                <MenuItem Header="Activate Character" cal:Message.Attach="Activate" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Edit Character" cal:Message.Attach="EditRosterMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Save Position" cal:Message.Attach="SavePosition" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Place" cal:Message.Attach="Place" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Spawn" cal:Message.Attach="Spawn" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Toggle Target" cal:Message.Attach="ToggleTargeted" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Move Camera to Target" cal:Message.Attach="MoveCameraToTarget" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Move Target to Camera" cal:Message.Attach="MoveToCamera" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Maneuver with camera" cal:Message.Attach="ToggleManueverWithCamera" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Clear From Desktop" cal:Message.Attach="ClearFromDesktop" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Reset Orientation" cal:Message.Attach="ResetOrientation" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
             </ContextMenu>
             <ContextMenu x:Key="AreaAttackMenu">
                 <MenuItem Header="Target" Command="{Binding Source={StaticResource BindingProxy}, Path=Data.AreaAttackTargetCommand}"></MenuItem>

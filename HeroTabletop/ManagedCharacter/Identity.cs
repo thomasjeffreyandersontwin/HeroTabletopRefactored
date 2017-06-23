@@ -46,6 +46,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        private AnimatedAbility.AnimatedAbility animationOnLoad;
+        public AnimatedAbility.AnimatedAbility AnimationOnLoad
+        {
+            get
+            {
+                return animationOnLoad;
+            }
+            set
+            {
+                animationOnLoad = value;
+                NotifyOfPropertyChange(() => AnimationOnLoad);
+            }
+        }
+
         public override void Play(bool completeEvent)
         {
             switch (Type)

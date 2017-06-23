@@ -9,7 +9,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 {
     public interface CharacterActionGroupViewModel
     {
-        CharacterActionGroup ActionGroup { get; }
+        CharacterActionGroup ActionGroup { get; set; }
         CharacterAction SelectedAction { get; set; }
         event EventHandler EditModeEnter;
         event EventHandler EditModeLeave;

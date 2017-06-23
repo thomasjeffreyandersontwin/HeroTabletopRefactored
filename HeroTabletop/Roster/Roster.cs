@@ -963,6 +963,20 @@ namespace HeroVirtualTabletop.Roster
         {
         }
 
+        public AnimatedAbility.AnimatedAbility AnimationOnLoad
+        {
+            get
+            {
+                Identity i = (Identity)SelectedParticipantActions?.FirstOrDefault();
+                return i.AnimationOnLoad;
+            }
+
+            set
+            {
+                
+            }
+        }
+
         public string Surface
         {
             get

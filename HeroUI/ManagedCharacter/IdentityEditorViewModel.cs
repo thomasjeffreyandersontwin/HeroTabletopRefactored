@@ -11,7 +11,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         event EventHandler EditModeEnter;
         event EventHandler EditModeLeave;
-
+        Identity EditedIdentity { get; set; }
+        ManagedCharacter Owner { get; }
         IEventAggregator EventAggregator { get; set; }
     }
 }

@@ -166,7 +166,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
             CharacterActionGroup actGroup = new CharacterActionListImpl<CharacterAction>(CharacterActionType.Mixed, this.EditedCharacter.Generator, this.EditedCharacter);
             actGroup.Name = newActionGroupName;
             this.EditedCharacter.AddActionGroup(actGroup);
-            var mixedActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<CharacterAction>>();
+            CharacterActionGroupViewModelImpl<CharacterAction> mixedActionGroup = null;
+            try
+            {
+                mixedActionGroup = IoC.Get<CharacterActionGroupViewModelImpl<CharacterAction>>();
+            }
+            catch
+            {
+                mixedActionGroup = new CharacterActionGroupViewModelImpl<CharacterAction>(this.EventAggregator);
+            }
             mixedActionGroup.ActionGroup = actGroup;
             mixedActionGroup.NewActionGroupAdded = true;
             this.CharacterActionGroups.Add(mixedActionGroup);

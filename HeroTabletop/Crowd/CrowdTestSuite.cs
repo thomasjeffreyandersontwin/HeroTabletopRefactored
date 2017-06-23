@@ -618,6 +618,24 @@ namespace HeroVirtualTabletop.Crowd
         }
         public CharacterCrowdMember MockCharacterCrowdMember => CustomizedMockFixture.Create<CharacterCrowdMember>();
 
+
+        public CharacterCrowdMember MockCharacterCrowdMemberWithMockIdentities
+        {
+            get
+            {
+                var moqCharacter = new Mock<CharacterCrowdMember>();
+                moqCharacter.Setup(c => c.Identities).Returns(MockIdentities);
+                moqCharacter.Setup(c => c.IsSpawned).Returns(true);
+                moqCharacter.Setup(c => c.ActiveIdentity).Returns(
+                    () =>
+                    {
+                        return moqCharacter.Object.Identities.Active;
+                    }
+                    );
+                return moqCharacter.Object;
+            }
+        }
+
         public Crowd MockCrowd => CustomizedMockFixture.Create<Crowd>();
         public Crowd CrowdUnderTest => StandardizedFixture.Create<CrowdImpl>();
 

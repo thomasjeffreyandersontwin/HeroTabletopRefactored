@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.ManagedCharacter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -58,12 +59,23 @@ namespace HeroVirtualTabletop.Roster
                 UpdateRosterSelection();
                 Target();
                 NotifyOfPropertyChange(() => SelectedParticipants);
+                NotifyOfPropertyChange(() => ShowAttackContextMenu);
                 RefreshRosterCommandsEligibility();
             }
         }
 
+        private bool showAttackContextMenu;
+        public bool ShowAttackContextMenu
+        {
+            get
+            { 
+                return showAttackContextMenu;
+            }
+        }
 
         #endregion
+
+        #region Refresh Commands
 
         private void RefreshRosterCommandsEligibility()
         {
@@ -77,6 +89,9 @@ namespace HeroVirtualTabletop.Roster
             NotifyOfPropertyChange(() => CanMoveCameraToTarget);
         }
 
+        #endregion
+
+        #region Constructor
         public RosterExplorerViewModelImpl(Roster roster, IEventAggregator eventAggregator)
         {
             this.Roster = roster;
@@ -85,6 +100,11 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Subscribe(this);
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        #region Add to Roster
         public void Handle(AddToRosterEvent message)
         {
             this.Roster.AddCrowdMemberToRoster(message.AddedCharacterCrowdMember, message.ParentCrowd);
@@ -93,6 +113,9 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
 
+        #endregion
+
+        #region Sync with Roster
         public void Handle(SyncWithRosterEvent message)
         {
             foreach (var crowdMember in message.MembersToSync)
@@ -107,7 +130,9 @@ namespace HeroVirtualTabletop.Roster
             OnRosterUpdated(null, null);
             //this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
+        #endregion
 
+        #region Delete Member
         public void Handle(DeleteCrowdMemberEvent message)
         {
             var deletedMember = message.DeletedMember;
@@ -117,19 +142,29 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.RemoveRosterMember(message.DeletedMember);
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
+        #endregion
 
+        #region Rename Member
         public void Handle(RenameCrowdMemberEvent message)
         {
             this.Roster.RenameRosterMember(message.RenamedMember);
             OnRosterUpdated(null, null);
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
+        #endregion
+
+        #endregion
+
+        #region Import Roster Member from Crowd Explorer
 
         public void ImportRosterMemberFromCrowdExplorer()
         {
             this.EventAggregator.PublishOnUIThread(new ImportRosterCrowdMemberEvent());
         }
 
+        #endregion
+
+        #region Update Roster Selection
         public void UpdateRosterSelection()
         {
             this.Roster.ClearAllSelections();
@@ -140,10 +175,17 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        #endregion
+
+        #region Target
+
         public void Target()
         {
             this.Roster.Selected?.Target();
         }
+        #endregion
+
+        #region Spawn
 
         public void Spawn()
         {
@@ -152,6 +194,10 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action)); // save needed due to possible identity change
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Clear from Desktop
 
         public bool CanClearFromDesktop
         {
@@ -177,6 +223,11 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             SelectFirstParticipant();
         }
+
+        #endregion
+
+        #region Move to Camera
+
         public bool CanMoveToCamera
         {
             get
@@ -189,6 +240,10 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.MoveCharacterToCamera();
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Save Position
 
         public bool CanSavePosition
         {
@@ -203,6 +258,10 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Place
         public bool CanPlace
         {
             get
@@ -215,6 +274,11 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.PlaceOnTableTop();
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Toggle Targeted
+
         public bool CanToggleTargeted
         {
             get
@@ -227,6 +291,10 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.ToggleTargeted();
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Toggle Maneuver With Camera
         public bool CanToggleManueverWithCamera
         {
             get
@@ -240,6 +308,10 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.ToggleManueveringWithCamera();
             SelectNextCharacterInCrowdCycle();
         }
+
+        #endregion
+
+        #region Move Camera to Target
         public bool CanMoveCameraToTarget
         {
             get
@@ -253,10 +325,18 @@ namespace HeroVirtualTabletop.Roster
             SelectNextCharacterInCrowdCycle();
         }
 
+        #endregion
+
+        #region Activate 
+
         public void Activate()
         {
             this.Roster.Selected?.Activate();
         }
+
+        #endregion
+
+        #region Reset Orientation
 
         public void ResetOrientation()
         {
@@ -264,7 +344,9 @@ namespace HeroVirtualTabletop.Roster
             //SelectNextCharacterInCrowdCycle();
         }
 
-        #region Cycle Commands Through Crowd
+        #endregion
+
+        #region Cycle Commands through Crowd
 
         public void CycleCommandsThroughCrowd()
         {
@@ -329,6 +411,16 @@ namespace HeroVirtualTabletop.Roster
             SelectedParticipants.Add(cNext);
             UpdateRosterSelection();
             NotifyOfPropertyChange(() => SelectedParticipants);
+        }
+
+        #endregion
+
+        #region Edit Roster Member
+
+        public void EditRosterMember()
+        {
+            var editingMember = SelectedParticipants[0] as CharacterCrowdMember;
+            this.EventAggregator.Publish(new EditCharacterEvent(editingMember), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
         #endregion

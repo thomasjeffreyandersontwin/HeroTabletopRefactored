@@ -40,7 +40,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             if (EditModeLeave != null)
                 EditModeLeave(sender, e);
-
         }
 
         #endregion
@@ -202,6 +201,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Methods
 
+        #region Property Changed Event Handlers
+
         private void OwnerIdentities_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -210,6 +211,40 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     NotifyOfPropertyChange(() => IsDefault);
                     break;
             }
+        }
+
+        private void AvailableIdentities_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove
+                && e.OldItems.Contains(this.EditedIdentity))
+            {
+                this.UnloadIdentity();
+            }
+        }
+
+        private void EditedIdentity_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Surface" || e.PropertyName == "AnimationOnLoad")
+            {
+                if (Owner.IsSpawned)
+                {
+                    if (Owner.ActiveIdentity == EditedIdentity)
+                    {
+                        Owner.Target(false);
+                        Owner.ActiveIdentity.Play();
+                    }
+                }
+            }
+            SaveIdentity();
+        }
+
+        #endregion
+
+        #region Load Identity
+
+        public void Handle(EditIdentityEvent message)
+        {
+            this.LoadIdentity(message.EditedIdentity);
         }
 
         private void LoadIdentity(Identity identity)
@@ -223,6 +258,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             NotifyOfPropertyChange(() => IsDefault);
         }
 
+        #endregion
+
+        #region Unload Identity and Close Editor
+
         private void UnloadIdentity()
         {
             this.EditedIdentity = null;
@@ -231,6 +270,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.IsShowingIdentityEditor = false;
         }
 
+        public void CloseEditor()
+        {
+            this.UnloadIdentity();
+        }
+
+        #endregion
+
+        #region Rename Identity
         public void EnterEditMode(object state)
         {
             this.originalName = EditedIdentity.Name;
@@ -266,14 +313,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        private void AvailableIdentities_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove
-                && e.OldItems.Contains(this.EditedIdentity))
-            {
-                this.UnloadIdentity();
-            }
-        }
+        #endregion
+
+        #region Create Collectins - Models and Surfaces and Abilities
 
         private void CreateModelsViewSource()
         {
@@ -305,14 +347,18 @@ namespace HeroVirtualTabletop.ManagedCharacter
             abilities.Add(none);
             abilitiesCVS.Source = new ObservableCollection<AnimatedAbility.AnimatedAbility>(abilities.Where((an) => { return an.Owner == this.Owner; /*&& an.IsAttack == false;*/}).OrderBy(a => a.Order));
             abilitiesCVS.View.Filter += abilitiesCVS_Filter;
-            //AnimatedAbility.AnimatedAbility moveTo = null;
-            //if (EditedIdentity != null)
-            //    moveTo = EditedIdentity.AnimationOnLoad;
-            //else
-            //    moveTo = none;
-            //abilitiesCVS.View.MoveCurrentTo(moveTo);
+            AnimatedAbility.AnimatedAbility moveTo = null;
+            if (EditedIdentity != null && EditedIdentity.AnimationOnLoad != null)
+                moveTo = EditedIdentity.AnimationOnLoad;
+            else
+                moveTo = none;
+            abilitiesCVS.View.MoveCurrentTo(moveTo);
             NotifyOfPropertyChange(() => AbilitiesCVS);
         }
+
+        #endregion
+
+        #region Filter
 
         private bool abilitiesCVS_Filter(object item)
         {
@@ -322,10 +368,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
 
             string strItem = (item as AnimatedAbility.AnimatedAbility).Name;
-            //if (EditedIdentity != null && EditedIdentity.AnimationOnLoad == item as AnimatedAbility)
-            //{
-            //    return true;
-            //}
+            if (EditedIdentity != null && EditedIdentity.AnimationOnLoad == item as AnimatedAbility.AnimatedAbility)
+            {
+                return true;
+            }
             return new Regex(Filter, RegexOptions.IgnoreCase).IsMatch(strItem);
         }
 
@@ -344,21 +390,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
             return new Regex(Filter, RegexOptions.IgnoreCase).IsMatch(strItem);
         }
 
-        private void EditedIdentity_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "Surface" || e.PropertyName == "AnimationOnLoad")
-            {
-                if (Owner.IsSpawned)
-                {
-                    if (Owner.ActiveIdentity == EditedIdentity)
-                    {
-                        Owner.Target(false);
-                        Owner.ActiveIdentity.Play();
-                    }
-                }
-            }
-            SaveIdentity();
-        }
+        #endregion
+
+        #region Load Abilities
 
         private void BeginLoadAbilities()
         {
@@ -369,20 +403,17 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
 
         }
+
+        #endregion
+
+        #region Save Identity
         private void SaveIdentity()
         {
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
-        public void Handle(EditIdentityEvent message)
-        {
-            this.LoadIdentity(message.EditedIdentity);
-        }
+        #endregion
 
-        public void CloseEditor()
-        {
-            this.UnloadIdentity();
-        }
         #endregion
     }
 }

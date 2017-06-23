@@ -142,6 +142,7 @@
     <Compile Include="ManagedCharacter\IdentityEditorViewModel.cs" />
     <Compile Include="ManagedCharacter\IdentityEditorViewModelImpl.cs" />
     <Compile Include="ManagedCharacter\ManagedCharacterEvents.cs" />
+    <Compile Include="ManagedCharacter\ManagedCharacterTestSuite.cs" />
     <Compile Include="Roster\RosterEvents.cs" />
     <Compile Include="Roster\RosterExplorerTestSuite.cs" />
     <Compile Include="Roster\RosterExplorerView.xaml.cs">

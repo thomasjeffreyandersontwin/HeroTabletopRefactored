@@ -7,6 +7,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Kernel;
 using System.Collections.ObjectModel;
 using HeroVirtualTabletop.Movement;
+using Caliburn.Micro;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -507,6 +508,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        public IEventAggregator MockEventAggregator => CustomizedMockFixture.Create<IEventAggregator>();
+
         public ObservableCollection<CharacterActionGroup> GetStandardCharacterActionGroup(ManagedCharacter character)
         {
             var actionGroup = new ObservableCollection<CharacterActionGroup>();
@@ -620,6 +623,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 var id = CustomizedMockFixture.Create<Identity>();
                 return id;
+            }
+        }
+
+        public Identity MockIdentityImpl
+        {
+            get
+            {
+                return CustomizedMockFixture.Create<IdentityImpl>();
             }
         }
 
