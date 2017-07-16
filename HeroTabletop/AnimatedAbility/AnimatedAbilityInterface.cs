@@ -5,6 +5,11 @@ using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Attack;
+using System.Collections.ObjectModel;
+using System.Windows.Data;
+using Caliburn.Micro;
+using System.ComponentModel;
+
 namespace HeroVirtualTabletop.AnimatedAbility
 {
     public interface AnimatedCharacterCommands
@@ -48,7 +53,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         bool IsActive { get; set; }
         bool IsSelected { get; set; }
         AnimatedAttack ActiveAttack { get; set; }
-
+        bool CheckIfAbilityNameIsDuplicate(string updatedName);
         Position Facing { get; set; }
         void PlayExternalAnimatedAbility(AnimatedAbility ability);
         KnockbackCollisionInfo PlayCompleteExternalAttack(AnimatedAttack attack, AttackInstructions instructions);
@@ -80,16 +85,25 @@ namespace HeroVirtualTabletop.AnimatedAbility
         //Dictionary<AnimatableCharacterStateType, AnimatableCharacterState> AnimatableCharacterStates { get; set; }
         AnimatableCharacterState CreateStateFor(AnimatedCharacter character, AnimatableCharacterState state);
     }
-
+    public enum AnimationElementType
+    {
+        Mov,
+        Sound,
+        FX,
+        Reference,
+        Sequence,
+        Pause
+    }
     public enum SequenceType
     {
-        And = 1,
-        Or = 2
+        And,
+        Or
     }
     public interface AnimationSequencer 
     {
         SequenceType Type { get; set; }
-        List<AnimationElement> AnimationElements { get; }
+        ObservableCollection<AnimationElement> AnimationElements { get; }
+        AnimationElement GetNewAnimationElement(AnimationElementType animationElementType);
 
         void InsertMany(List<AnimationElement> animationElements);
         void InsertElement(AnimationElement toInsert);
@@ -112,27 +126,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
         new void Play(List<AnimatedCharacter> targets);
         void Stop(bool completedEvent = true);
         AnimatedAbility Clone(AnimatedCharacter target);
-       
+        void Rename(string newName);
     }
-    public interface AnimatedAbilityRepository
-    {
-        AnimatedAbility NewAbility(AnimatedCharacter owner);
-
-        SoundElement NewSoundElement(AnimatedAbility parentAbility);
-        FXElement NewFXElement(AnimatedAbility parentAbility);
-        MovElement NewMOVElement(AnimatedAbility parentAbility);
-        PauseElement NewPauselement(AnimatedAbility parentAbility);
-        SoundElement NewSequenceElement(AnimatedAbility parentAbility);
-        ReferenceElement NewRefElement(AnimatedAbility parentAbility);
-    }
-
    
     
-    public interface AnimationElement : OrderedElement
+    public interface AnimationElement : INotifyPropertyChanged, OrderedElement
     {
         AnimationSequencer ParentSequence { get; set; }
        
-
+        AnimationElementType AnimationElementType { get; set; }
         AnimatedCharacter Target { get; set; }
 
         bool PlayWithNext { get; set; }
@@ -213,33 +215,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
     }
     public interface ReferenceElement : AnimationElement
     {
-        AnimatedAbility Reference { get; set; }
+        ReferenceResource Reference { get; set; }
 
         SequenceElement Copy(AnimatedCharacter destination);
     }
-    public enum AnimationelEmentType
+
+    public interface AnimatedResourceManager
     {
-        Mov,
-        FX,
-        Sound,
-        Reference,
-        Sequence,
-        Pause
-    }
-    public interface AnimationElementRepository
-    {
-        List<SoundResource> SoundElements { get; set; }
+        string GameDirectory { get; set; }
 
-        List<FXResource> FXElements { get; set; }
+        CrowdRepository CrowdRepository { get; set; }
+        ObservableCollection<SoundResource> SoundElements { get; set; }
 
-        List<MovResource> MovElements { get; set; }
+        ObservableCollection<FXResource> FXElements { get; set; }
 
-        List<ReferenceResource> ReferenceElements { get; set; }
-        List<AnimationElement> Filter(string filter, AnimationelEmentType type);
-        SoundResource FilteredSoundElements(string filter);
-        List<FXResource> FilteredFXElements(string filter);
-        List<MovResource> FilteredMovs(string filter);
-        List<ReferenceResource> References(string filter);
+        ObservableCollection<MovResource> MovElements { get; set; }
+
+        ObservableCollection<ReferenceResource> ReferenceElements { get; set; }
+
+        CollectionViewSource MOVResourcesCVS { get; set; }
+        CollectionViewSource FXResourcesCVS { get; set; }
+        CollectionViewSource SoundResourcesCVS { get; set; }
+        CollectionViewSource ReferenceElementsCVS { get; set; }
+        AnimatedAbility CurrentAbility { get; set; }
+        AnimationElement CurrentAnimationElement { get; set; }
+        string Filter { get; set; }
+        void LoadResources();
+        void LoadReferenceResource();
     }
 
     public interface AnimatedResource

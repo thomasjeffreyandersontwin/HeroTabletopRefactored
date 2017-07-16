@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Threading;
 using HeroVirtualTabletop.Desktop;
+using System;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -17,7 +18,30 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public KeyBindCommandGenerator Generator { get; }
 
-        public Position Position { get; set; }
+        private Position position;
+        public Position Position
+        {
+            get
+            {
+                if (position == null)
+                {
+                    try
+                    {
+                        RefreshPosition();
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                return position;
+            }
+            set
+            {
+                position = value;
+            }
+        }
+
         public Identity Identity { get; private set; }
 
         public ManagedCharacter ManueveringCharacter
@@ -39,8 +63,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     _manueveringCharacter = value;
                     _manueveringCharacter.Target(false);
                     MoveToTarget();
-                    if(Position == null)
-                        RefreshPosition();
+                    //if(Position == null)
+                    //    RefreshPosition();
                     float dist = 13.23f, calculatedDistance;
                     var maxRecalculationCount = 5;
                         // We will allow the same distance to be calculated 5 times at max. After this we'll assume that the camera is stuck.
@@ -69,11 +93,35 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 }
             }
         }
-        public void RefreshPosition()
+        public void ReInitializePosition()
         {
             MemoryManager memoryManager = new MemoryManagerImpl(false, 1696336);
             DesktopMemoryCharacter desktopChar = new DesktopMemoryCharacterImpl(memoryManager);
             Position = new PositionImpl(desktopChar);
+        }
+
+        public void RefreshPosition()
+        {
+            ReInitializePosition();
+            float x, y, z;
+            int numberOfReInitialize = 0;
+            while (true)
+            {
+                if (Math.Abs(position.X) < 0.01f || Math.Abs(position.Y) < 0.01f || Math.Abs(position.Z) < 0.01f)
+                {
+                    ReInitializePosition();
+                    numberOfReInitialize++;
+                }
+                else
+                {
+                    x = position.X;
+                    y = position.Y;
+                    z = position.Z;
+                    if (Math.Abs(x) >= 0.01f && Math.Abs(y) >= 0.01f && Math.Abs(z) >= 0.01f)
+                        break;
+                }
+
+            }
         }
         public void MoveToTarget(bool completeEvent = true)
         {

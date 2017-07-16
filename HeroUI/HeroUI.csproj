@@ -124,6 +124,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnimatedAbility\AbilityEditorView.xaml.cs">
+      <DependentUpon>AbilityEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AnimatedAbility\AbilityEditorViewModel.cs" />
+    <Compile Include="AnimatedAbility\AbilityEditorViewModelImpl.cs" />
     <Compile Include="AnimatedAbility\AnimatedAbilityEvents.cs" />
     <Compile Include="ManagedCharacter\ActionListBoxControl.cs" />
     <Compile Include="ManagedCharacter\CharacterActionGroupView.xaml.cs">
@@ -150,6 +155,10 @@
     </Compile>
     <Compile Include="Roster\RosterExplorerViewModel.cs" />
     <Compile Include="Roster\RosterExplorerViewModelImpl.cs" />
+    <Page Include="AnimatedAbility\AbilityEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="BusyService\BusyControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

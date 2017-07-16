@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
@@ -17,7 +18,7 @@ using System.Windows;
 namespace HeroUI
 {
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
-        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>
+        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
@@ -209,11 +210,26 @@ namespace HeroUI
             }
         }
 
+        private AbilityEditorViewModel abilityEditorViewModel;
+        public AbilityEditorViewModel AbilityEditorViewModel
+        {
+            get
+            {
+                return abilityEditorViewModel;
+            }
+            set
+            {
+                abilityEditorViewModel = value;
+                NotifyOfPropertyChange(() => AbilityEditorViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
             RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
+            AbilityEditorViewModel abilityEditorViewModel,
             IconInteractionUtility iconInteractionUtility, Camera camera)
         {
             this.eventAggregator = eventAggregator;
@@ -221,6 +237,7 @@ namespace HeroUI
             this.RosterExplorerViewModel = rosterExplorerViewModel;
             this.CharacterEditorViewModel = characterEditorViewModel;
             this.IdentityEditorViewModel = identityEditorViewModel;
+            this.AbilityEditorViewModel = abilityEditorViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
@@ -313,6 +330,12 @@ namespace HeroUI
             }
         }
 
+        private void SetGamePathForAnimationElements()
+        {
+            FXElementImpl.COSTUME_DIR = Path.Combine(Properties.Settings.Default.GameDirectory, "Costumes");
+            SoundElementImpl.SOUND_DIR = Path.Combine(Properties.Settings.Default.GameDirectory, "Sound");
+        }
+
         private void gameInitializeTimer_Callback(object state)
         {
             bool gameLoaded = iconInteractionUtility.IsGameLoaded();
@@ -348,6 +371,7 @@ namespace HeroUI
                 // Load camera on start
                 camera.ActivateCameraIdentity();
 
+                SetGamePathForAnimationElements();
                 //LoadMainView();
             };
             Application.Current.Dispatcher.BeginInvoke(d);
@@ -520,6 +544,11 @@ namespace HeroUI
         public void Handle(EditCharacterEvent message)
         {
             this.IsCharacterEditorExpanded = true;
+        }
+
+        public void Handle(EditAnimatedAbilityEvent message)
+        {
+            this.IsAbilityEditorExpanded = true;
         }
 
         #endregion

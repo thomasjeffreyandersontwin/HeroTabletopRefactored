@@ -6,13 +6,22 @@ using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class BeginLoadAbilities
+    public class BeginLoadAbilitiesEvent
     {
 
     }
 
-    public class EndLoadAbilities
+    public class EndLoadAbilitiesEvent
     {
         public List<AnimatedAbility> LoadedAbilities { get; set; }
+    }
+
+    public class EditAnimatedAbilityEvent
+    {
+        public AnimatedAbility EditedAbility { get; set; }
+        public EditAnimatedAbilityEvent(AnimatedAbility editedAbility)
+        {
+            this.EditedAbility = editedAbility;
+        }
     }
 }

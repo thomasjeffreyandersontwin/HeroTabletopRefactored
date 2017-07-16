@@ -171,6 +171,8 @@
     <Compile Include="Roster\RosterTestSuite.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="AnimatedAbility\FXElements.csv" />
+    <EmbeddedResource Include="AnimatedAbility\MOVElements.csv" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

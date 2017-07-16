@@ -128,18 +128,17 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsIdentityEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="IdentityEditor">
                     </ToggleButton>
-                    <!--<Grid x:Name="identityEditorPanel" Width="Auto" Grid.Row="1"/>-->
                     <Grid x:Name="identityEditorPanel" Grid.Row="1">
                         <ContentControl x:Name="IdentityEditorViewModel" />
                     </Grid>
                 </Grid>
             </GroupBox>
         </Expander>
-        <!--<Expander Grid.Column="5" Style="{StaticResource VerticalExpanderStyle}"
+        <Expander Grid.Column="5" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Power Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
-                  Visibility="{Binding ElementName=abilityEditorPanel, Path=Children[0].DataContext.IsShowingAbilityEditor, Converter={StaticResource BooleanToVisibilityConverter}}"
+                  Visibility="{Binding ElementName=abilityEditorPanel, Path=Children[0].Content.DataContext.IsShowingAbilityEditor, Converter={StaticResource BooleanToVisibilityConverter}}"
                   IsExpanded="{Binding IsAbilityEditorExpanded}"
                   >
 
@@ -152,10 +151,12 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsAbilityEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="AbilityEditor">
                     </ToggleButton>
-                    <Grid x:Name="abilityEditorPanel" Width="Auto" Grid.Row="1"/>
+                    <Grid x:Name="abilityEditorPanel" Grid.Row="1">
+                        <ContentControl x:Name="AbilityEditorViewModel" />
+                    </Grid>
                 </Grid>
             </GroupBox>
-        </Expander>-->
+        </Expander>
         <!--<Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Movement Editor"

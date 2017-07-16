@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
+using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Movement;
@@ -321,17 +322,18 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         private void SetSelectedAction(T value)
         {
-            //if (selectedAction != null && selectedAction is AnimatedAbility)
-            //{
-            //    if (selectedAction as AnimatedAbility != value as AnimatedAbility)
-            //    {
-            //        AnimatedAbility ability = selectedOption as AnimatedAbility;
-            //        if (ability.IsActive && !ability.Persistent)
-            //            ability.Stop();
-            //    }
-            //}
+            if (selectedAction != null && selectedAction is AnimatedAbility.AnimatedAbility)
+            {
+                if (selectedAction as AnimatedAbility.AnimatedAbility != value as AnimatedAbility.AnimatedAbility)
+                {
+                    AnimatedAbility.AnimatedAbility ability = selectedAction as AnimatedAbility.AnimatedAbility;
+                    if (!ability.Persistant)
+                        ability.Stop();
+                }
+            }
             selectedAction = value;
-            this.CharacterActionList.Active = value;
+            if(!(value is AnimatedAbility.AnimatedAbility))
+                this.CharacterActionList.Active = value;
             this.SpawnAndTargetOwnerCharacter();
             if(value is Identity)
             {
@@ -344,13 +346,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             CharacterCrowdMember member = this.ActionGroup.Owner as CharacterCrowdMember;
             if (!member.IsSpawned)
             {
-                
-                Crowd.Crowd parent = null;
-                if (member.RosterParent == null)
-                    parent = member.AllCrowdMembershipParents.FirstOrDefault(membership => membership.ParentCrowd != null && membership.ParentCrowd.Name != member.CrowdRepository.AllMembersCrowd.Name)?.ParentCrowd;
-                else
-                    parent = member.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == member.RosterParent.Name) as Crowd.Crowd;
-
+                Crowd.Crowd parent = member.GetRosterParentCrowd();
                 this.EventAggregator.PublishOnUIThread(new AddToRosterEvent(member, parent));
                 member.SpawnToDesktop(false);
             }
@@ -367,10 +363,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             }
-            //else if (SelectedAction is AnimatedAbility.AnimatedAbility)
-            //{
-            //    EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
-            //}
+            else if (SelectedAction is AnimatedAbility.AnimatedAbility)
+            {
+                EventAggregator.Publish(new EditAnimatedAbilityEvent(SelectedAction as AnimatedAbility.AnimatedAbility), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
             //else if (SelectedAction is CharacterMovement)
             //{
             //    EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
@@ -381,18 +377,65 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Play Action
 
-        public void PlayAction()
+        public void PlayAction(object action)
         {
+            if (action is AnimatedAbility.AnimatedAbility)
+            {
+                AnimatedAbility.AnimatedAbility ability = action as AnimatedAbility.AnimatedAbility;
+                if (ability != null)
+                {
+                    this.CharacterActionList.Active = (T)ability;
+                    this.SpawnAndTargetOwnerCharacter();
+                    ability.Play();
+                    TurnOffActiveStateForAbilityAfterPredefinedTime();
+                }
+            }
+            else
+            {
+                CharacterMovement characterMovement = action as CharacterMovement;
+                if (characterMovement != null && characterMovement.Movement != null && !characterMovement.IsActive)
+                {
+                    //owner.ActiveMovement = characterMovement;
+                    //characterMovement.ActivateMovement();
+                }
+            }
+        }
 
+        private void TurnOffActiveStateForAbilityAfterPredefinedTime()
+        {
+            System.Action d = delegate ()
+            {
+                this.CharacterActionList.Active = default(T);
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5000);
+            adex.ExecuteAsyncDelegate();
         }
 
         #endregion
 
         #region Stop Action
 
-        public void StopAction()
+        public void StopAction(object action)
         {
-
+            if (action is AnimatedAbility.AnimatedAbility)
+            {
+                AnimatedAbility.AnimatedAbility abilityToStop = action as AnimatedAbility.AnimatedAbility;
+                AnimatedAbility.AnimatedAbility ability = SelectedAction as AnimatedAbility.AnimatedAbility;
+                if (ability != null && abilityToStop != null && ability == abilityToStop)
+                {
+                    this.SpawnAndTargetOwnerCharacter();
+                    ability.Stop();
+                }
+            }
+            else
+            {
+                CharacterMovement characterMovement = action as CharacterMovement;
+                if (characterMovement != null && characterMovement.Movement != null && characterMovement.IsActive)
+                {
+                    //characterMovement.DeactivateMovement();
+                    //owner.ActiveMovement = null;
+                }
+            }
         }
 
         #endregion
@@ -403,10 +446,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             if (SelectedAction != null && SelectedAction is AnimatedAbility.AnimatedAbility && !(obj is AnimatedAbility.AnimatedAbility))
             {
-                //StopOption(SelectedAction);
+                StopAction(SelectedAction);
             }
-
-            //SelectedOption = (T)obj;
+            
             if (SelectedAction is AnimatedAbility.AnimatedAbility)
             {
                 AnimatedAbility.AnimatedAbility ability = obj as AnimatedAbility.AnimatedAbility;
@@ -415,11 +457,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 // If it's persistent and has been played already - stop
                 if (!(ability.Persistant && (ability.Owner as AnimatedAbility.AnimatedCharacter).ActiveStates.FirstOrDefault(state => state.Ability == ability && state.AbilityAlreadyPlayed) != null))
                 {
-                    //PlayOption(obj);
+                    PlayAction(obj);
                 }
                 else
                 {
-                    //StopOption(obj);
+                    StopAction(obj);
                 }
             }
             else if (SelectedAction is CharacterMovement)
@@ -427,11 +469,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 CharacterMovement characterMovement = obj as CharacterMovement;
                 if (!characterMovement.IsActive)
                 {
-                    //PlayOption(obj);
+                    //PlayAction(obj);
                 }
                 else
                 {
-                    //StopOption(obj);
+                    //StopAction(obj);
                 }
             }
         }

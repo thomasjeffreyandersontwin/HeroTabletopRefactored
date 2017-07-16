@@ -10,12 +10,18 @@ using HeroVirtualTabletop.Desktop;
 using IrrKlang;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using HeroVirtualTabletop.Common;
+using System.Windows.Data;
+using Caliburn.Micro;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using HeroVirtualTabletop.Crowd;
+using Newtonsoft.Json;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public abstract class AnimationElementImpl : AnimationElement
+    public abstract class AnimationElementImpl : PropertyChangedBase, AnimationElement
     {
-        public abstract string Name { get; set; }
+        
         protected bool completeEvent;
 
         protected AnimationElementImpl(AnimatedCharacter owner)
@@ -26,12 +32,47 @@ namespace HeroVirtualTabletop.AnimatedAbility
         protected AnimationElementImpl()
         {
         }
-
+        [JsonProperty]
         public int Order { get; set; }
+        [JsonProperty]
         public AnimatedCharacter Target { get; set; }
+        [JsonProperty]
         public bool PlayWithNext { get; set; }
+        [JsonProperty]
         public bool Persistent { get; set; }
+        [JsonProperty]
         public AnimationSequencer ParentSequence { get; set; }
+
+        private string _name;
+        [JsonProperty]
+        public virtual string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+                NotifyOfPropertyChange(() => Name);
+            }
+        }
+
+        private AnimationElementType animationElementType;
+        [JsonProperty]
+        public AnimationElementType AnimationElementType
+        {
+            get
+            {
+                return animationElementType;
+            }
+
+            set
+            {
+                animationElementType = value;
+                NotifyOfPropertyChange(() => AnimationElementType);
+            }
+        }
 
         public void DeactivatePersistent()
         {
@@ -99,18 +140,29 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public MovElementImpl(AnimatedCharacter owner, MovResource resource) : base(owner)
         {
             Mov = resource;
+            this.AnimationElementType = AnimationElementType.Mov;
         }
 
-        public MovElementImpl()
+        public MovElementImpl(): this(null, null)
         {
         }
 
-        public override string Name
+        private MovResource mov;
+        [JsonProperty]
+        public MovResource Mov
         {
-            get { return Mov.Name; }
-            set { }
+            get
+            {
+                return mov;
+            }
+            set
+            {
+                mov = value;
+                NotifyOfPropertyChange(() => Mov);
+            }
         }
-        public MovResource Mov { get; set; }
+
+        public static MovResource LastMov { get; set; }
 
         public override void Play(List<AnimatedCharacter> targets)
         {
@@ -161,20 +213,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class FXElementImpl : AnimationElementImpl, FXElement
     {
-        public override string Name
-        {
-            get { return FX.Name; }
-            set { }
-        }
         public static string COSTUME_DIR = "";
 
         public FXElementImpl(AnimatedCharacter owner, FXResource resource, string gameDirectory = "") : base(owner)
         {
             FX = resource;
-            COSTUME_DIR = Path.Combine(gameDirectory, "costumes");
+            if(!string.IsNullOrEmpty(gameDirectory))
+                COSTUME_DIR = Path.Combine(gameDirectory, "costumes");
+            this.AnimationElementType = AnimationElementType.FX;
         }
 
-        public FXElementImpl()
+        public FXElementImpl(): this(null, null, "")
         {
         }
 
@@ -188,11 +237,80 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        public FXResource FX { get; set; }
-        public Color Color1 { get; set; }
-        public Color Color2 { get; set; }
-        public Color Color3 { get; set; }
-        public Color Color4 { get; set; }
+        private FXResource fx;
+        [JsonProperty]
+        public FXResource FX
+        {
+            get
+            {
+                return fx;
+            }
+            set
+            {
+                if (fx != null)
+                    removePreviousFXResource(fx);
+                fx = value;
+                NotifyOfPropertyChange(()=> FX);
+            }
+        }
+
+        public static FXResource LastFX { get; set; }
+        private Color color1;
+        [JsonProperty]
+        public Color Color1
+        {
+            get
+            {
+                return color1;
+            }
+            set
+            {
+                color1 = value;
+                NotifyOfPropertyChange(() => Color1);
+            }
+        }
+        private Color color2;
+        [JsonProperty]
+        public Color Color2
+        {
+            get
+            {
+                return color2;
+            }
+            set
+            {
+                color2 = value;
+                NotifyOfPropertyChange(() => Color2);
+            }
+        }
+        private Color color3;
+        [JsonProperty]
+        public Color Color3
+        {
+            get
+            {
+                return color3;
+            }
+            set
+            {
+                color3 = value;
+                NotifyOfPropertyChange(() => Color3);
+            }
+        }
+        private Color color4;
+        [JsonProperty]
+        public Color Color4
+        {
+            get
+            {
+                return color4;
+            }
+            set
+            {
+                color4 = value;
+                NotifyOfPropertyChange(() => Color4);
+            }
+        }
 
         public Position AttackDirection { get; set; }
 
@@ -275,13 +393,28 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         public Position Destination { get; set; }
-        public bool IsDirectional { get; set; }
+        private bool isDirectional;
+        [JsonProperty]
+        public bool IsDirectional
+        {
+            get
+            {
+                return isDirectional;
+            }
+            set
+            {
+                isDirectional = value;
+                NotifyOfPropertyChange(() => IsDirectional);
+            }
+        }
 
         public override void PlayResource(AnimatedCharacter target)
         {
             if (!File.Exists(CostumeFilePath))
                 return;
-            if (File.Exists(ModifiedCostumeFilePath) == false)
+            if(File.Exists(ModifiedCostumeFilePath) && (target.LoadedFXs == null || target.LoadedFXs.Count == 0))
+                File.Delete(ModifiedCostumeFilePath);
+            if (!File.Exists(ModifiedCostumeFilePath))
                 File.Copy(CostumeFilePath, ModifiedCostumeFilePath);
             var fileStr = ModifiedCostumeText;
 
@@ -292,20 +425,38 @@ namespace HeroVirtualTabletop.AnimatedAbility
             File.Delete(ModifiedCostumeFilePath);
             File.AppendAllText(ModifiedCostumeFilePath, fileStr);
             loadCostumeWithFxInIt(target);
-            target.LoadedFXs?.Add(this);
+            if(target.LoadedFXs != null && !target.LoadedFXs.Contains(this))
+                target.LoadedFXs.Add(this);
+        }
+
+        private void removePreviousFXResource(FXResource fxResource)
+        {
+            if(File.Exists(ModifiedCostumeFilePath) && !string.IsNullOrEmpty(ModifiedCostumeText))
+            {
+                string fileStr = ModifiedCostumeText;
+                fileStr = removeFX(fileStr, this);
+                File.Delete(ModifiedCostumeFilePath);
+                File.AppendAllText(ModifiedCostumeFilePath, fileStr);
+            }
         }
 
         private string removePreviouslyLoadedFX(string fileStr)
         {
             if (Target.LoadedFXs != null)
                 foreach (var fx in Target.LoadedFXs)
-                    if (fx.Persistent != true)
-                    {
-                        var re = new Regex(Regex.Escape(fx.FX.FullResourcePath));
-                        if (re.IsMatch(fileStr))
-                            fileStr = fileStr.Replace(fx.FX.FullResourcePath, "none");
-                    }
+                    fileStr = removeFX(fileStr, fx);
 
+            return fileStr;
+        }
+
+        private string removeFX(string fileStr, FXElement fx)
+        {
+            if (!fx.Persistent)
+            {
+                var re = new Regex(Regex.Escape(fx.FX.FullResourcePath));
+                if (re.IsMatch(fileStr))
+                    fileStr = fileStr.Replace(fx.FX.FullResourcePath, "none");
+            }
             return fileStr;
         }
 
@@ -316,13 +467,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (IsDirectional)
             {
                 para = new string[2];
-                para[0] = ModifiedCostumeFilePath;
+                para[0] = Path.GetFileNameWithoutExtension(ModifiedCostumeFilePath);
                 para[1] = parseFromDestination();
             }
             else
             {
                 para = new string[1];
-                para[0] = ModifiedCostumeFilePath;
+                para[0] = Path.GetFileNameWithoutExtension(ModifiedCostumeFilePath);
             }
 
 
@@ -342,8 +493,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var fxNew = "Fx " + FX.FullResourcePath;
             var fxNone = "Fx none";
             var re = new Regex(Regex.Escape(fxNone));
-
-            fileStr = re.Replace(fileStr, fxNew, 1);
+            var reFx = new Regex(Regex.Escape(fxNew));
+            if(!reFx.IsMatch(fileStr))
+                fileStr = re.Replace(fileStr, fxNew, 1);
             var fxPos = fileStr.IndexOf(fxNew);
             var colorStart = fileStr.IndexOf("Color1", fxPos);
             var colorEnd = fileStr.IndexOf("}", fxPos);
@@ -402,11 +554,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class SoundElementImpl : AnimationElementImpl, SoundElement
     {
-        public override string Name
-        {
-            get { return Sound.Name; }
-            set { }
-        }
         public static string SOUND_DIR = "";
 
         private bool _active;
@@ -415,14 +562,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public SoundElementImpl(AnimatedCharacter owner, SoundResource resource, string gameDirectory = "") : base(owner)
         {
             Sound = resource;
-            SOUND_DIR = Path.Combine(gameDirectory, "sound");
+            if(!string.IsNullOrEmpty(gameDirectory))
+                SOUND_DIR = Path.Combine(gameDirectory, "sound");
+            this.AnimationElementType = AnimationElementType.Sound;
         }
 
-        public SoundElementImpl()
+        public SoundElementImpl(): this(null, null, "")
         {
         }
 
-        public SoundResource Sound { get; set; }
+        private SoundResource sound;
+        [JsonProperty]
+        public SoundResource Sound
+        {
+            get
+            {
+                return sound;
+            }
+            set
+            {
+                if (sound != null)
+                    StopResource(Target);
+                sound = value;
+                NotifyOfPropertyChange(() => Sound);
+            }
+        }
+
+        public static SoundResource LastSound { get; set; }
 
         public bool Active
         {
@@ -448,7 +614,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public string SoundFileName => SOUND_DIR + Sound.FullResourcePath;
 
-        public SoundEngineWrapper SoundEngine { get; set; }
+        private SoundEngineWrapper soundEngine;
+        public SoundEngineWrapper SoundEngine
+        {
+            get
+            {
+                return soundEngine ?? (soundEngine = new SoundEngineWrapperImpl());
+            }
+            set
+            {
+                soundEngine = value;
+            }
+        }
 
         public override void Play(List<AnimatedCharacter> targets)
         {
@@ -482,6 +659,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 Active = true;
 
             var targetPositionVector = target.Position;
+            target.Camera.RefreshPosition();
             var camPositionVector = target.Camera.Position;
 
             SoundEngine.SetListenerPosition(camPositionVector.X, camPositionVector.Y, camPositionVector.Z, 0, 0, 1);
@@ -551,11 +729,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class PauseElementImpl : AnimationElementImpl, PauseElement
     {
-        public override string Name
-        {
-            get { return "Pause " + Duration; }
-            set { }
-        }
         private PauseBasedOnDistanceManager _distancemanager;
 
         private int _dur;
@@ -563,6 +736,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public PauseElementImpl()
         {
             _distancemanager = new PauseBasedOnDistanceManagerImpl(this);
+            this.AnimationElementType = AnimationElementType.Pause;
         }
 
         public PauseBasedOnDistanceManager DistanceDelayManager
@@ -575,9 +749,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     _distancemanager.PauseElement = this;
             }
         }
-
+        [JsonProperty]
         public int CloseDistanceDelay { get; set; }
-
+        [JsonProperty]
         public int Duration
         {
             get
@@ -591,10 +765,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             set { _dur = value; }
         }
-
+        [JsonProperty]
         public int LongDistanceDelay { get; set; }
+        [JsonProperty]
         public int MediumDistanceDelay { get; set; }
+        [JsonProperty]
         public int ShortDistanceDelay { get; set; }
+        [JsonProperty]
         public bool IsUnitPause { get; set; }
 
         public Position TargetPosition { get; set; }
@@ -757,29 +934,40 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class SequenceElementImpl : AnimationElementImpl, SequenceElement
     {
-        public override string Name
-        {
-            get { return "Sequencer " + Order; }
-            set { }
-        }
         private AnimationSequencer _sequencer;
 
         public SequenceElementImpl(AnimationSequencer cloneedSequence)
         {
             _sequencer = cloneedSequence;
+            this.AnimationElementType = AnimationElementType.Sequence;
         }
-        public SequenceElementImpl()
+        public SequenceElementImpl() : this(null)
         {
         }
 
-        public List<AnimationElement> AnimationElements => Sequencer.AnimationElements;
+        public ObservableCollection<AnimationElement> AnimationElements => Sequencer.AnimationElements;
 
-        public AnimationSequencer Sequencer => _sequencer ?? (_sequencer = new AnimationSequencerImpl(Target));
+        [JsonProperty]
+        public AnimationSequencer Sequencer
+        {
+            get
+            {
+                return _sequencer ?? (_sequencer = new AnimationSequencerImpl(Target));
+            }
+            set
+            {
+                _sequencer = value;
+                NotifyOfPropertyChange(() => Sequencer);
+            }
+        }
 
+        [JsonProperty]
         public SequenceType Type
         {
             get { return Sequencer.Type; }
-            set { Sequencer.Type = value; }
+            set { Sequencer.Type = value;
+                NotifyOfPropertyChange(() => Type);
+            }
         }
 
         public void InsertMany(List<AnimationElement> elements)
@@ -812,6 +1000,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             _sequencer.Play(target);
         }
 
+        public AnimationElement GetNewAnimationElement(AnimationElementType animationElementType)
+        {
+            return _sequencer.GetNewAnimationElement(animationElementType);
+        }
+
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             var sequencer = (Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
@@ -838,18 +1031,45 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set { }
         }
 
-        private OrderedCollectionImpl<AnimationElement> _animationElements;
-        private OrderedCollectionImpl<AnimationElement> animationCollection => 
-            _animationElements ?? (_animationElements =  new OrderedCollectionImpl<AnimationElement>());
-            
+        
+
+        private ObservableCollection<AnimationElement> _animationElements;
+        
+        [JsonProperty]
+        public ObservableCollection<AnimationElement> AnimationElements
+        {
+            get
+            {
+                return _animationElements ?? (_animationElements = new ObservableCollection<AnimationElement>());
+            }
+            private set
+            {
+                _animationElements = value;
+                NotifyOfPropertyChange(() => AnimationElements);
+            }
+        }
+
         public AnimationSequencerImpl(AnimatedCharacter target)
         {
             Target = target;
         }
-        
-        public SequenceType Type { get; set; }
 
-        public List<AnimationElement> AnimationElements => (from e in animationCollection.Values orderby e.Order select e).ToList();
+        private SequenceType type;
+        [JsonProperty]
+        public SequenceType Type
+        {
+            get
+            {
+                return type;
+            }
+            set
+            {
+                type = value;
+                NotifyOfPropertyChange(() => Type);
+            }
+        }
+
+        
         public void InsertMany(List<AnimationElement> animationElements)
         {
             foreach (var e in animationElements)
@@ -859,39 +1079,55 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             animationElement.Target = Target;
             animationElement.ParentSequence = this;
-           animationCollection.InsertElement(animationElement);
+            AnimationElements.Add(animationElement);
         }
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement insertAfter)
         {
-            if (toInsert.ParentSequence == insertAfter.ParentSequence)
+            if (insertAfter.ParentSequence == this)
             {
-                if (insertAfter.ParentSequence == this)
+                if (toInsert.ParentSequence == insertAfter.ParentSequence)
                 {
-                    animationCollection.InsertElementAfter( toInsert,  insertAfter);
+                    InsertAfter(toInsert, insertAfter);
                 }
                 else
                 {
-                    throw new ArgumentException(
-                        "the target elements parent does not match the parent you are trying to add to");
+                    toInsert.ParentSequence.RemoveElement(toInsert);
                 }
             }
             else
             {
-                if (insertAfter.ParentSequence == this)
-                {
-                    toInsert.ParentSequence.RemoveElement(toInsert);
-                    animationCollection.InsertElementAfter(toInsert, insertAfter);
-                }
-                else
-                {
-                    throw new ArgumentException(
-                        "the target elements parent does not match the parent you are trying to add to");
-                }
+                throw new ArgumentException(
+                    "the target elements parent does not match the parent you are trying to add to");
             }
         }
+
+        private void InsertAfter(AnimationElement toInsert, AnimationElement insertAfter)
+        {
+            var index = AnimationElements.IndexOf(insertAfter);
+            if (index >= 0)
+            {
+                var position = index + 1;
+                AnimationElements.Insert(position, toInsert);
+            }
+            FixOrders();
+        }
+        public void InsertElement(AnimationElement animationElement, int index)
+        {
+            var existingIndex = AnimationElements.IndexOf(animationElement);
+            if (existingIndex >= 0)
+            {
+                AnimationElements.RemoveAt(existingIndex);
+                if (index > 0 && index >= AnimationElements.Count)
+                    index -= 1;
+            }
+            AnimationElements.Insert(index, animationElement);
+            FixOrders();
+        }
+
         public void RemoveElement(AnimationElement animationElement)
         {
-            animationCollection.RemoveElement(animationElement);
+            AnimationElements.Remove(animationElement);
+            FixOrders();
         }
 
         public override void Play(List<AnimatedCharacter> targets)
@@ -910,7 +1146,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public override void PlayResource(AnimatedCharacter target)
         {
-            //to do add asyncronous code
             if (Type == SequenceType.And)
             {
                 foreach (var e in from e in AnimationElements orderby e.Order select e)
@@ -925,21 +1160,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public override void StopResource(AnimatedCharacter target)
         {
-            //to do add asyncronous code
-            if (Type == SequenceType.And)
-            {
-                foreach (var e in from e in AnimationElements orderby e.Order select e)
-                    e.Stop(target);
-            }
-            else
-            {
-                var rnd = new Random();
-                var chosen = rnd.Next(0, AnimationElements.Count);
-                if (AnimationElements.Count > 0)
-                {
-                    AnimationElements[chosen].Play(target);
-                }
-            }
+            // to do CHECK FOR PERSISTENT SHIT
+            foreach (var e in from e in AnimationElements orderby e.Order select e)
+                e.Stop(target);
         }
 
         public override bool Equals(object other)
@@ -970,65 +1193,245 @@ namespace HeroVirtualTabletop.AnimatedAbility
             return clone as AnimationElement;
         }
 
+        public AnimationElement GetNewAnimationElement(AnimationElementType animationElementType)
+        {
+            AnimationElement animationElement = null;
+            List<AnimationElement> flattenedList = GetFlattenedAnimationList(AnimationElements.ToList());
+            string fullName = "";
+            switch (animationElementType)
+            {
+                case AnimationElementType.Mov:
+                    animationElement = new MovElementImpl(this.Target, null);
+                    MovResource movResource = MovElementImpl.LastMov;
+                    fullName = GetAppropriateAnimationName(AnimationElementType.Mov, flattenedList);
+                    if (movResource == null)
+                    {
+                        animationElement.Name = fullName;
+                    }
+                    else
+                    {
+                        (animationElement as MovElement).Mov = movResource;
+                        animationElement.Name = Path.GetFileNameWithoutExtension(movResource.FullResourcePath);
+                    }
+
+                    break;
+                case AnimationElementType.FX:
+                    animationElement = new FXElementImpl(this.Target, null);
+                    FXResource fxResource = FXElementImpl.LastFX;
+                    fullName = GetAppropriateAnimationName(AnimationElementType.FX, flattenedList);
+                    if (fxResource == null)
+                    {
+                        animationElement.Name = fullName;
+                    }
+                    else
+                    {
+                        (animationElement as FXElement).FX = fxResource;
+                        animationElement.Name = Path.GetFileNameWithoutExtension(fxResource.FullResourcePath);
+                    }
+
+                    animationElement.Name = fullName;
+                    break;
+                case AnimationElementType.Sound:
+                    animationElement = new SoundElementImpl(this.Target, null);
+                    SoundResource soundResource = SoundElementImpl.LastSound;
+                    fullName = GetAppropriateAnimationName(AnimationElementType.Sound, flattenedList);
+                    if (soundResource == null)
+                    {
+                        animationElement.Name = fullName;
+                    }
+                    else
+                    {
+                        (animationElement as SoundElement).Sound = soundResource;
+                        animationElement.Name = Path.GetFileNameWithoutExtension(soundResource.FullResourcePath);
+                    }
+
+                    animationElement.Name = fullName;
+                    break;
+                case AnimationElementType.Sequence:
+                    animationElement = new SequenceElementImpl();
+                    //fullName = GetAppropriateAnimationName(AnimationElementType.Sequence, flattenedList);
+                    //animationElement.Name = fullName;
+                    (animationElement as SequenceElement).Type = SequenceType.And;
+                    animationElement.Name = "Sequence: " + (animationElement as SequenceElement).Type.ToString();
+                    break;
+                case AnimationElementType.Pause:
+                    animationElement = new PauseElementImpl();
+                    //fullName = GetAppropriateAnimationName(AnimationElementType.Pause, flattenedList);
+                    //animationElement.Name = fullName;
+                    (animationElement as PauseElement).Duration = 1;
+                    animationElement.Name = "Pause " + (animationElement as PauseElement).Duration.ToString();
+                    break;
+                case AnimationElementType.Reference:
+                    animationElement = new ReferenceElementImpl();
+                    ReferenceResource refResource = ReferenceElementImpl.LastReference;
+                    fullName = GetAppropriateAnimationName(AnimationElementType.Reference, flattenedList);
+                    if (refResource == null)
+                    {
+                        animationElement.Name = fullName;
+                    }
+                    else
+                    {
+                        (animationElement as ReferenceElement).Reference = refResource;
+                        animationElement.Name = refResource.Ability.Name;
+                    }
+                    break;
+            }
+
+            return animationElement;
+        }
+
+        private List<AnimationElement> GetFlattenedAnimationList(List<AnimationElement> animationElementList)
+        {
+            List<AnimationElement> _list = new List<AnimationElement>();
+            foreach (AnimationElement animationElement in animationElementList)
+            {
+                if (animationElement is SequenceElement)
+                {
+                    SequenceElement sequenceElement = (animationElement as SequenceElement);
+                    if (sequenceElement.AnimationElements != null && sequenceElement.AnimationElements.Count > 0)
+                        _list.AddRange(GetFlattenedAnimationList(sequenceElement.AnimationElements.ToList()));
+                }
+                _list.Add(animationElement);
+            }
+            return _list;
+        }
+
+        private string GetAppropriateAnimationName(AnimationElementType animationType, List<AnimationElement> collection)
+        {
+            string name = "";
+            switch (animationType)
+            {
+                case AnimationElementType.Mov:
+                    name = "Mov Element";
+                    break;
+                case AnimationElementType.FX:
+                    name = "FX Element";
+                    break;
+                case AnimationElementType.Pause:
+                    name = "Pause Element";
+                    break;
+                case AnimationElementType.Sequence:
+                    name = "Seq Element";
+                    break;
+                case AnimationElementType.Sound:
+                    name = "Sound Element";
+                    break;
+                case AnimationElementType.Reference:
+                    name = "Ref Element";
+                    break;
+            }
+
+            string suffix = " 1";
+            string rootName = name;
+            int i = 1;
+            Regex reg = new Regex(@"\d+");
+            MatchCollection matches = reg.Matches(name);
+            if (matches.Count > 0)
+            {
+                int k;
+                Match match = matches[matches.Count - 1];
+                if (int.TryParse(match.Value.Substring(1, match.Value.Length - 2), out k))
+                {
+                    i = k + 1;
+                    suffix = string.Format(" {0}", i);
+                    rootName = name.Substring(0, match.Index).TrimEnd();
+                }
+            }
+            string newName = rootName + suffix;
+            while (collection.Where(a => a.Name == newName).FirstOrDefault() != null)
+            {
+                suffix = string.Format(" {0}", ++i);
+                newName = rootName + suffix;
+            }
+            return newName;
+        }
+
+        private void FixOrders()
+        {
+            for (int i = 0; i < AnimationElements.Count; i++)
+                AnimationElements[i].Order = i + 1;
+        }
+
     }
 
     public class ReferenceElementImpl : AnimationElementImpl, ReferenceElement, AnimationSequencer
     {
-        public override string Name
+        public ReferenceElementImpl()
         {
-            get { return Reference.Name; }
-            set { }
+            this.AnimationElementType = AnimationElementType.Reference;
         }
 
-        public List<AnimationElement> AnimationElements => Reference.AnimationElements;
+        public ObservableCollection<AnimationElement> AnimationElements => Reference?.Ability?.AnimationElements;
 
         public SequenceType Type
         {
-            get { return Reference.Type; }
+            get { return Reference !=null && Reference.Ability != null ? Reference.Ability.Type : SequenceType.And; }
 
             set
             {
-                if (Reference != null)
-                    Reference.Type = value;
+                if (Reference != null && Reference.Ability != null)
+                    Reference.Ability.Type = value;
+                NotifyOfPropertyChange(() => Type);
             }
         }
 
 
         public void InsertMany(List<AnimationElement> elements)
         {
-            Reference.InsertMany(elements);
+            Reference?.Ability?.InsertMany(elements);
         }
 
         public void InsertElement(AnimationElement animationElement)
         {
-            Reference.InsertElement(animationElement);
+            Reference?.Ability?.InsertElement(animationElement);
         }
 
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement moveAfter)
         {
-            Reference.InsertElementAfter(toInsert, moveAfter);
+            Reference?.Ability?.InsertElementAfter(toInsert, moveAfter);
         }
 
         public void RemoveElement(AnimationElement animationElement)
         {
-            Reference.RemoveElement(animationElement);
+            Reference?.Ability?.RemoveElement(animationElement);
         }
 
-        public AnimatedAbility Reference { get; set; }
+        
+        private ReferenceResource reference;
+        [JsonProperty]
+        public ReferenceResource Reference
+        {
+            get
+            {
+                return reference;
+            }
+            set
+            {
+                reference = value;
+                NotifyOfPropertyChange(() => Reference);
+            }
+        }
+
+        public static ReferenceResource LastReference { get; set; }
 
         public override void Play(List<AnimatedCharacter> targets)
         {
-            Reference.Play(targets);
+            Reference?.Ability?.Play(targets);
         }
 
         public override void StopResource(AnimatedCharacter target)
         {
-            Reference.Stop(target);
+            Reference?.Ability?.Stop(target);
+        }
+
+        public AnimationElement GetNewAnimationElement(AnimationElementType animationElementType)
+        {
+            return Reference?.Ability?.GetNewAnimationElement(animationElementType);
         }
 
         public SequenceElement Copy(AnimatedCharacter target)
         {
-            var clonedSequence = (Reference.Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
+            var clonedSequence = (Reference?.Ability?.Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
 
             SequenceElement clone = new SequenceElementImpl(clonedSequence);
             clone = (SequenceElement) cloneBaseAttributes(clone);
@@ -1043,7 +1446,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
-            Reference.Play(target);
+            Reference?.Ability?.Play(target);
         }
 
         public override bool Equals(object other)
@@ -1052,8 +1455,719 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return false;
             var r = other as ReferenceElement;
             if (baseAttributesEqual(r) != true) return false;
-            if (r.Reference.Equals(Reference) == false) return false;
+            if (Reference != null && r.Reference != null && r.Reference.Equals(Reference) == false) return false;
             return true;
+        }
+    }
+
+    public class AnimatedResourceImpl : PropertyChangedBase, AnimatedResource
+    {
+        private string name;
+        [JsonProperty]
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+
+            set
+            {
+                name = value;
+                NotifyOfPropertyChange(() => Name);
+            }
+        }
+
+        private string tag;
+        [JsonProperty]
+        public string Tag
+        {
+            get
+            {
+                return tag;
+            }
+
+            set
+            {
+                tag = value;
+                NotifyOfPropertyChange(() => Tag);
+            }
+        }
+
+        public static bool operator ==(AnimatedResourceImpl a, AnimatedResourceImpl b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            if ((object)a == null || (object)b == null)
+            {
+                return false;
+            }
+            return a.Tag == b.Tag && a.Name == b.Name;
+        }
+
+        public static bool operator !=(AnimatedResourceImpl a, AnimatedResourceImpl b)
+        {
+            return !(a == b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            bool areEqual = false;
+            if (obj is AnimatedResourceImpl)
+                areEqual = this == (AnimatedResourceImpl)obj;
+            return areEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+    }
+
+    public class MovResourceImpl : AnimatedResourceImpl, MovResource
+    {
+        private string fullResourcePath;
+        [JsonProperty]
+        public string FullResourcePath
+        {
+            get
+            {
+                return fullResourcePath;
+            }
+
+            set
+            {
+                fullResourcePath = value;
+                NotifyOfPropertyChange(() => FullResourcePath);
+            }
+        }
+    }
+
+    public class FXResourceImpl : AnimatedResourceImpl, FXResource
+    {
+        private string fullResourcePath;
+        [JsonProperty]
+        public string FullResourcePath
+        {
+            get
+            {
+                return fullResourcePath;
+            }
+
+            set
+            {
+                fullResourcePath = value;
+                NotifyOfPropertyChange(() => FullResourcePath);
+            }
+        }
+    }
+
+    public class SoundResourceImpl : AnimatedResourceImpl, SoundResource
+    {
+        private string fullResourcePath;
+        [JsonProperty]
+        public string FullResourcePath
+        {
+            get
+            {
+                return fullResourcePath;
+            }
+
+            set
+            {
+                fullResourcePath = value;
+                NotifyOfPropertyChange(() => FullResourcePath);
+            }
+        }
+    }
+
+    public class ReferenceResourceImpl : PropertyChangedBase, ReferenceResource
+    {
+        private AnimatedAbility ability;
+        [JsonProperty]
+        public AnimatedAbility Ability
+        {
+            get
+            {
+                return ability;
+            }
+
+            set
+            {
+                ability = value;
+                NotifyOfPropertyChange(() => Ability);
+            }
+        }
+
+        private AnimatedCharacter character;
+        [JsonProperty]
+        public AnimatedCharacter Character
+        {
+            get
+            {
+                return character;
+            }
+
+            set
+            {
+                character = value;
+                NotifyOfPropertyChange(() => Character);
+            }
+        }
+        public static bool operator ==(ReferenceResourceImpl a, ReferenceResourceImpl b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            if ((object)a == null || (object)b == null)
+            {
+                return false;
+            }
+            return a.Character == b.Character && a.Ability == b.Ability;
+        }
+
+        public static bool operator !=(ReferenceResourceImpl a, ReferenceResourceImpl b)
+        {
+            return !(a == b);
+        }
+        public override bool Equals(object obj)
+        {
+            bool areEqual = false;
+            if (obj is ReferenceResourceImpl)
+                areEqual = this == (ReferenceResourceImpl)obj;
+            return areEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+    }
+
+    public class AnimatedResourceManagerImpl : PropertyChangedBase, AnimatedResourceManager
+    {
+        private const string GAME_DATA_FOLDERNAME = "data";
+        private const string GAME_SOUND_FOLDERNAME = "sound";
+        private const string GAME_MOVE_REPOSITORY_FILENAME = "MovRepository.data";
+        private const string GAME_FX_REPOSITORY_FILENAME = "FXRepository.data";
+        private const string GAME_SOUND_REPOSITORY_FILENAME = "SoundRepository.data";
+        private string movRepositoryPath;
+        private string fxRepositoryPath;
+        private string soundRepositoryPath;
+        private string gameDirectory;
+        public string GameDirectory
+        {
+            get
+            {
+                return gameDirectory;
+            }
+            set
+            {
+                gameDirectory = value;
+                this.movRepositoryPath = Path.Combine(gameDirectory, GAME_DATA_FOLDERNAME, GAME_MOVE_REPOSITORY_FILENAME);
+                this.fxRepositoryPath = Path.Combine(gameDirectory, GAME_DATA_FOLDERNAME, GAME_FX_REPOSITORY_FILENAME);
+                this.soundRepositoryPath = Path.Combine(gameDirectory, GAME_DATA_FOLDERNAME, GAME_SOUND_REPOSITORY_FILENAME);
+            }
+        }
+
+        public CrowdRepository CrowdRepository { get; set; }
+
+        private ObservableCollection<FXResource> fxElements;
+        public ObservableCollection<FXResource> FXElements
+        {
+            get
+            {
+                if (fxElements == null)
+                    fxElements = GetFXResources();
+                return fxElements;
+            }
+
+            set
+            {
+                fxElements = value;
+                NotifyOfPropertyChange(() => FXElements);
+            }
+        }
+
+        private ObservableCollection<MovResource> movElements;
+        public ObservableCollection<MovResource> MovElements
+        {
+            get
+            {
+                if (movElements == null)
+                    movElements = GetMovResources();
+                return movElements;
+            }
+
+            set
+            {
+                movElements = value;
+                NotifyOfPropertyChange(() => MovElements);
+            }
+        }
+        
+        private ObservableCollection<ReferenceResource> referenceElements;
+        public ObservableCollection<ReferenceResource> ReferenceElements
+        {
+            get
+            {
+                if (referenceElements == null)
+                    referenceElements = GetReferenceResources();
+                return referenceElements;
+            }
+
+            set
+            {
+                referenceElements = value;
+                NotifyOfPropertyChange(() => ReferenceElements);
+            }
+        }
+
+        private ObservableCollection<SoundResource> soundElements;
+        public ObservableCollection<SoundResource> SoundElements
+        {
+            get
+            {
+                if (soundElements == null)
+                    soundElements = GetSoundResources();
+                return soundElements;
+            }
+
+            set
+            {
+                soundElements = value;
+                NotifyOfPropertyChange(() => SoundElements);
+            }
+        }
+
+        private CollectionViewSource movResourcesCVS;
+        public CollectionViewSource MOVResourcesCVS
+        {
+            get
+            {
+                return movResourcesCVS;
+            }
+            set
+            {
+                movResourcesCVS = value;
+                NotifyOfPropertyChange(() => MOVResourcesCVS);
+            }
+        }
+
+        private CollectionViewSource fxResourcesCVS;
+        public CollectionViewSource FXResourcesCVS
+        {
+            get
+            {
+                return fxResourcesCVS;
+            }
+            set
+            {
+                fxResourcesCVS = value;
+                NotifyOfPropertyChange(() => FXResourcesCVS);
+            }
+        }
+
+        private CollectionViewSource soundResourcesCVS;
+        public CollectionViewSource SoundResourcesCVS
+        {
+            get
+            {
+                return soundResourcesCVS;
+            }
+            set
+            {
+                soundResourcesCVS = value;
+                NotifyOfPropertyChange(() => SoundResourcesCVS);
+            }
+        }
+
+        private CollectionViewSource referenceElementsCVS;
+        public CollectionViewSource ReferenceElementsCVS
+        {
+            get
+            {
+                return referenceElementsCVS;
+            }
+            set
+            {
+                referenceElementsCVS = value;
+                NotifyOfPropertyChange(() => ReferenceElementsCVS);
+            }
+        }
+
+        private AnimatedAbility currentAbility;
+        public AnimatedAbility CurrentAbility
+        {
+            get
+            {
+                return currentAbility;
+            }
+            set
+            {
+                currentAbility = value;
+                NotifyOfPropertyChange(() => CurrentAbility);
+            }
+        }
+
+        private AnimationElement currentAnimationElement;
+        public AnimationElement CurrentAnimationElement
+        {
+            get
+            {
+                return currentAnimationElement;
+            }
+
+            set
+            {
+                currentAnimationElement = value;
+                NotifyOfPropertyChange(() => CurrentAnimationElement);
+            }
+        }
+        private string filter;
+        public string Filter 
+        {
+            get
+            {
+                return filter;
+            }
+
+            set
+            {
+                filter = value;
+                if (CurrentAnimationElement != null)
+                {
+                    if (value.Length > 2 || value.Length == 0)
+                    {
+                        switch (CurrentAnimationElement.AnimationElementType)
+                        {
+                            case AnimationElementType.Mov:
+                                //Helper.SaveUISettings("Ability_MoveFilter", value);
+                                MOVResourcesCVS.View.Refresh();
+                                break;
+                            case AnimationElementType.FX:
+                                //Helper.SaveUISettings("Ability_FxFilter", value);
+                                FXResourcesCVS.View.Refresh();
+                                break;
+                            case AnimationElementType.Sound:
+                                //Helper.SaveUISettings("Ability_SoundFilter", value);
+                                SoundResourcesCVS.View.Refresh();
+                                break;
+                            case AnimationElementType.Reference:
+                                //Helper.SaveUISettings("Ability_ReferenceFilter", value);
+                                ReferenceElementsCVS.View.Refresh();
+                                break;
+                        }
+                    }
+                }
+                    
+                NotifyOfPropertyChange(() => Filter);
+            }
+        }
+
+        public ObservableCollection<MovResource> GetMovResources()
+        {
+            if (string.IsNullOrEmpty(GameDirectory))
+                throw new Exception("Game Directory Not Set!");
+            var movResources = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<MovResource>>(movRepositoryPath);
+            
+            if (movResources == null || movResources.Count == 0)
+            {
+                movResources = new ObservableCollection<MovResource>();
+                Assembly assembly = Assembly.GetExecutingAssembly();
+
+                string resName = "HeroVirtualTabletop.AnimatedAbility.MOVElements.csv";
+                using (StreamReader Sr = new StreamReader(assembly.GetManifestResourceStream(resName)))
+                {
+                    while (!Sr.EndOfStream)
+                    {
+                        string resLine = Sr.ReadLine();
+                        string[] resArray = resLine.Split(';');
+                        movResources.Add(new MovResourceImpl { FullResourcePath = resArray[1],  Name = Path.GetFileNameWithoutExtension(resArray[1]), Tag = resArray[0]});
+                    }
+                }
+                movResources = new ObservableCollection<MovResource>(movResources.OrderBy(x => x, new AnimatedResourceComparer()));
+                SaveMoveResources(movResources);
+            }
+
+            return movResources;
+        }
+        public void SaveMoveResources(ObservableCollection<MovResource> movResources)
+        {
+            CommonLibrary.SerializeObjectAsJSONToFile(movRepositoryPath, movResources);
+        }
+
+        public ObservableCollection<FXResource> GetFXResources()
+        {
+            if (string.IsNullOrEmpty(GameDirectory))
+                throw new Exception("Game Directory Not Set!");
+            var fxResources = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<FXResource>>(fxRepositoryPath);
+            if (fxResources == null || fxResources.Count == 0)
+            {
+                fxResources = new ObservableCollection<FXResource>();
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                string resName = "HeroVirtualTabletop.AnimatedAbility.FXElements.csv";
+                using (StreamReader Sr = new StreamReader(assembly.GetManifestResourceStream(resName)))
+                {
+                    while (!Sr.EndOfStream)
+                    {
+                        string resLine = Sr.ReadLine();
+                        string[] resArray = resLine.Split(';');
+                        fxResources.Add(new FXResourceImpl { FullResourcePath = resArray[2], Name = resArray[1], Tag = resArray[0] });
+                    }
+                }
+                fxResources = new ObservableCollection<FXResource>(fxResources.OrderBy(x => x, new AnimatedResourceComparer()));
+                SaveFXResources(fxResources);
+            }
+
+            return fxResources;
+        }
+        public void SaveFXResources(ObservableCollection<FXResource> fxResources)
+        {
+            CommonLibrary.SerializeObjectAsJSONToFile(fxRepositoryPath, fxResources);
+        }
+
+        public ObservableCollection<SoundResource> GetSoundResources()
+        {
+            if (string.IsNullOrEmpty(GameDirectory))
+                throw new Exception("Game Directory Not Set!");
+            var soundResources = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<SoundResource>>(soundRepositoryPath);
+            if (soundResources == null || soundResources.Count == 0)
+            {
+                soundResources = new ObservableCollection<SoundResource>();
+                string soundDir = Path.Combine(GameDirectory, GAME_SOUND_FOLDERNAME);
+                if (!Directory.Exists(soundDir))
+                {
+                    Directory.CreateDirectory(soundDir);
+                }
+                var soundFiles = Directory.EnumerateFiles
+                            (soundDir,
+                            "*.ogg", SearchOption.AllDirectories);//.OrderBy(x => { return Path.GetFileNameWithoutExtension(x); });
+
+                foreach (string file in soundFiles)
+                {
+                    string name = Path.GetFileNameWithoutExtension(file);
+                    string resourceVal = file.Substring(soundDir.Length);
+                    string[] tmpTags = file.Substring(soundDir.Length).Split('\\').Where((s) =>
+                    {
+                        return !string.IsNullOrWhiteSpace(s);
+                    }).ToArray();
+                    string[] tags = new string[1];
+
+                    string sound = tmpTags[tmpTags.Length - 1];
+
+                    string tag = tmpTags.Length >= 2 ? tmpTags[tmpTags.Length - 2] : "Sound";
+                    tag = tag[0].ToString().ToUpper() + tag.Substring(1);
+
+                    Regex re = new Regex(@"_{1}");
+                    if (!re.IsMatch(sound, 1))
+                        re = new Regex(@"[A-Z,0-9,\-]{1}");
+                    string tmp;
+                    if (re.IsMatch(sound, 1))
+                    {
+                        tmp = sound.Substring(0, re.Match(sound, 1).Index);
+                        tmp = tmp[0].ToString().ToUpper() + tmp.Substring(1);
+                        tag += tmp;
+                    }
+
+                    tags[0] = tag;
+                    soundResources.Add(new SoundResourceImpl { FullResourcePath = resourceVal, Name = name, Tag = tag });
+                }
+                soundResources = new ObservableCollection<SoundResource>(soundResources.OrderBy(x => x, new AnimatedResourceComparer()));
+            }
+            
+            SaveSoundResources(soundResources);
+
+            return soundResources;
+        }
+
+        public void SaveSoundResources(ObservableCollection<SoundResource> soundResources)
+        {
+            CommonLibrary.SerializeObjectAsJSONToFile(soundRepositoryPath, soundResources);
+        }
+
+        public ObservableCollection<ReferenceResource> GetReferenceResources()
+        {
+            var abilityCollection = this.CrowdRepository.AllMembersCrowd.Members.Where(m => m is CharacterCrowdMember).SelectMany((member) =>
+            {
+                return (member as CharacterCrowdMember).Abilities.ToList().Where(a => !(a is Attack.AnimatedAttack) && !(a is Attack.AreaEffectAttack));
+            }).Distinct();
+            var referenceResources = new ObservableCollection<ReferenceResource>(abilityCollection.Select(x =>
+            {
+                return new ReferenceResourceImpl { Ability = x, Character = x.Target };
+            }).OrderBy(x => x, new ReferenceResourceComparer()));
+
+            return referenceResources;
+        }
+
+        #region Load Resources
+        public void LoadResources()
+        {
+            MOVResourcesCVS = new CollectionViewSource();
+            MOVResourcesCVS.Source = this.MovElements;
+            MOVResourcesCVS.View.Filter += AnimatedResourceCVS_Filter;
+            NotifyOfPropertyChange(() => MOVResourcesCVS);
+
+            FXResourcesCVS = new CollectionViewSource();
+            FXResourcesCVS.Source = this.FXElements;
+            FXResourcesCVS.View.Filter += AnimatedResourceCVS_Filter;
+            NotifyOfPropertyChange(() => FXResourcesCVS);
+
+            SoundResourcesCVS = new CollectionViewSource();
+            SoundResourcesCVS.Source = this.SoundElements;
+            SoundResourcesCVS.View.Filter += AnimatedResourceCVS_Filter;
+            NotifyOfPropertyChange(() => SoundResourcesCVS);
+
+            LoadReferenceResource();
+        }
+
+        public void LoadReferenceResource()
+        {
+            this.referenceElements = null; // to force reload
+            ReferenceElementsCVS = new CollectionViewSource();
+            referenceElementsCVS.Source = this.ReferenceElements;
+            referenceElementsCVS.View.Filter += ReferenceResourcesCVS_Filter;
+            NotifyOfPropertyChange(() => ReferenceElementsCVS);
+        } 
+
+        private bool AnimatedResourceCVS_Filter(object item)
+        {
+            AnimatedResource animationRes = item as AnimatedResource;
+            if (string.IsNullOrWhiteSpace(Filter))
+            {
+                return true;
+            }
+            if (CurrentAnimationElement != null)
+            {
+                if (CurrentAnimationElement is MovElement && (CurrentAnimationElement as MovElement).Mov == animationRes)
+                    return true;
+                else if (CurrentAnimationElement is FXElement && (CurrentAnimationElement as FXElement).FX == animationRes)
+                    return true;
+                else if (CurrentAnimationElement is SoundElement && (CurrentAnimationElement as SoundElement).Sound == animationRes)
+                    return true;
+            }
+            // Replace non-alphanumeric characters with empty string
+            Regex rgx = new Regex("[^a-zA-Z0-9 ]");
+            string filter = rgx.Replace(Filter, "");
+            return new Regex(filter, RegexOptions.IgnoreCase).IsMatch(animationRes.Tag) || new Regex(filter, RegexOptions.IgnoreCase).IsMatch(animationRes.Name);
+        }
+
+        private bool ReferenceResourcesCVS_Filter(object item)
+        {
+            ReferenceResource animationRes = item as ReferenceResource;
+            if (animationRes.Ability == this.CurrentAbility)
+                return false;
+            if (animationRes.Ability != null)
+            {
+                AnimatedAbility reference = animationRes.Ability;
+                if (reference != null && reference.AnimationElements != null && reference.AnimationElements.Count > 0)
+                {
+                    if (reference.AnimationElements.FirstOrDefault(ae => ae is ReferenceElement && (ae as ReferenceElement).Reference == this.CurrentAbility) != null)
+                        return false;
+                    List<AnimationElement> elementList = this.GetFlattenedAnimationList(reference.AnimationElements.ToList());
+                    if (elementList.Where((an) => { return an.AnimationElementType == AnimationElementType.Reference; }).Any((an) => { return (an as ReferenceElement).Reference == this.CurrentAbility; }))
+                        return false;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(Filter))
+            {
+                return true;
+            }
+            // Replace non-alphanumeric characters with empty string
+            Regex rgx = new Regex("[^a-zA-Z0-9 ]");
+            string filter = rgx.Replace(Filter, "");
+
+            bool caseReferences = false;
+            if (animationRes.Ability != null && animationRes.Character != null)
+            {
+                caseReferences = new Regex(filter, RegexOptions.IgnoreCase).IsMatch(animationRes.Ability.Name) || new Regex(filter, RegexOptions.IgnoreCase).IsMatch(animationRes.Character.Name);
+            }
+            return caseReferences;
+        }
+        private List<AnimationElement> GetFlattenedAnimationList(List<AnimationElement> animationElementList)
+        {
+            List<AnimationElement> _list = new List<AnimationElement>();
+            foreach (AnimationElement animationElement in animationElementList)
+            {
+                if (animationElement is SequenceElement)
+                {
+                    SequenceElement sequenceElement = (animationElement as SequenceElement);
+                    if (sequenceElement.AnimationElements != null && sequenceElement.AnimationElements.Count > 0)
+                        _list.AddRange(GetFlattenedAnimationList(sequenceElement.AnimationElements.ToList()));
+                }
+                _list.Add(animationElement);
+            }
+            return _list;
+        }
+        #endregion
+    }
+
+    public class AnimatedResourceComparer : IComparer<AnimatedResource>
+    {
+        public int Compare(AnimatedResource ar1, AnimatedResource ar2)
+        {
+            string s1 = ar1.Tag;
+            string s2 = ar2.Tag;
+            if (ar1.Tag == ar2.Tag)
+            {
+                s1 = ar1.Name;
+                s2 = ar2.Name;
+            }
+
+            return CommonLibrary.CompareStrings(s1, s2);
+        }
+    }
+    public class ReferenceResourceComparer : IComparer<ReferenceResource>
+    {
+        public int Compare(ReferenceResource ar1, ReferenceResource ar2)
+        {
+            string s1 = ar1.Character.Name;
+            string s2 = ar2.Character.Name;
+            if (s1 == s2)
+            {
+                s1 = ar1.Ability.Name;
+                s2 = ar2.Ability.Name;
+            }
+
+            return CommonLibrary.CompareStrings(s1, s2);
+        }
+    }
+    public class AnimationTypeToAnimationIconTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            string iconText = null;
+            AnimationElementType animationType = (AnimationElementType)value;
+            switch (animationType)
+            {
+                case AnimationElementType.Mov:
+                    iconText = "\uf008";
+                    break;
+                case AnimationElementType.FX:
+                    iconText = "\uf0d0";
+                    break;
+                case AnimationElementType.Sound:
+                    iconText = "\uf001";
+                    break;
+                case AnimationElementType.Pause:
+                    iconText = "\uf04c";
+                    break;
+                case AnimationElementType.Sequence:
+                    iconText = "\uf126";
+                    break;
+                case AnimationElementType.Reference:
+                    iconText = "\uf08e";
+                    break;
+            }
+            return iconText;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

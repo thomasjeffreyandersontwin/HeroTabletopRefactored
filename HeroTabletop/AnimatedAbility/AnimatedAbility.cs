@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+
 namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedAbilityImpl : CharacterActionImpl, AnimatedAbility
@@ -16,8 +19,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityImpl()
         {
         }
-
+        [JsonProperty]
         public bool Persistant { get; set; }
+        [JsonProperty]
         public AnimatedCharacter Target
         {
             get { return _target; }
@@ -39,10 +43,21 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     Target = value as AnimatedCharacter;
             }
         }
-
+        [JsonProperty]
         public AnimatedAbility StopAbility { get; set; }   
-
-        public AnimationSequencer Sequencer => _sequencer ?? (_sequencer = new AnimationSequencerImpl(Target));
+        [JsonProperty]
+        public AnimationSequencer Sequencer
+        {
+            get
+            {
+                return _sequencer ?? (_sequencer = new AnimationSequencerImpl(Target));
+            }
+            set
+            {
+                _sequencer = value;
+                NotifyOfPropertyChange(() => Sequencer);
+            }
+        }
         public override void Play(bool completeEvent=true)
         {
             Play(Target);
@@ -70,6 +85,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        public AnimationElement GetNewAnimationElement(AnimationElementType animationElementType)
+        {
+            return Sequencer.GetNewAnimationElement(animationElementType);
+        }
+
         public virtual void Stop(bool completedEvent = true)
         {
             Stop(Target);
@@ -83,29 +103,39 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Stop(List<AnimatedCharacter> targets)
         {
         }
-        public List<AnimationElement> AnimationElements => _sequencer?.AnimationElements;
+        public ObservableCollection<AnimationElement> AnimationElements => _sequencer?.AnimationElements;
+        [JsonProperty]
         public SequenceType Type
         {
-            get { return Sequencer.Type; }
+            get {
+                return Sequencer.Type;
+            }
 
-            set { Sequencer.Type = value; }
+            set {
+                Sequencer.Type = value;
+                NotifyOfPropertyChange(() => Type);
+            }
         }
 
         public void InsertMany(List<AnimationElement> animationElements)
         {
             Sequencer.InsertMany(animationElements);
+            NotifyOfPropertyChange(() => AnimationElements);
         }
         public void InsertElement(AnimationElement animationElement)
         {
             Sequencer.InsertElement(animationElement);
+            NotifyOfPropertyChange(() => AnimationElements);
         }
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement moveAfter)
         {
             Sequencer.InsertElementAfter(toInsert, moveAfter);
+            NotifyOfPropertyChange(() => AnimationElements);
         }
         public void RemoveElement(AnimationElement animationElement)
         {
             Sequencer.RemoveElement(animationElement);
+            NotifyOfPropertyChange(() => AnimationElements);
         }
 
         public AnimatedAbility Clone(AnimatedCharacter target)
@@ -133,6 +163,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (other.Persistant != Persistant) return false;
             if (other.Sequencer.Equals(Sequencer) == false) return false;
             return true;
+        }
+
+        public void Rename(string newName)
+        {
+            this.Name = newName;
         }
     }
 }

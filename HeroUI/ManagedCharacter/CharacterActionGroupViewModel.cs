@@ -23,8 +23,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void SetDefaultAction();
         void SaveActionGroup();
         void EditAction();
-        void PlayAction();
-        void StopAction();
+        void PlayAction(object action);
+        void StopAction(object action);
         void TogglePlayAction(object obj);
         void UnloadActionGroup();
         IEventAggregator EventAggregator { get; set; }

@@ -564,7 +564,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var element = TestObjectsFactory.ReferenceAbilityUnderTestWithAnimatedAbility;
             element.Play();
 
-            foreach (var e in element.Reference.AnimationElements)
+            foreach (var e in element.Reference?.Ability?.AnimationElements)
                 Mock.Get(e).Verify(x => x.Play(element.Target));
         }
 
@@ -575,7 +575,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var element = TestObjectsFactory.ReferenceAbilityUnderTestWithAnimatedAbilityWithRealElements;
             var copied = element.Copy(character);
 
-            Assert.IsTrue(element.Reference.Sequencer.Equals(copied.Sequencer));
+            Assert.IsTrue(element.Reference.Ability.Sequencer.Equals(copied.Sequencer));
         }
     }
 
@@ -919,6 +919,26 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     .Create();
             }
         }
+        public ReferenceResource ReferenceResourceUnderTest
+        {
+            get
+            {
+                return StandardizedFixture.Build<ReferenceResourceImpl>()
+                    .With(x => x.Ability, AnimatedAbilityUnderTest)
+                    .With(x => x.Character, AnimatedCharacterUnderTest)
+                    .Create();
+            }
+        }
+        public ReferenceResource ReferenceResourceUnderTestWithMockElements
+        {
+            get
+            {
+                return StandardizedFixture.Build<ReferenceResourceImpl>()
+                    .With(x => x.Ability, AnimatedAbilityUnderTestWitMockElements)
+                    .With(x => x.Character, AnimatedCharacterUnderTest)
+                    .Create();
+            }
+        }
         public AnimatedAbility AnimatedAbilityUnderTestWitMockElements
         {
             get
@@ -939,12 +959,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 ReferenceElement r = StandardizedFixture.Build<ReferenceElementImpl>()
                     .With(x => x.Target, MockAnimatedCharacter)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
-                    .With(x => x.Reference, AnimatedAbilityUnderTest)
+                    .With(x => x.Reference, ReferenceResourceUnderTest)
                     .Create();
-                r.Reference.AnimationElements?.Clear();
-                r.Reference.InsertElement(FxElementUnderTestWithAnimatedCharacter);
-                r.Reference.InsertElement(MovElementUnderTest);
-                r.Reference.InsertElement(SoundElementUnderTest);
+                r.Reference?.Ability?.AnimationElements?.Clear();
+                r.Reference?.Ability?.InsertElement(FxElementUnderTestWithAnimatedCharacter);
+                r.Reference?.Ability?.InsertElement(MovElementUnderTest);
+                r.Reference?.Ability?.InsertElement(SoundElementUnderTest);
                 return r;
             }
         }
@@ -955,11 +975,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 ReferenceElement r = StandardizedFixture.Build<ReferenceElementImpl>()
                     .With(x => x.Target, MockAnimatedCharacter)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
-                    .With(x => x.Reference, AnimatedAbilityUnderTestWitMockElements)
+                    .With(x => x.Reference, ReferenceResourceUnderTestWithMockElements)
                     .Create();
                 var list = CustomizedMockFixture.CreateMany<AnimationElement>().ToList();
                 foreach (var e in list)
-                    r.Reference.AnimationElements.Add(e);
+                    r.Reference.Ability.AnimationElements.Add(e);
                 return r;
             }
         }

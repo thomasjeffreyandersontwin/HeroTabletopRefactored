@@ -228,12 +228,16 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         public Position Facing { get; set; }
+
+        public bool CheckIfAbilityNameIsDuplicate(string updatedName)
+        {
+            return this.Abilities?.FirstOrDefault(a => a.Name == updatedName) != null;
+        }
+
         public void TurnTowards(Position position)
         {
             Position.TurnTowards(position);
         }
-
-       
     }
     public class AnimatableCharacterStateImpl : AnimatableCharacterState
     {

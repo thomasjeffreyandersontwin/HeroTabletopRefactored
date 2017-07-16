@@ -916,7 +916,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         public SequenceType Type { get; set; }
-        public List<AnimationElement> AnimationElements { get; }
+        public ObservableCollection<AnimationElement> AnimationElements { get; }
         public void InsertMany(List<AnimationElement> animationElements)
         {
             throw new NotImplementedException();
@@ -932,6 +932,11 @@ namespace HeroVirtualTabletop.Roster
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement moveAfter)
         {
             throw new NotImplementedException();
+        }
+
+        public AnimationElement GetNewAnimationElement(AnimationElementType animationElementType)
+        {
+            return null;
         }
 
         public void Stop(AnimatedCharacter target)
@@ -953,6 +958,11 @@ namespace HeroVirtualTabletop.Roster
         public AnimatedAbility.AnimatedAbility StopAbility { get; set; }
 
         public AnimatedAbility.AnimatedAbility Clone(AnimatedCharacter target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rename(string newName)
         {
             throw new NotImplementedException();
         }

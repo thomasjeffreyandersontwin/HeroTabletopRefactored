@@ -58,22 +58,22 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             get
             {
-                if (_active == null)
-                    if (_default != null)
-                    {
-                        _active = _default;
-                    }
-                    else
-                    {
-                        if (Count > 0)
-                            _active = this.First();
-                    }
+                //if (_active == null)
+                //    if (_default != null)
+                //    {
+                //        _active = _default;
+                //    }
+                //    else
+                //    {
+                //        if (Count > 0)
+                //            _active = this.First();
+                //    }
                 return _active;
             }
 
             set
             {
-                if (value != null)
+                //if (value != null)
                     _active = value;
                 OnPropertyChanged("Active");
             }
@@ -301,7 +301,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         private AnimatedAbility.AnimatedAbility GetNewAbility()
         {
-            AnimatedAbility.AnimatedAbility ability = new AreaEffectAttackImpl();
+            AnimatedAbility.AnimatedAbility ability = new AnimatedAbility.AnimatedAbilityImpl();
             return ability;
         }
 

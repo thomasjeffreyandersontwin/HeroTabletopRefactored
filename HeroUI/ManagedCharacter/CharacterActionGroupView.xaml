@@ -120,7 +120,7 @@
                                         <Grid Name="optGrid" 
                             ContextMenu="{StaticResource optionListBoxMenu}">
                                             <Ellipse Name="optionEllipse"  Width="40" Height="40" ToolTip="{Binding Name}" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
-                                                     behaviors:CommandBehavior.Event="MouseLeftButtonUp" behaviors:CommandBehavior.Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=managedcharacter:CharacterActionGroupView}, Path=DataContext.TogglePlayOptionCommand}" behaviors:CommandBehavior.CommandParameter="{Binding ElementName=optionEllipse, Path=DataContext}">
+                                                     cal:Message.Attach="[Event MouseLeftButtonUp] = [Action TogglePlayAction($dataContext)]">
                                                 <Ellipse.Style>
                                                     <Style TargetType="{x:Type Ellipse}">
                                                         <Setter Property="Fill" Value="Transparent" />

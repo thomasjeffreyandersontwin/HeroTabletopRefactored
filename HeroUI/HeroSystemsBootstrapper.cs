@@ -55,12 +55,14 @@ namespace HeroUI
             container.Singleton<RosterExplorerViewModel, RosterExplorerViewModelImpl>();
             container.Singleton<CharacterEditorViewModel, CharacterEditorViewModelImpl>();
             container.Singleton<IdentityEditorViewModel, IdentityEditorViewModelImpl>();
+            container.Singleton<AbilityEditorViewModel, AbilityEditorViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();
             container.Singleton<Roster, RosterImpl>();
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
             container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
+            container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
 
             container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();

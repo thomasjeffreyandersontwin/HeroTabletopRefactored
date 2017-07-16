@@ -61,6 +61,7 @@ namespace HeroVirtualTabletop.Roster
     {
         RosterParent RosterParent { get; set; }
         new string Name { get; set; }
+        Crowd.Crowd GetRosterParentCrowd();
     }
 
     public interface RosterSelection : CharacterActionContainer, ManagedCharacterCommands, AnimatedCharacterCommands, CrowdMemberCommands

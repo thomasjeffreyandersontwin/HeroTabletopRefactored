@@ -18,6 +18,7 @@ namespace HeroVirtualTabletop.Common
         {
             this.delegateToExecute = delegateToExecute;
             this.isRecurring = isRecurring;
+            this.dueTime = dueTime;
             if (isRecurring)
                 this.period = period;
             timer = new Timer(Timer_Callback);

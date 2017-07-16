@@ -213,6 +213,7 @@ namespace HeroVirtualTabletop.Crowd
                     this.Crowds = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<Crowd>>(this.CrowdRepositoryPath);
                 if (this.Crowds == null)
                     this.Crowds = new ObservableCollection<Crowd>();
+                RefreshAllmembersCrowd();
             });
             
         }
@@ -694,184 +695,6 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => SavedPosition);
             }
         }
-
-        /*
-       public void RemoveMemberFromParent(bool nested = false)
-       {
-           
-           if (Child is CharacterCrowdMember)
-           {
-               // Check if the Character is in All Characters. If so, prompt
-               if (ParentCrowd == ParentCrowd.CrowdRepository.AllMembersCrowd)
-               {
-                   DeleteCrowdMemberFromAllCrowdsByName(Child.Name);
-               }
-               else
-               {
-                   // Delete the Character from all occurances of this crowd
-                   DeleteCrowdMemberFromCrowdByName(ParentCrowd, Child.Name);
-               }
-           }
-           else // Delete Crowd
-           {
-               //If it is a nested crowd, just delete it from the parent
-               if (Child != null)
-               {
-                   string nameOfDeletingCrowd = ParentCrowd.Name;
-                   DeleteNestedCrowdFromCrowdByName(ParentCrowd, nameOfDeletingCrowd);
-               }
-               // Check if there are containing characters. If so, prompt
-               else if (ParentCrowd.MemberShips != null && ParentCrowd.MemberShips.Where(cm => cm is CrowdMember).Count() > 0)
-               {
-                   string nameOfDeletingCrowd = "";
-                   if (nested)
-                   {
-                       // Delete crowd specific characters from All Characters and this crowd
-                       List<CrowdMember> crowdSpecificCharacters = FindCrowdSpecificCrowdMembers((Crowd)this.Child);
-                       nameOfDeletingCrowd = Child.Name;
-                       DeleteCrowdMembersFromAllCrowdsByList(crowdSpecificCharacters);
-                       DeleteNestedCrowdFromAllCrowdsByName(nameOfDeletingCrowd);
-                       DeleteCrowdFromCrowdCollectionByName(nameOfDeletingCrowd);
-                       return;
-                   }
-                   else {
-                       nameOfDeletingCrowd = Child.Name;
-                       DeleteNestedCrowdFromAllCrowdsByName(nameOfDeletingCrowd);
-                       DeleteCrowdFromCrowdCollectionByName(nameOfDeletingCrowd);
-                       return;
-                   }
-               }
-               // or just delete the crowd from crowd collection and other crowds
-               else
-               {
-                   string nameOfDeletingCrowd = Child.Name;
-                   DeleteNestedCrowdFromAllCrowdsByName(nameOfDeletingCrowd);
-                   DeleteCrowdFromCrowdCollectionByName(nameOfDeletingCrowd);
-               }
-           }
-       }
-      
-         private void DeleteCrowdMemberFromAllCrowdsByName(string nameOfDeletingCrowdMember)
-        {
-            foreach (CrowdMemberShip membership in ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips)
-            {
-                if (membership.Child is Crowd)
-                {
-                    DeleteCrowdMemberFromCrowdByName((Crowd)membership.Child, nameOfDeletingCrowdMember);
-                    DeleteCrowdMemberFromNestedCrowdByName((Crowd)membership.Child, nameOfDeletingCrowdMember);
-                }
-            }
-            DeleteCrowdMemberFromCharacterCollectionByName(nameOfDeletingCrowdMember);
-        }
-        private void DeleteCrowdMemberFromNestedCrowdByName(Crowd crowd, string nameOfDeletingCrowdMember)
-        {
-            if (crowd.MemberShips != null && crowd.MemberShips.Count > 0)
-            {
-                foreach (var membership in crowd.MemberShips)
-                {
-                    if (membership.Child is Crowd)
-                    {
-                        var membershipChild = membership as Crowd;
-                        if (membershipChild.MemberShips != null)
-                        {
-                            var crm = membershipChild.MemberShips.Where(cmmm => cmmm.Child.Name == nameOfDeletingCrowdMember).FirstOrDefault();
-                            if (crm != null)
-                                membershipChild.RemoveMember(crm.Child);
-                            DeleteCrowdMemberFromNestedCrowdByName(membershipChild, nameOfDeletingCrowdMember);
-                        }
-                    }
-                }
-            }
-        }
-        private void DeleteCrowdMemberFromCrowdByName(Crowd Crowd, string nameOfDeletingCrowdMember)
-        {
-            if (Crowd.MemberShips != null)
-            {
-                var crm = Crowd.MemberShips.Where(cm => cm.Child.Name == nameOfDeletingCrowdMember).FirstOrDefault();
-                Crowd.RemoveMember(crm.Child);
-            }
-        }
-        private void DeleteCrowdMemberFromCharacterCollectionByName(string nameOfDeletingCrowdMember)
-        {
-            var charFromAllCrowd = ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips.Where(c => c.Child.Name == nameOfDeletingCrowdMember).FirstOrDefault();
-            ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips.Remove(charFromAllCrowd);
-        }
-        private void DeleteCrowdMemberFromCharacterCollectionByList(List<CrowdMember> crowdMembersToDelete)
-        {
-            foreach (var crowdMemberToDelete in crowdMembersToDelete)
-            {
-                var deletingCrowdMember = ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips.Where(c => c.Child.Name == crowdMemberToDelete.Name).FirstOrDefault();
-                ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips.Remove(deletingCrowdMember);
-            }
-        }
-        private void DeleteCrowdMembersFromAllCrowdsByList(List<CrowdMember> crowdMembersToDelete)
-        {
-            if (Child is Crowd)
-            {
-                foreach (Crowd crowd in ((Crowd)Child).MemberShips)
-                {
-                    DeleteCrowdMembersFromCrowdByList(crowd, crowdMembersToDelete);
-                }
-                DeleteCrowdMemberFromCharacterCollectionByList(crowdMembersToDelete);
-            }
-        }
-        private void DeleteCrowdMembersFromCrowdByList(Crowd Crowd, List<CrowdMember> crowdMembersToDelete)
-        {
-            if (Crowd.MemberShips != null)
-            {
-                foreach (var crowdMemberToDelete in crowdMembersToDelete)
-                {
-                    var deletingCrowdMemberFromModel = Crowd.MemberShips.Where(cm => cm.Child.Name == crowdMemberToDelete.Name).FirstOrDefault();
-                    Crowd.RemoveMember(deletingCrowdMemberFromModel.Child);
-                }
-            }
-        }
-        private void DeleteNestedCrowdFromAllCrowdsByName(string nameOfDeletingCrowd)
-        {
-            if (Child is Crowd)
-            {
-                foreach (Crowd crowd in ((Crowd)Child).MemberShips)
-                {
-                    DeleteNestedCrowdFromCrowdByName(crowd, nameOfDeletingCrowd);
-                }
-            }
-        }
-        private void DeleteNestedCrowdFromCrowdByName(Crowd Crowd, string nameOfDeletingCrowd)
-        {
-            if (Crowd.MemberShips != null)
-            {
-                var CrowdToDelete = Crowd.MemberShips.Where(cm => cm.Child.Name == nameOfDeletingCrowd).FirstOrDefault();
-                if (CrowdToDelete != null)
-                    Crowd.RemoveMember(CrowdToDelete.Child);
-            }
-        }
-        private void DeleteCrowdFromCrowdCollectionByName(string nameOfDeletingCrowd)
-        {
-            var crowdToDelete = ((Crowd)Child).MemberShips.Where(cr => cr.Child.Name == nameOfDeletingCrowd).FirstOrDefault();
-            ((Crowd)Child).MemberShips.Remove(crowdToDelete);
-        }
-        private List<CrowdMember> FindCrowdSpecificCrowdMembers(Crowd crowdModel)
-        {
-            List<CrowdMember> crowdSpecificCharacters = new List<CrowdMember>();
-            foreach (CrowdMemberShip cMember in crowdModel.MemberShips)
-            {
-                if (cMember.Child is CharacterCrowdMember)
-                {
-                    CharacterCrowdMember currentCharacter = cMember as CharacterCrowdMember;
-                    foreach (Crowd crowd in ParentCrowd.CrowdRepository.AllMembersCrowd.MemberShips.Where(cm => cm.Child.Name != ParentCrowd.Name))
-                    {
-                        var crm = crowd.MemberShips.Where(cm => cm is CharacterCrowdMember && cm.Child.Name == currentCharacter.Name).FirstOrDefault();
-                        if (crm == null || crowd.Name == ParentCrowd.CrowdRepository.AllMembersCrowd.Name)
-                        {
-                            if (crowdSpecificCharacters.Where(csc => csc.Name == currentCharacter.Name).FirstOrDefault() == null)
-                                crowdSpecificCharacters.Add(currentCharacter);
-                        }
-                    }
-                }
-            }
-            return crowdSpecificCharacters;
-        }
-        */
     }
 
     public class CharacterCrowdMemberImpl : MovableCharacterImpl, CharacterCrowdMember
@@ -1103,6 +926,17 @@ namespace HeroVirtualTabletop.Crowd
         }
         [JsonProperty(Order=4)]
         public RosterParent RosterParent { get; set; }
+
+        public Crowd GetRosterParentCrowd()
+        {
+            Crowd parent = null;
+            if (RosterParent == null)
+                parent = this.AllCrowdMembershipParents.FirstOrDefault(membership => membership.ParentCrowd != null && membership.ParentCrowd.Name != this.CrowdRepository.AllMembersCrowd.Name)?.ParentCrowd;
+            else
+                parent = this.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == this.RosterParent.Name) as Crowd;
+
+            return parent;
+        }
     }
 
     public class CrowdClipboardImpl : CrowdClipboard
