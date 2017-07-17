@@ -196,9 +196,9 @@
             <StackPanel.Resources>
                 <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
             </StackPanel.Resources>
-            <Button x:Name="btnClone" Content="&#xf0c5;" ToolTip="Clone (Alt+Ctrl+C)" Command="{Binding CloneAnimationCommand}"/>
-            <Button x:Name="btnCut" Content="&#xf0c4;" ToolTip="Cut (Alt+Ctrl+X)" Command="{Binding CutAnimationCommand}"/>
-            <Button x:Name="btnPaste" Content="&#xf0ea;" ToolTip="Paste (Alt+Ctrl+V)" Command="{Binding PasteAnimationCommand}"/>
+            <Button x:Name="CloneAnimation" Content="&#xf0c5;" ToolTip="Clone (Alt+Ctrl+C)"/>
+            <Button x:Name="CutAnimation" Content="&#xf0c4;" ToolTip="Cut (Alt+Ctrl+X)"/>
+            <Button x:Name="PasteAnimation" Content="&#xf0ea;" ToolTip="Paste (Alt+Ctrl+V)"/>
             <Button x:Name="RemoveAnimation" Content="&#xf056;" ToolTip="Remove (Alt+Ctrl+Backspace)" />
             <Button x:Name="DemoAnimation" Content="&#xf04b;" ToolTip="Demo Animation (Alt+Ctrl+Enter)" />
             <Button x:Name="btnAttack" Grid.Column="0" Content="&#xf0e7;" ToolTip="Attack (Alt+Ctrl+A)" Margin="2" Command="{Binding ConfigureAttackAnimationCommand}" CommandParameter="Attack">

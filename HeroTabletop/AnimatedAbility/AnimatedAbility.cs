@@ -5,6 +5,8 @@ using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using HeroVirtualTabletop.Crowd;
+using System.Linq;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -148,7 +150,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             clone.KeyboardShortcut = KeyboardShortcut;
             clone.Persistant = Persistant;
             clone.Target = Target;
-            clone.StopAbility = StopAbility.Clone(target);
+            clone.StopAbility = StopAbility?.Clone(target);
             return clone;
         }
         public override CharacterAction Clone()
@@ -169,5 +171,166 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             this.Name = newName;
         }
+    }
+
+    public class AbilityClipboardImpl : AbilityClipboard
+    {
+        private object currentClipboardObject;
+        public ClipboardAction CurrentClipboardAction
+        {
+            get; set;
+        }
+
+        public void CopyToClipboard(AnimatedAbility ability)
+        {
+            CurrentClipboardAction = ClipboardAction.Clone;
+            currentClipboardObject = ability;
+        }
+
+        public void CopyToClipboard(AnimationElement animationElement)
+        {
+            CurrentClipboardAction = ClipboardAction.Clone;
+            currentClipboardObject = animationElement;
+        }
+
+        public void CutToClipboard(AnimationElement animationElement, AnimationSequencer sourceSequence)
+        {
+            this.CurrentClipboardAction = ClipboardAction.Cut;
+            this.currentClipboardObject = new object[] { animationElement, sourceSequence };
+        }
+
+        public bool CheckPasteEligibilityFromClipboard(AnimationSequencer destinationSequence)
+        {
+            bool canPaste = false;
+            switch (this.CurrentClipboardAction)
+            {
+                case ClipboardAction.Clone:
+                    if (this.currentClipboardObject != null)
+                    {
+                        if (this.currentClipboardObject is AnimationSequencer)
+                        {
+                            AnimationSequencer seqElement = this.currentClipboardObject as AnimationSequencer;
+                            List<AnimationElement> elementList = AnimationSequencerImpl.GetFlattenedAnimationList(seqElement.AnimationElements);
+                            if (!(elementList.Where((an) => { return an.AnimationElementType == AnimationElementType.Reference; }).Any((an) => { return (an as ReferenceElement).Reference?.Ability == destinationSequence; })))
+                                canPaste = true;
+                        }
+                        else if (this.currentClipboardObject is ReferenceElement)
+                        {
+                            ReferenceElement refAbility = this.currentClipboardObject as ReferenceElement;
+                            if (refAbility.Reference?.Ability == destinationSequence)
+                                canPaste = false;
+                            else if (refAbility.Reference?.Ability?.AnimationElements != null && refAbility.Reference?.Ability?.AnimationElements.Count > 0)
+                            {
+                                bool refexists = false;
+                                if (refAbility.Reference.Ability.AnimationElements.Contains(destinationSequence as AnimationElement))
+                                    refexists = true;
+                                List<AnimationElement> elementList = AnimationSequencerImpl.GetFlattenedAnimationList(refAbility.Reference.Ability.AnimationElements);
+                                if (elementList.Where((an) => { return an.AnimationElementType == AnimationElementType.Reference; }).Any((an) => { return (an as ReferenceElement).Reference.Ability == destinationSequence; }))
+                                    refexists = true;
+                                if (!refexists)
+                                    canPaste = true;
+                            }
+                            else
+                                canPaste = true;
+                        }
+                        else
+                            canPaste = true;
+                    }
+                    break;
+                case ClipboardAction.Cut:
+                    if (this.currentClipboardObject != null)
+                    {
+                        object[] clipObj = this.currentClipboardObject as object[];
+                        AnimationElement clipboardAnimationElement = clipObj[0] as AnimationElement;
+                        AnimationSequencer clipboardAnimationSequencer = clipObj[1] as AnimationSequencer;
+                        if (clipboardAnimationElement is SequenceElement)
+                        {
+                            SequenceElement seqElement = clipboardAnimationElement as SequenceElement;
+                            List<AnimationElement> elementList = AnimationSequencerImpl.GetFlattenedAnimationList(seqElement.AnimationElements);
+                            if (!(elementList.Where((an) => { return an.AnimationElementType == AnimationElementType.Reference; }).Any((an) => { return (an as ReferenceElement).Reference.Ability == destinationSequence; })))
+                                canPaste = true;
+                        }
+                        else if (clipboardAnimationElement is ReferenceElement)
+                        {
+                            ReferenceElement refAbility = clipboardAnimationElement as ReferenceElement;
+                            if (refAbility.Reference?.Ability == destinationSequence)
+                                canPaste = false;
+                            else if (refAbility.Reference?.Ability?.AnimationElements != null && refAbility.Reference?.Ability?.AnimationElements.Count > 0)
+                            {
+                                bool refexists = false;
+                                if (refAbility.Reference.Ability.AnimationElements.Contains(destinationSequence as AnimationElement))
+                                    refexists = true;
+                                List<AnimationElement> elementList = AnimationSequencerImpl.GetFlattenedAnimationList(refAbility.Reference.Ability.AnimationElements);
+                                if (elementList.Where((an) => { return an.AnimationElementType == AnimationElementType.Reference; }).Any((an) => { return (an as ReferenceElement).Reference.Ability == destinationSequence; }))
+                                    refexists = true;
+                                if (!refexists)
+                                    canPaste = true;
+                            }
+                            else
+                                canPaste = true;
+                        }
+                        else
+                            canPaste = true;
+                    }
+                    break;
+            }
+            return canPaste;
+        }
+
+        public AnimationElement PasteFromClipboard(AnimationSequencer destinationSequence)
+        {
+            AnimationElement pastedMember = null;
+            switch (this.CurrentClipboardAction)
+            {
+                case ClipboardAction.Clone:
+                    pastedMember = cloneAndPaste(destinationSequence);
+                    break;
+                case ClipboardAction.Cut:
+                    pastedMember = cutAndPaste(destinationSequence);
+                    break;
+            }
+            this.CurrentClipboardAction = ClipboardAction.None;
+            this.currentClipboardObject = null;
+
+            return pastedMember;
+        }
+
+        private AnimationElement cloneAndPaste(AnimationSequencer destinationSequence)
+        {
+            AnimationElement clonedElement = null;
+            if (currentClipboardObject is AnimationElement)
+            {
+                var cloningElement = currentClipboardObject as AnimationElement;
+                clonedElement = cloningElement.Clone(cloningElement.Target);
+
+                destinationSequence.InsertElement(clonedElement);
+            }
+            else
+            {
+                var cloningAbility = currentClipboardObject as AnimatedAbility;
+                AnimationSequencer sequencer = cloningAbility.Clone() as AnimationSequencer;
+
+                SequenceElementImpl sequenceElement = new HeroVirtualTabletop.AnimatedAbility.SequenceElementImpl(sequencer);
+                sequenceElement.Type = sequencer.Type;
+                sequenceElement.Name = "Sequence: " + sequenceElement.Type.ToString();
+                clonedElement = sequenceElement;
+
+                destinationSequence.InsertElement(sequenceElement);
+            }
+            return clonedElement;
+        }
+
+        private AnimationElement cutAndPaste(AnimationSequencer destinationSequence)
+        {
+            object[] clipboardObj = this.currentClipboardObject as object[];
+            AnimationElement cutElement = clipboardObj[0] as AnimationElement;
+            AnimationSequencer parentSequence = clipboardObj[1] as AnimationSequencer;
+
+            parentSequence.RemoveElement(cutElement);
+            destinationSequence.InsertElement(cutElement);
+
+            return cutElement;
+        }
+
     }
 }

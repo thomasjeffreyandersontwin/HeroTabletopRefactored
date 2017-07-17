@@ -93,13 +93,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 currentAbility = value;
                 AnimatedResourceMananger.CurrentAbility = value;
                 NotifyOfPropertyChange(() => CurrentAbility);
-                //this.CloneAnimationCommand.RaiseCanExecuteChanged();
-                //this.PasteAnimationCommand.RaiseCanExecuteChanged();
+                NotifyOfPropertyChange(() => CanCloneAnimation);
+                NotifyOfPropertyChange(() => CanPasteAnimation);
             }
         }
 
         public Roster.Roster Roster { get; set; }
-
+        public AbilityClipboard AbilityClipboard { get; set; }
         public AnimatedResourceManager AnimatedResourceMananger { get; set; }
         public CrowdRepository CrowdRepository { get; set; }
 
@@ -156,9 +156,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 //if (selectedAnimationElement != null)
                 //    SetSavedUIFilter(selectedAnimationElement);
                 OnSelectionChanged(value, null);
-                //this.CloneAnimationCommand.RaiseCanExecuteChanged();
-                //this.CutAnimationCommand.RaiseCanExecuteChanged();
-                //this.PasteAnimationCommand.RaiseCanExecuteChanged();
+                NotifyOfPropertyChange(() => CanCloneAnimation);
+                NotifyOfPropertyChange(() => CanCutAnimation);
+                NotifyOfPropertyChange(() => CanPasteAnimation);
             }
         }
 
@@ -333,10 +333,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #region Constructor
 
-        public AbilityEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, Roster.Roster roster, IEventAggregator eventAggregator)
+        public AbilityEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, AbilityClipboard abilityClipboard, Roster.Roster roster, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = crowdRepository;
             this.Roster = roster;
+            this.AbilityClipboard = abilityClipboard;
             this.AnimatedResourceMananger = animatedResourceRepository;
             this.AnimatedResourceMananger.CrowdRepository = crowdRepository;
             this.AnimatedResourceMananger.GameDirectory = HeroUI.Properties.Settings.Default.GameDirectory;
@@ -430,7 +431,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             OnAnimationAdded(animationElement, null);
             this.SaveAbility();
-            //this.CloneAnimationCommand.RaiseCanExecuteChanged();
+            NotifyOfPropertyChange(() => CanCloneAnimation);
         }
 
 
@@ -829,6 +830,86 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 member.Target();
             }
         }
+        #endregion
+
+        #region Clone Animation
+
+        public bool CanCloneAnimation
+        {
+            get
+            {
+                return (this.SelectedAnimationElement != null || (this.SelectedAnimationElement == null && this.CurrentAbility != null && this.CurrentAbility.AnimationElements != null && this.CurrentAbility.AnimationElements.Count > 0)) && !IS_ATTACK_EXECUTING;
+            }
+        }
+        public void CloneAnimation()
+        {
+            if (this.SelectedAnimationElement != null)
+                this.AbilityClipboard.CopyToClipboard(this.SelectedAnimationElement); // any animation element
+            else
+                this.AbilityClipboard.CopyToClipboard(this.CurrentAbility); // To be copied as a sequence element
+            NotifyOfPropertyChange(() => CanPasteAnimation);
+        }
+        #endregion
+
+        #region Cut Animation
+        public bool CanCutAnimation
+        {
+            get
+            {
+                return (this.SelectedAnimationElement != null) && !IS_ATTACK_EXECUTING;
+            }
+        }
+        public void CutAnimation()
+        {
+            if (this.SelectedAnimationParent != null)
+            {
+                this.AbilityClipboard.CutToClipboard(this.SelectedAnimationElement, this.SelectedAnimationParent as AnimationSequencer);
+            }
+            else
+            {
+                this.AbilityClipboard.CutToClipboard(this.SelectedAnimationElement, this.CurrentAbility);
+            }
+            NotifyOfPropertyChange(() => CanPasteAnimation);
+        }
+        #endregion
+
+        #region Paste Animation
+        public bool CanPasteAnimation
+        {
+            get
+            {
+                bool canPaste = !IS_ATTACK_EXECUTING && this.AbilityClipboard.CheckPasteEligibilityFromClipboard((AnimationSequencer)CurrentSequenceElement ?? CurrentAbility);
+                return canPaste;
+            }
+        }
+        public void PasteAnimation()
+        {
+            // Lock animation Tree from updating
+            this.LockModelAndMemberUpdate(true);
+            switch (AbilityClipboard.CurrentClipboardAction)
+            {
+                case ClipboardAction.Clone:
+                    {
+                        AnimationElement animationElement = this.AbilityClipboard.PasteFromClipboard((AnimationSequencer)CurrentSequenceElement ?? CurrentAbility);
+                        OnAnimationAdded(animationElement, null);
+                        break;
+                    }
+                case ClipboardAction.Cut:
+                    {
+                        AnimationElement animationElement = this.AbilityClipboard.PasteFromClipboard((AnimationSequencer)CurrentSequenceElement ?? CurrentAbility);
+                        OnAnimationAdded(animationElement, new CustomEventArgs<bool>() { Value = false });
+                        break;
+                    }
+            }
+            this.SaveAbility();
+            if (SelectedAnimationElement != null)
+            {
+                OnExpansionUpdateNeeded(this.SelectedAnimationElement, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Paste });
+            }
+            // UnLock character crowd Tree from updating
+            this.LockModelAndMemberUpdate(false);
+        }
+
         #endregion
 
         #region Drag Drop

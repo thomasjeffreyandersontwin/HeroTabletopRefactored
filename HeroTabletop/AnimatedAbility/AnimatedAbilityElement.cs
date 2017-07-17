@@ -126,6 +126,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         protected AnimationElement cloneBaseAttributes(AnimationElement clone)
         {
             clone.Persistent = Persistent;
+            clone.Name = Name;
             clone.Order = Order;
             clone.PlayWithNext = PlayWithNext;
             return clone;
@@ -1080,6 +1081,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             animationElement.Target = Target;
             animationElement.ParentSequence = this;
             AnimationElements.Add(animationElement);
+            FixOrders();
         }
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement insertAfter)
         {
@@ -1126,8 +1128,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void RemoveElement(AnimationElement animationElement)
         {
-            AnimationElements.Remove(animationElement);
-            FixOrders();
+            if(AnimationElements.Contains(animationElement))
+                AnimationElements.Remove(animationElement);
+            else
+            { // In case where a cloned object matches all the properties
+                var animElement = AnimationElements.FirstOrDefault(ae => ae.Name == animationElement.Name);
+                if (animElement != null)
+                    AnimationElements.Remove(animElement);
+            }
+            //FixOrders(); // don't need to reset orders actually. Plus it helps to differentiate between two otherwise identical elements - one just deleted and one right after it that was cloned from the deleted one
         }
 
         public override void Play(List<AnimatedCharacter> targets)
@@ -1280,7 +1289,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             return animationElement;
         }
 
-        private List<AnimationElement> GetFlattenedAnimationList(List<AnimationElement> animationElementList)
+        public static List<AnimationElement> GetFlattenedAnimationList(IEnumerable<AnimationElement> animationElementList)
         {
             List<AnimationElement> _list = new List<AnimationElement>();
             foreach (AnimationElement animationElement in animationElementList)
@@ -1296,7 +1305,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             return _list;
         }
 
-        private string GetAppropriateAnimationName(AnimationElementType animationType, List<AnimationElement> collection)
+        public static string GetAppropriateAnimationName(AnimationElementType animationType, List<AnimationElement> collection)
         {
             string name = "";
             switch (animationType)
@@ -1441,7 +1450,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override AnimationElement Clone(AnimatedCharacter target)
         {
-            return Copy(target);
+            ReferenceElement refElement = new ReferenceElementImpl();
+            refElement = (ReferenceElement)cloneBaseAttributes(refElement);
+            refElement.Reference = Reference;
+            refElement.Target = Target;
+
+            return refElement;
         }
 
         public override void PlayResource(AnimatedCharacter target)

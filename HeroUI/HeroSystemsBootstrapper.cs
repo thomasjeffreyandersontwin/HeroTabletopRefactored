@@ -63,6 +63,7 @@ namespace HeroUI
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
             container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
             container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
+            container.Singleton<AbilityClipboard, AbilityClipboardImpl>();
 
             container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();

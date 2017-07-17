@@ -266,4 +266,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
         AnimatedCharacter Character { get; set; }
         AnimatedAbility Ability { get; set; }
     }
+
+    public interface AbilityClipboard
+    {
+        ClipboardAction CurrentClipboardAction { get; set; }
+        void CopyToClipboard(AnimatedAbility ability);
+        void CopyToClipboard(AnimationElement animationElement);
+        void CutToClipboard(AnimationElement animationElement, AnimationSequencer parentSequence);
+        AnimationElement PasteFromClipboard(AnimationSequencer destinationSequence);
+        bool CheckPasteEligibilityFromClipboard(AnimationSequencer destinationSequence);
+    }
 }
