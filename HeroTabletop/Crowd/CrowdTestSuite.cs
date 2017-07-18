@@ -704,14 +704,7 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(CrowdMemberShip),
                     typeof(CrowdMemberShipImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(CharacterAction),
-                    typeof(IdentityImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(CharacterActionGroup),
-                    typeof(CharacterActionListImpl<CharacterAction>)));
+            
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(CharacterCrowdMember),

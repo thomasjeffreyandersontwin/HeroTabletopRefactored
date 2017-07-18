@@ -20,6 +20,7 @@ namespace HeroVirtualTabletop.Movement
         MovableCharacterTestObjectFactory TestObjectFactory = new MovableCharacterTestObjectFactory();
 
         [TestMethod]
+        [TestCategory("Movement")]
         public void AddMovement_CreatesACharacterMovementForCharacter()
         {
             //arrange
@@ -31,6 +32,7 @@ namespace HeroVirtualTabletop.Movement
             Assert.AreEqual(character.Movements.FirstOrDefault().Movement, mov);
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void MovementCommands_DelegateToActiveMovement()
         {
             //arrange
@@ -45,6 +47,7 @@ namespace HeroVirtualTabletop.Movement
             mocker.Verify(x => x.Move(character, Direction.Right, null, character.Movements.FirstOrDefault().Speed));
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void CharacterMovementSpeedIsNotSet_IsTakenFromMovement()
         {
             //arrange
@@ -64,6 +67,7 @@ namespace HeroVirtualTabletop.Movement
         MovableCharacterTestObjectFactory TestObjectFactory = new MovableCharacterTestObjectFactory();
 
         [TestMethod]
+        [TestCategory("Movement")]
         public void MoveCharacterForwardToDestination_TurnsDesktopCharacterToDestinationAndstartsMovingToDestination()
         {
             //assert
@@ -83,6 +87,7 @@ namespace HeroVirtualTabletop.Movement
 
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void MoveCharacteDirection_ActivatesCorrectMovementAbilityOnce()
         {
             //arrange
@@ -98,6 +103,7 @@ namespace HeroVirtualTabletop.Movement
             Assert.AreEqual(character.DesktopNavigator.Direction, Direction.Left);
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void MoveCharacterDifferentDirection_ActivatesBothMovementAbilitiesForEachDirection()
         {
             //arrange
@@ -114,6 +120,8 @@ namespace HeroVirtualTabletop.Movement
             mocker.Verify(x => x.Play(character), Times.Once);
             Assert.AreEqual(character.DesktopNavigator.Direction, Direction.Right);
         }     
+        [TestMethod]
+        [TestCategory("Movement")]
         public void IncrementCharacteForward_IncrementsPosition() //to do with real calcs
         {
             //arrange
@@ -128,6 +136,7 @@ namespace HeroVirtualTabletop.Movement
             mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, new PositionImpl(character.Position.FacingVector),movement.Speed,false));
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void TurnCharacter_IncrementsTurn()
         {
             //arrange
@@ -147,6 +156,8 @@ namespace HeroVirtualTabletop.Movement
             mocker.Verify(
                 x => x.Turn(TurnDirection.Right, 5));
         }      
+        [TestMethod]
+        [TestCategory("Movement")]
         public void MoveCharacteToDestination_IncrementsPositionUntilDestinationReached()
         {
             //arrange
@@ -165,6 +176,7 @@ namespace HeroVirtualTabletop.Movement
             Assert.IsTrue(character.Position.IsWithin(5,destination,out calc));    
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void SettingGravityOnMove_ThenNavigatesWithgravity()
         {
             //arrange
@@ -181,6 +193,7 @@ namespace HeroVirtualTabletop.Movement
             mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Left, destination, movement.Speed,true));
         }
         [TestMethod]
+        [TestCategory("Movement")]
         public void TurnTowardsDestination_TurnsPositionOfCharacter()
         {
             //arrange

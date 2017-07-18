@@ -24,6 +24,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("KeybindGenerator")]
         public void ExecuteCmd_SendsCommandToIconUtility()
         {
             //arrange
@@ -38,6 +39,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("KeybindGenerator")]
         public void ExecuteCmd_SendsMultipleParametersAsTextDividecBySpaces()
         {
             //arrange
@@ -52,6 +54,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("KeybindGenerator")]
         public void GenerateKeyBindsForCommand_ConnectsMultipleCommandsUntilExecuteCmdSent()
         {
             //arrange
@@ -85,6 +88,8 @@ namespace HeroVirtualTabletop.Desktop
     {
         DesktopTestObjectsFactory TestObjectsFactory = new DesktopTestObjectsFactory();
         
+        [TestMethod]
+        [TestCategory("Position")]
         void MovingPositionWith0DegreeFacing_UpdatesXYZProperlyForAllDirections()
         {
 
@@ -99,6 +104,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void UpdateYaw_UpdatesRotationMatrixSoThatPositionItWillReturnTheSameYaw()
         {
             //arrange
@@ -126,6 +132,7 @@ namespace HeroVirtualTabletop.Desktop
             Assert.AreEqual(position.FacingVector.Z, position.RotationMatrix.M33);
         }
         [TestMethod]
+        [TestCategory("Position")]
         public void TurnYaw_UpdatesRotationMatrixSoThatPositionReturnCorrectYaw()
         {
             //arrange
@@ -140,6 +147,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void UpdatePitch_UpdatesRotationMatrixThatWillReturnTheSamePitch()
         {
             //arrange
@@ -167,6 +175,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void TurnPitch_UpdatesRotationMatrixToReturnCorrectPitch()
         {
             //arrange
@@ -183,6 +192,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void TurnTowardsDestinationPosition_TurnsCorrectYawBasedOnPositionOfDestination()
         {
             ValidateTurnTowardsTargetWithXandZ_TurnsCorrectYaw(2f, 10f);
@@ -209,6 +219,7 @@ namespace HeroVirtualTabletop.Desktop
             Assert.AreEqual(target.X, turner.X);
         }
 
+        [TestCategory("Position")]
         [TestMethod]
         public void IsWithin_ReturnsWetherTwoPositionsAreWithinDistance()
         {
@@ -228,6 +239,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void DistanceFrom_ReturnsCorrectDistanceBetweenTwoPositions()
         {
             Position startPosition = TestObjectsFactory.PositionUnderTest;
@@ -239,6 +251,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void JustMiss_ReturnsPositionJustBesideOriginalPosition()
         {
             Position startPosition = TestObjectsFactory.PositionUnderTest;
@@ -251,6 +264,7 @@ namespace HeroVirtualTabletop.Desktop
 
         }
         [TestMethod]
+        [TestCategory("Position")]
         public void MovingPositionWithAdjustedYawe_UpdatesAllXYZBasedOnAdjustedYaw()
         {      
             Validate2DistanceAtAngle(45f, 10f);
@@ -276,6 +290,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void MovingPositionWithPitchAndYawAdjusted_UpdatesXYZBasedOnAdjustedPitchAndYaw()
         {    
             validate3DMoveOfYawPitchDistance(45f, 45f, 10f);
@@ -306,6 +321,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("Position")]
         public void
             MovingPositionADifferentDirectionWithPitchAAndAdjustedYaw_UpdatesXYZBasedonDirectionMovingAndAdjustedPitchAndYaw()
         {
@@ -369,21 +385,13 @@ namespace HeroVirtualTabletop.Desktop
         }
     }
 
-    public class WindowsUtilitiesTestSuite
-    {
-    }
-
-    //todo
-    public class DesktopMemoryInstanceTestSuite
-    {
-    }
-
     [TestClass]
-    public class DesktopCharacterNavgatorTestSuite
+    public class DesktopCharacterNavigatorTestSuite
     {
         private DesktopTestObjectsFactory TestObjectsFactory= new DesktopTestObjectsFactory();
 
         [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
         public void NavigateToDestinationWithCollision_StopAtCollision()
         {
            
@@ -406,6 +414,7 @@ namespace HeroVirtualTabletop.Desktop
 
         }
         [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
         public void NavigateToDestinationWithNoCollision_StopAtDestination()
         {
             //arrange
@@ -428,6 +437,7 @@ namespace HeroVirtualTabletop.Desktop
         }
 
         [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
         public void NavigatePositionWithBodyToDestinationWithACollision_StopsAheadOfCollisionBasedOnPositionSize()
         {
             //arrange
@@ -465,8 +475,8 @@ namespace HeroVirtualTabletop.Desktop
         public void NavigatePositionWithBodyToDestinationWithACollisionInFrontOfOneBodyPart_StopsAtCollisionBlockingSpecific()
         {
         }
-
-       
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
         public void NavigateWithGravityAlongIncliningFloor_SuccesfullyMovesCharacterAlongFloor()
         {
             //arrange

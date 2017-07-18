@@ -22,8 +22,10 @@ namespace HeroVirtualTabletop.Attack
 
             set { Owner = value; }
         }
-        public bool IsActive { get; set; }
-        public AnimatedAbility.AnimatedAbility OnHitAnimation { get; set; }
+        public bool IsActive { get;
+            set; }
+        public AnimatedAbility.AnimatedAbility OnHitAnimation { get;
+            set; }
 
         public KnockbackCollisionInfo AnimateKnockBack()
         {

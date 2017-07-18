@@ -16,6 +16,7 @@ namespace HeroVirtualTabletop.Attack
         public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void StartAttack_SetsActiveAttackOfOwnerTotheStartedAttack()
         {
             //arrange
@@ -31,6 +32,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackThatMisses_PlaysAttackAbilityOnAttackerAndMissAnimationOnDefender()
         {
             //arrange
@@ -51,6 +53,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackThatHits_PlaysDefaultHitIfTheAttackHasNoOnHitAnimation()
         {
             // arrange
@@ -71,6 +74,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackThatHits_PlaysCustomtHitIfTheAttackHasACustomOnHitAnimation()
         {
             // arrange
@@ -89,6 +93,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackThatHits_PlaysOnlyTheMostSevereOfStunUnconsiousDyingOrDeadAttackEffect()
         {
             // arrange
@@ -141,6 +146,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void AttackWithUnitPause_PausesCorrectDurationBasedOnDistanceBetweenAttackerAndDefender()
         {
             //arrange
@@ -171,6 +177,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackCycle_TurnsAttackerToFaceDefenderBeforeAnimatingAttack()
         {
             //arrange
@@ -190,6 +197,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackCycleThatHits_AimsFXInAttackToFireAtThePositionOfTheDefenderIfFXisDirectional()
         {
             //arrange
@@ -228,6 +236,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void
             CompleteAttackCycleThatMisses_AimsFXInAttackToFireAtThePositionCloseToButMissingTheDefenderIfFXisDirectional
             ()
@@ -269,6 +278,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void AnimateAttackOnTheDesktop_TurnsTheAttackerTowardsTheDesktopAndFiresAtThePositonOfTheDesktop()
         {
             //arrange
@@ -310,6 +320,7 @@ namespace HeroVirtualTabletop.Attack
         public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void CompleteAttackThatHits_PlayHitEachElementOneAfterTheOtherAcrossAllDefenders()
         {
             // arrange
@@ -331,6 +342,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void
             CompleteAttackThatHitsSomeTargetsAndMissesOthers_PlaysMissElementTogetherOnMissedTargetsAndTheHitElementsTogetherAcrossAllHitTargets
             ()
@@ -367,6 +379,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void AddTargetToListOfDefendersUpdatesStateOfTheTargetToUnderAttack()
         {
             // arrange
@@ -392,6 +405,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         [TestMethod]
+        [TestCategory("Attack")]
         public void StartAttack_SetsActiveAttackOfOwnerTotheStartedAttack()
         {
             //arrange

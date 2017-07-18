@@ -22,6 +22,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void Target_CallsGenerateCommandCorrectlyIfNoMemoryInstance()
         {
             //arrange
@@ -40,6 +41,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void Target_AssignsCorrectMemoryInstanceIfNoMemoryInstance()
         {
             //arrange
@@ -54,6 +56,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void Target_UsesMemoryInstanceIfExists()
         {
             //arrange
@@ -67,6 +70,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void IsTargeted_MatchesBasedOnMemoryInstance()
         {
             //arrange
@@ -84,6 +88,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void Follow_GeneratesCorrectCommandText()
         {
             string[] para = {};
@@ -93,19 +98,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var generator = characterUnderTest.Generator;
             Mock.Get(generator).VerifyAll();
         }
-
-        //todo fix
-        public void UnFollow_GeneratesCorrectCommandTextIfFollowedSetToFalse()
-        {
-            string[] para = {};
-            var characterUnderTest =
-                TestObjectsFactory.GetCharacterUnderTestWithCommandGenerationSetupToCommand(DesktopCommand.Follow, para);
-
-            var generator = characterUnderTest.Generator;
-            Mock.Get(generator).VerifyAll();
-        }
-
+        
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void TargetAndMoveCameraToCharacter_TellsCameraToMoveToCharacter()
         {
             //arrange
@@ -121,6 +116,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void IsManueveringWithCamera_SettingToTrueOnCharacterSetsManueveringCharacterOfCamera()
         {
             //arrange
@@ -136,6 +132,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void SpawnToDesktop_SpawnsDefaultModel()
         {
             //arrange
@@ -151,6 +148,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void SpawnToDesktop_CLearsFromDesktopIfAlreadySpawned()
         {
             //arrange
@@ -167,6 +165,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void SpawnToDesktop_UnsetsManueveringWithDesktopIfSet()
         {
             //arrange
@@ -179,6 +178,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void ClearsFromDesktop_RemovesCharacterFromDesktop()
         {
             //arrange
@@ -194,6 +194,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void ClearsFromDesktop_CLearsAllStateAndMemoryInstanceAndIdentity()
         {
             //arrange
@@ -209,6 +210,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("ManagedCharacter")]
         public void MoveCharacterToCamera_GeneratesCorrectCommand()
         {
             //arrange
@@ -235,6 +237,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Camera")]
         public void MoveToCharacter_GenerateCommandToFollowCharacter()
         {
             //arrange
@@ -252,6 +255,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Camera")]
         public void
             ManueverCharacter_StopsWaitingToGetToDestinationCharacterIfNoChangeInDistancebetweenCameraAndCharacterAfterSixChecksOnPosition
             ()
@@ -276,6 +280,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Camera")]
         public void ManueverCharacter_ContinuesToWaitForCameraToGetToDestinationUntilWithinMinimumDistanceBeforeBecomingCharacter()
         {
             //arrange
@@ -305,6 +310,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Camera")]
         public void ManueverCharacter_ClearsCharacterFromDesktopAndCameraBecomesCharacter()
         {
             //arrange
@@ -339,6 +345,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Identity")]
         public void Render_GeneratesCorrectCommandsToLoadCostume()
         {
             //arrange
@@ -354,6 +361,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("Identity")]
         public void Render_GeneratesCorrectCommandsTLoadModel()
         {
             //arrange
@@ -380,24 +388,17 @@ namespace HeroVirtualTabletop.ManagedCharacter
         } 
 
         [TestMethod]
-        public void Active_ReturnsDefalultIfNotSet()
-        {
-            var idList = TestObjectsFactory.IdentityListUnderTest;
-            idList.Deactivate();
-            Assert.AreEqual(idList.Active, idList.Default);
-        }
-
-        [TestMethod]
-        public void ActiveAndDefault_ReturnsFIrstIfDefalultAndActiveNotSet()
+        [TestCategory("CharacterAction")]
+        public void Default_ReturnsFIrstIfDefalultNotSet()
         {
             var idList = TestObjectsFactory.IdentityListUnderTest;
             idList.Deactivate();
             idList.Default = null;
             Assert.AreEqual(idList.Default, idList[0]);
-            Assert.AreEqual(idList.Active, idList[0]);
         }
 
         [TestMethod]
+        [TestCategory("CharacterAction")]
         public void GetNewValidActionName_ReturnsGenericActionTypeWithNumberIfNoNamePassedInOrNamePlusUniqueNumberIfNamePassedIn()
         {
             //arrange
@@ -419,6 +420,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("CharacterAction")]
         public void InsertAction_InsertsAtBottomOfListAndIsRetrieveableByActionName()
         {
             //arrange
@@ -433,6 +435,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("CharacterAction")]
         public void InsertAfter_InsertsActionAfterPreviousActionsAndIsRetrieveableByActionNameAndByCorrectItemNumber()
         {
             //arrange
@@ -452,6 +455,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         [TestMethod]
+        [TestCategory("CharacterAction")]
         public void RemoveAction_CannotRetreiveRemovedActionFromList()
         {
             //arrange
@@ -688,10 +692,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 new TypeRelay(
                     typeof(ManagedCharacter),
                     typeof(ManagedCharacterImpl)));
-            //StandardizedFixture.Customizations.Add(
-            //    new TypeRelay(
-            //        typeof(CharacterActionGroup),
-            //        typeof(CharacterActionListImpl<Identity>)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(CharacterActionList<Identity>),
@@ -704,6 +704,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 new TypeRelay(
                     typeof(CharacterActionContainer),
                     typeof(ManagedCharacterImpl)));
+
+            StandardizedFixture.Customize<IdentityImpl>(i => i
+            .Without(x => x.AnimationOnLoad));
             //handle recursion
             StandardizedFixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
