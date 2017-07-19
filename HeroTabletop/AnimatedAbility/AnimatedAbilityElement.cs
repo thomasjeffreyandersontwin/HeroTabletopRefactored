@@ -21,7 +21,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 {
     public abstract class AnimationElementImpl : PropertyChangedBase, AnimationElement
     {
-        
+
         protected bool completeEvent;
 
         protected AnimationElementImpl(AnimatedCharacter owner)
@@ -33,15 +33,35 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
         }
         [JsonProperty]
-        public int Order { get; set; }
+        public int Order
+        {
+            get;
+            set;
+        }
         [JsonProperty]
-        public AnimatedCharacter Target { get; set; }
+        public AnimatedCharacter Target
+        {
+            get;
+            set;
+        }
         [JsonProperty]
-        public bool PlayWithNext { get; set; }
+        public bool PlayWithNext
+        {
+            get;
+            set;
+        }
         [JsonProperty]
-        public bool Persistent { get; set; }
+        public bool Persistent
+        {
+            get;
+            set;
+        }
         [JsonProperty]
-        public AnimationSequencer ParentSequence { get; set; }
+        public AnimationSequencer ParentSequence
+        {
+            get;
+            set;
+        }
 
         private string _name;
         [JsonProperty]
@@ -144,7 +164,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.AnimationElementType = AnimationElementType.Mov;
         }
 
-        public MovElementImpl(): this(null, null)
+        public MovElementImpl() : this(null, null)
         {
         }
 
@@ -185,7 +205,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             MovElement clone = new MovElementImpl();
-            clone = (MovElement) cloneBaseAttributes(clone);
+            clone = (MovElement)cloneBaseAttributes(clone);
             clone.Target = target;
             clone.Mov = Mov;
             return clone;
@@ -194,7 +214,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override void PlayResource(AnimatedCharacter target)
         {
             var generator = target.Generator;
-            string[] para = {Mov.FullResourcePath};
+            string[] para = { Mov.FullResourcePath };
             generator.GenerateDesktopCommandText(DesktopCommand.Move, para);
             if (completeEvent)
                 if (PlayWithNext == false)
@@ -219,12 +239,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public FXElementImpl(AnimatedCharacter owner, FXResource resource, string gameDirectory = "") : base(owner)
         {
             FX = resource;
-            if(!string.IsNullOrEmpty(gameDirectory))
+            if (!string.IsNullOrEmpty(gameDirectory))
                 COSTUME_DIR = Path.Combine(gameDirectory, "costumes");
             this.AnimationElementType = AnimationElementType.FX;
         }
 
-        public FXElementImpl(): this(null, null, "")
+        public FXElementImpl() : this(null, null, "")
         {
         }
 
@@ -251,7 +271,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (fx != null)
                     removePreviousFXResource(fx);
                 fx = value;
-                NotifyOfPropertyChange(()=> FX);
+                NotifyOfPropertyChange(() => FX);
             }
         }
 
@@ -383,7 +403,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             FXElement clone = new FXElementImpl();
-            clone = (FXElement) cloneBaseAttributes(clone);
+            clone = (FXElement)cloneBaseAttributes(clone);
             clone.Target = target;
             clone.FX = FX;
             clone.Color1 = Color1;
@@ -413,7 +433,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             if (!File.Exists(CostumeFilePath))
                 return;
-            if(File.Exists(ModifiedCostumeFilePath) && (target.LoadedFXs == null || target.LoadedFXs.Count == 0))
+            if (File.Exists(ModifiedCostumeFilePath) && (target.LoadedFXs == null || target.LoadedFXs.Count == 0))
                 File.Delete(ModifiedCostumeFilePath);
             if (!File.Exists(ModifiedCostumeFilePath))
                 File.Copy(CostumeFilePath, ModifiedCostumeFilePath);
@@ -426,13 +446,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             File.Delete(ModifiedCostumeFilePath);
             File.AppendAllText(ModifiedCostumeFilePath, fileStr);
             loadCostumeWithFxInIt(target);
-            if(target.LoadedFXs != null && !target.LoadedFXs.Contains(this))
+            if (target.LoadedFXs != null && !target.LoadedFXs.Contains(this))
                 target.LoadedFXs.Add(this);
         }
 
         private void removePreviousFXResource(FXResource fxResource)
         {
-            if(File.Exists(ModifiedCostumeFilePath) && !string.IsNullOrEmpty(ModifiedCostumeText))
+            if (File.Exists(ModifiedCostumeFilePath) && !string.IsNullOrEmpty(ModifiedCostumeText))
             {
                 string fileStr = ModifiedCostumeText;
                 fileStr = removeFX(fileStr, this);
@@ -495,7 +515,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var fxNone = "Fx none";
             var re = new Regex(Regex.Escape(fxNone));
             var reFx = new Regex(Regex.Escape(fxNew));
-            if(!reFx.IsMatch(fileStr))
+            if (!reFx.IsMatch(fileStr))
                 fileStr = re.Replace(fileStr, fxNew, 1);
             var fxPos = fileStr.IndexOf(fxNew);
             var colorStart = fileStr.IndexOf("Color1", fxPos);
@@ -563,12 +583,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public SoundElementImpl(AnimatedCharacter owner, SoundResource resource, string gameDirectory = "") : base(owner)
         {
             Sound = resource;
-            if(!string.IsNullOrEmpty(gameDirectory))
+            if (!string.IsNullOrEmpty(gameDirectory))
                 SOUND_DIR = Path.Combine(gameDirectory, "sound");
             this.AnimationElementType = AnimationElementType.Sound;
         }
 
-        public SoundElementImpl(): this(null, null, "")
+        public SoundElementImpl() : this(null, null, "")
         {
         }
 
@@ -644,7 +664,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             SoundElement clone = new SoundElementImpl();
-            clone = (SoundElement) cloneBaseAttributes(clone);
+            clone = (SoundElement)cloneBaseAttributes(clone);
             clone.Target = target;
             clone.Sound = Sound;
 
@@ -736,13 +756,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public PauseElementImpl()
         {
-            _distancemanager = new PauseBasedOnDistanceManagerImpl(this);
             this.AnimationElementType = AnimationElementType.Pause;
         }
 
         public PauseBasedOnDistanceManager DistanceDelayManager
         {
-            get { return _distancemanager; }
+            get
+            {
+                if (_distancemanager == null)
+                    _distancemanager = new PauseBasedOnDistanceManagerImpl(this);
+                return _distancemanager;
+            }
             set
             {
                 _distancemanager = value;
@@ -761,7 +785,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     return _dur;
                 var delayManager = new DelayManager(this);
                 var distance = Target.Position.DistanceFrom(TargetPosition);
-                var delay = (int) delayManager.GetDelayForDistance(distance);
+                var delay = (int)delayManager.GetDelayForDistance(distance);
                 return delay;
             }
             set { _dur = value; }
@@ -789,7 +813,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             PauseElement clone = new PauseElementImpl();
-            clone = (PauseElement) cloneBaseAttributes(clone);
+            clone = (PauseElement)cloneBaseAttributes(clone);
             clone.Target = target;
             clone.LongDistanceDelay = LongDistanceDelay;
             clone.MediumDistanceDelay = MediumDistanceDelay;
@@ -802,11 +826,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
-            //why are we doing this todo
             if (IsUnitPause)
             {
-                DistanceDelayManager.Distance = 0d;
-                Thread.Sleep((int) DistanceDelayManager.Duration);
+                DistanceDelayManager.Distance = target.Position.DistanceFrom(TargetPosition);
+                Thread.Sleep((int)DistanceDelayManager.Duration);
             }
             else
             {
@@ -913,7 +936,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 var baseDelayDiff = distanceDelayMappingDictionary[50] - distanceDelayMappingDictionary[100];
                 var baseDelay = distanceDelayMappingDictionary[100];
-                var nearestLowerHundredMultiplier = (int) (distance / 100);
+                var nearestLowerHundredMultiplier = (int)(distance / 100);
                 var nearestHigherHundredMultiplier = nearestLowerHundredMultiplier + 1;
                 double nearestLowerHundredDistance = nearestLowerHundredMultiplier * 100;
                 double nearestHigherHundredDistance = nearestHigherHundredMultiplier * 100;
@@ -966,7 +989,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public SequenceType Type
         {
             get { return Sequencer.Type; }
-            set { Sequencer.Type = value;
+            set
+            {
+                Sequencer.Type = value;
                 NotifyOfPropertyChange(() => Type);
             }
         }
@@ -1010,9 +1035,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             var sequencer = (Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
             var clone = new SequenceElementImpl(sequencer);
-            clone = (SequenceElementImpl) cloneBaseAttributes(clone);
+            clone = (SequenceElementImpl)cloneBaseAttributes(clone);
             return clone;
-        }     
+        }
         public override bool Equals(object other)
         {
             if (other is SequenceElementImpl == false)
@@ -1028,14 +1053,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
     {
         public override string Name
         {
-            get { return "Sequencer "+ Order; }
+            get { return "Sequencer " + Order; }
             set { }
         }
 
-        
+
 
         private ObservableCollection<AnimationElement> _animationElements;
-        
+
         [JsonProperty]
         public ObservableCollection<AnimationElement> AnimationElements
         {
@@ -1070,7 +1095,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        
+
         public void InsertMany(List<AnimationElement> animationElements)
         {
             foreach (var e in animationElements)
@@ -1087,14 +1112,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             if (insertAfter.ParentSequence == this)
             {
-                if (toInsert.ParentSequence == insertAfter.ParentSequence)
-                {
-                    InsertAfter(toInsert, insertAfter);
-                }
-                else
+                if (toInsert.ParentSequence != insertAfter.ParentSequence)
                 {
                     toInsert.ParentSequence.RemoveElement(toInsert);
                 }
+                InsertAfter(toInsert, insertAfter);
             }
             else
             {
@@ -1105,10 +1127,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private void InsertAfter(AnimationElement toInsert, AnimationElement insertAfter)
         {
+            var existingIndex = AnimationElements.IndexOf(toInsert);
             var index = AnimationElements.IndexOf(insertAfter);
+
             if (index >= 0)
             {
                 var position = index + 1;
+                if (existingIndex >= 0)
+                {
+                    AnimationElements.RemoveAt(existingIndex);
+                    position = index;
+                }
                 AnimationElements.Insert(position, toInsert);
             }
             FixOrders();
@@ -1128,7 +1157,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void RemoveElement(AnimationElement animationElement)
         {
-            if(AnimationElements.Contains(animationElement))
+            if (AnimationElements.Contains(animationElement))
                 AnimationElements.Remove(animationElement);
             else
             { // In case where a cloned object matches all the properties
@@ -1374,7 +1403,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public SequenceType Type
         {
-            get { return Reference !=null && Reference.Ability != null ? Reference.Ability.Type : SequenceType.And; }
+            get { return Reference != null && Reference.Ability != null ? Reference.Ability.Type : SequenceType.And; }
 
             set
             {
@@ -1405,7 +1434,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             Reference?.Ability?.RemoveElement(animationElement);
         }
 
-        
+
         private ReferenceResource reference;
         [JsonProperty]
         public ReferenceResource Reference
@@ -1443,7 +1472,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var clonedSequence = (Reference?.Ability?.Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
 
             SequenceElement clone = new SequenceElementImpl(clonedSequence);
-            clone = (SequenceElement) cloneBaseAttributes(clone);
+            clone = (SequenceElement)cloneBaseAttributes(clone);
             clone.Target = Target;
             return clone;
         }
@@ -1722,7 +1751,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyOfPropertyChange(() => MovElements);
             }
         }
-        
+
         private ObservableCollection<ReferenceResource> referenceElements;
         public ObservableCollection<ReferenceResource> ReferenceElements
         {
@@ -1842,7 +1871,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
         private string filter;
-        public string Filter 
+        public string Filter
         {
             get
             {
@@ -1877,7 +1906,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                         }
                     }
                 }
-                    
+
                 NotifyOfPropertyChange(() => Filter);
             }
         }
@@ -1887,7 +1916,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (string.IsNullOrEmpty(GameDirectory))
                 throw new Exception("Game Directory Not Set!");
             var movResources = CommonLibrary.GetDeserializedJSONFromFile<ObservableCollection<MovResource>>(movRepositoryPath);
-            
+
             if (movResources == null || movResources.Count == 0)
             {
                 movResources = new ObservableCollection<MovResource>();
@@ -1900,7 +1929,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     {
                         string resLine = Sr.ReadLine();
                         string[] resArray = resLine.Split(';');
-                        movResources.Add(new MovResourceImpl { FullResourcePath = resArray[1],  Name = Path.GetFileNameWithoutExtension(resArray[1]), Tag = resArray[0]});
+                        movResources.Add(new MovResourceImpl { FullResourcePath = resArray[1], Name = Path.GetFileNameWithoutExtension(resArray[1]), Tag = resArray[0] });
                     }
                 }
                 movResources = new ObservableCollection<MovResource>(movResources.OrderBy(x => x, new AnimatedResourceComparer()));
@@ -1992,7 +2021,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 }
                 soundResources = new ObservableCollection<SoundResource>(soundResources.OrderBy(x => x, new AnimatedResourceComparer()));
             }
-            
+
             SaveSoundResources(soundResources);
 
             return soundResources;
@@ -2045,7 +2074,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             referenceElementsCVS.Source = this.ReferenceElements;
             referenceElementsCVS.View.Filter += ReferenceResourcesCVS_Filter;
             NotifyOfPropertyChange(() => ReferenceElementsCVS);
-        } 
+        }
 
         private bool AnimatedResourceCVS_Filter(object item)
         {

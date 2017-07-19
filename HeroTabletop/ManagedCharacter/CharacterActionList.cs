@@ -141,7 +141,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 if (value.Name == key)
                 {
                     var existing = this.FirstOrDefault(a => a.Name == key);
-                    if (!existing.Equals(value))
+                    if(existing == null)
+                    {
+                        this.InsertAction(value);
+                    }
+                    else if (existing != null && !existing.Equals(value))
                     {
                         this.Remove(existing);
                         this.InsertAction(value);

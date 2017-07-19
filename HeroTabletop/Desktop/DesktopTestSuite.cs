@@ -393,8 +393,7 @@ namespace HeroVirtualTabletop.Desktop
         [TestMethod]
         [TestCategory("DesktopCharacterNavigator")]
         public void NavigateToDestinationWithCollision_StopAtCollision()
-        {
-           
+        {           
             //arrange
             DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithCollision;
             Position moving = navigator.PositionBeingNavigated;
@@ -408,8 +407,8 @@ namespace HeroVirtualTabletop.Desktop
 
             navigator.Navigate();
 
-            Assert.AreEqual( collision.X, moving.X);
-            Assert.AreEqual( collision.Y, moving.Y);
+            Assert.AreEqual(collision.X, moving.X);
+            Assert.AreEqual(collision.Y, moving.Y);
             Assert.AreEqual(collision.Z, moving.Z);
 
         }
@@ -475,37 +474,9 @@ namespace HeroVirtualTabletop.Desktop
         public void NavigatePositionWithBodyToDestinationWithACollisionInFrontOfOneBodyPart_StopsAtCollisionBlockingSpecific()
         {
         }
-        [TestMethod]
-        [TestCategory("DesktopCharacterNavigator")]
         public void NavigateWithGravityAlongIncliningFloor_SuccesfullyMovesCharacterAlongFloor()
         {
-            //arrange
-            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithIncliningCollision;
-            Position moving = navigator.PositionBeingNavigated;
-            moving.Yaw = 0;
-            moving.Pitch = 0;
-            Vector3 movingStart = moving.Vector;
-            Vector3 movingTopBodyLocation = moving.BodyLocations[PositionBodyLocation.Bottom].Vector;
-
-            //act
-            navigator.Direction = Direction.Forward;
-            navigator.Speed = 10f;
-            navigator.UsingGravity = false;
-            navigator.Navigate();
-            Vector3 destination = navigator.AdjustedDestination;
-            Vector3 adjustment = navigator.AdjustmentVector;
-
-            //does the adjustment destination equal the destination minus the adjustment
-            Assert.AreEqual(navigator.Destination.X, destination.X - adjustment.X );
-            Assert.AreEqual(navigator.Destination.Y, destination.X - adjustment.Y);
-            Assert.AreEqual(navigator.Destination.Z, destination.X - adjustment.Z);
-
-            //does the adjustment equal the sumthin collision
-            Assert.AreEqual(navigator.Destination.X, destination.X - adjustment.X);
-            Assert.AreEqual(navigator.Destination.Y, destination.X - adjustment.Y);
-            Assert.AreEqual(navigator.Destination.Z, destination.X - adjustment.Z);
-
-
+            
         }
         void NavigateWithGravityAlongDecliningFloor_CharacterContinuesTravellingfloor() { }      
         void CharacterInCollisionWhoBacksOutOfCollion_CanBackOutSucessfully() { }      
@@ -566,6 +537,16 @@ namespace HeroVirtualTabletop.Desktop
                 var instance = CustomizedMockFixture.Create<DesktopMemoryCharacter>();
                 instance.Position.JustMissedPosition = MockPosition;
                 return instance;
+            }
+        }
+
+        public Position MoqPosition
+        {
+            get
+            {
+                var moqPos = new Mock<Position>();
+                moqPos.Setup(p => p.DistanceFrom(It.IsAny<Position>())).Returns(20);
+                return moqPos.Object;
             }
         }
 
@@ -654,7 +635,29 @@ namespace HeroVirtualTabletop.Desktop
             } 
         }
 
-        public DesktopNavigator DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithIncliningCollision { get; set; }
+        public DesktopNavigator DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithIncliningCollision
+        {
+            get
+            {
+                DesktopNavigator nav = DesktopNavigatorUnderTest;
+                IconInteractionUtility utility = MockInteractionUtility;
+                nav.CityOfHeroesInteractionUtility = utility;
+                nav.PositionBeingNavigated = PositionUnderTest;
+                nav.PositionBeingNavigated.Size = 6;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = nav.PositionBeingNavigated.X;
+                nav.Destination.Y = nav.PositionBeingNavigated.Y / 4;
+                nav.Destination.Z = nav.PositionBeingNavigated.Z;
+
+                Vector3 collision = PositionUnderTest.Vector;
+                collision.X = nav.PositionBeingNavigated.X;
+                collision.Y = nav.PositionBeingNavigated.Y / 2;
+                collision.Z = nav.PositionBeingNavigated.Z;
+
+                nav.CityOfHeroesInteractionUtility.Collision = collision;
+                return nav;
+            }
+        }
 
 
         private void SetupMockFixtureToReturnSinlgetonDesktopCharacterTargeterWithBlankLabel()

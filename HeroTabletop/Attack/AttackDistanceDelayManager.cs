@@ -19,13 +19,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set
             {
                 _element = value;
-                if (_element.DistanceDelayManager != this)
-                    _element.DistanceDelayManager = this;
                 constructDelayDictionary();
             }
         }
 
-        public double Distance { get; set; }
+        public double Distance
+        {
+            get;
+            set;
+        }
 
         public double Duration
         {
@@ -54,7 +56,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 {
                     var baseDelayDiff = distanceDelayMappingDictionary[50] - distanceDelayMappingDictionary[100];
                     var baseDelay = distanceDelayMappingDictionary[100];
-                    var nearestLowerHundredMultiplier = (int) (Distance / 100);
+                    var nearestLowerHundredMultiplier = (int)(Distance / 100);
                     var nearestHigherHundredMultiplier = nearestLowerHundredMultiplier + 1;
                     double nearestLowerHundredDistance = nearestLowerHundredMultiplier * 100;
                     double nearestHigherHundredDistance = nearestHigherHundredMultiplier * 100;

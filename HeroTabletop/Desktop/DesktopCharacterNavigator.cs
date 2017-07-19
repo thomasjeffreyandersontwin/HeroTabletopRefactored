@@ -213,7 +213,8 @@ namespace HeroVirtualTabletop.Desktop
             {
                 Vector3 vCurrent = PositionBeingNavigated.Vector;
                 Vector3 directionVector = PositionBeingNavigated.FacingVector;
-                directionVector.Normalize();
+                if(directionVector != Vector3.Zero)
+                    directionVector.Normalize();
                 var destX = vCurrent.X + directionVector.X * Speed;
                 var destY = vCurrent.Y + directionVector.Y * Speed;
                 var destZ = vCurrent.Z + directionVector.Z * Speed;

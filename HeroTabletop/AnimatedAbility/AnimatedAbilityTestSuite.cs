@@ -20,7 +20,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         public void PlayMultipleTargets_PlayElementOnEachTarget()
         {
             //arrange
@@ -35,7 +35,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         public void PlayTarget_TargetsIfCharacterNotAlreadyTargeted()
         {
             //arrange
@@ -67,7 +67,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("MovElement")]
         public void MovElement_PlaysMovBasedOnOwnerAndMovResource()
         {
@@ -84,7 +84,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("MovElement")]
         public void MovOrFxMarkedPlaywithNext_DoesNotExecuteCommand()
         {
@@ -107,7 +107,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("MovElement")]
         public void PlayMovElementOnMultipleTargets_GeneratesOneMovCommandForAllTargetsAndSubmitsItOnce()
         {
@@ -137,7 +137,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void FXElement_CreatesCostumeForOwnerBasedOnFXResource()
         {
@@ -151,7 +151,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void FXElement_LoadsCostumeOnOwnerWithFXResourceBasedOnActiveIdentity()
         {
@@ -164,14 +164,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
             element.Play();
 
             //assert
-            string[] para = {element.ModifiedCostumeFilePath};
+            string[] para = {Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath)};
             Mock.Get(generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
             Assert.IsTrue(element.ModifiedCostumeContainsFX);
             File.Delete(element.CostumeFilePath);
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void FXElement_LoadsCostumeOnOwnerWithFXResourceBasedOnCharacterName()
         {
@@ -184,14 +184,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
             element.Play();
 
             //assert
-            string[] para = {element.ModifiedCostumeFilePath};
+            string[] para = { Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath) };
             Mock.Get(generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
             Assert.IsTrue(element.ModifiedCostumeContainsFX);
             File.Delete(element.CostumeFilePath);
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void FXElement_IsNotInCostumeFileIfSecondFXElementIsRenderedForSameOwner()
         {
@@ -212,7 +212,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void PersistentFXElement_StayInCostumeFileIfSecondFXElementIsRenderedForSameOwner()
         {
@@ -233,7 +233,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod] 
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
         public void PlayMovElementOnMultipleTargets_GeneratesOneLoadCostumeCommandForAllTargetsAndSubmitsItOnce()
         {
@@ -255,7 +255,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 Mock.Get(character).Verify(x => x.Target(false));
                 element.Target = character;
-                string[] para2 = {element.ModifiedCostumeFilePath};
+                string[] para2 = { Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath) };
                 Mock.Get(character.Generator)
                     .Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para2));
             }
@@ -276,7 +276,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void SoundElement_PlaysSoundResource()
         {
@@ -293,7 +293,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void SoundElement_PlaysSoundAtPositionOfOwnerFromCameraPosition()
         {
@@ -315,7 +315,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void PersistentSoundElement_PlaysSoundInALoop()
         {
@@ -331,7 +331,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void PersistentSoundElement_ChangesPositionPlayingFromWhenOwnerChangesPosition()
         {
@@ -361,7 +361,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void PersistentSoundElement_StopsPlayingInLoopWhenTurnedOff()
         {
@@ -379,7 +379,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SoundElement")]
         public void PlaySoundElementOnMultipleTargets_PlayssoundOnlyOnce()
         {
@@ -391,7 +391,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
     {
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("PauseElement")]
         public void PauseElement_PausesDuration()
         {
@@ -409,14 +409,21 @@ namespace HeroVirtualTabletop.AnimatedAbility
             Assert.AreEqual(expected.Second, after.Second);
         }
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("PauseElement")]
         public void PauseElementWithUnitPause_PausesBasedOnDistanceOfTarget()
         {
             //arrange
             var element = TestObjectsFactory.PauseElementUnderTest;
+            element.CloseDistanceDelay = 10;
+            element.ShortDistanceDelay = 20;
+            element.MediumDistanceDelay = 35;
+            element.LongDistanceDelay = 50;
+
+            element.Target.MemoryInstance.Position = TestObjectsFactory.MoqPosition;
 
             var targetPos = TestObjectsFactory.MockPosition;
+            
             targetPos.X = element.Target.Position.X + 20;
             targetPos.Y = element.Target.Position.Y + 10;
             targetPos.Z = element.Target.Position.Z + 20;
@@ -440,7 +447,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SequenceElement")]
         public void AndSequenceElement_PlaysAllElementChildrenInOrder()
         {
@@ -451,7 +458,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             element.Play();
 
             //assert
-
             var elements = element.AnimationElements;
 
             foreach (var e in elements)
@@ -459,7 +465,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SequenceElement")]
         public void OrSequenceElement_PlaysOneElementAtRandom()
         {
@@ -491,7 +497,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SequenceElement")]
         public void MoveElementinSequence_AllOrdersUpdatedCorrectly()
         {
@@ -512,7 +518,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SequenceElement")]
         public void MoveElementsAcrossTwoSequences_UpdatesParentOfItemAndUpdatesOrderOfAllItemsInBothSequence()
         {
@@ -560,7 +566,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("SequenceElement")]
         public void RemoveElement_UpdatesOrderCorrectly()
         {
@@ -595,7 +601,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("ReferenceElement")]
         public void PlayingReferenceElement_PlaysAllElementsInUnderlyingAbility()
         {
@@ -607,7 +613,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
 
         [TestMethod]
-        [TestCategory("AnimatedElement")]
+        [TestCategory("AnimationElement")]
         [TestCategory("ReferenceElement")]
         public void CopyingAReferenceElement_CreatesSequenceElementWithClonedSequencerWithClonedElements()
         {
@@ -653,8 +659,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             ability.Stop();
             //assert
             var state = ability.Target.ActiveStates.FirstOrDefault();
-
-            //arrange
             Assert.IsNull(state);
         }
 
@@ -769,7 +773,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         [TestMethod]
         [TestCategory("AnimatedCharacter")]
-        public void Contructor_LoadsDefaultAbilitiesIfTheCharacterDoesNotHaveMatchingCustomAbilitiesOfTheSameName()
+        public void CharacterAbilities_LoadsDefaultAbilitiesIfTheCharacterDoesNotHaveMatchingCustomAbilitiesOfTheSameName()
         {
             //arrange
 
@@ -814,6 +818,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 AnimatedCharacter a = StandardizedFixture.Build<AnimatedCharacterImpl>()
                     .Without(x => x.ActiveAttack)
                     .Create();
+                a.CharacterActionGroups = GetStandardCharacterActionGroup(a);
                 return a;
             }
         }
@@ -910,6 +915,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 SequenceElement element = StandardizedFixture.Build<SequenceElementImpl>()
                     .With(x => x.Target, MockAnimatedCharacter)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
+                    .With(x => x.Type, SequenceType.And)
                     .Create();
 
                 var list = MockAnimationElementList;
@@ -1123,7 +1129,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 new TypeRelay(
                     typeof(AnimatedCharacterRepository),
                     typeof(AnimatedCharacterRepositoryImpl)));
-            StandardizedFixture.Customize<AnimatedCharacter>(c => c
+            StandardizedFixture.Customize<AnimatedCharacterImpl>(c => c
                 .Without(x => x.ActiveAttack)
             );
             StandardizedFixture.Customize<AnimatedAbilityImpl>(c => c

@@ -71,7 +71,7 @@ namespace HeroVirtualTabletop.Movement
         public void MoveCharacterForwardToDestination_TurnsDesktopCharacterToDestinationAndstartsMovingToDestination()
         {
             //assert
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestMockDesktopCharacter;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
@@ -83,7 +83,7 @@ namespace HeroVirtualTabletop.Movement
             mocker2.Verify(x => x.TurnTowards(destination));
             
             var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
-            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, destination, movement.Speed, false));  
+            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, destination, movement.Speed, movement.HasGravity));  
 
         }
         [TestMethod]
@@ -91,7 +91,7 @@ namespace HeroVirtualTabletop.Movement
         public void MoveCharacteDirection_ActivatesCorrectMovementAbilityOnce()
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestMockDesktopCharacter;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
             //act
@@ -107,7 +107,7 @@ namespace HeroVirtualTabletop.Movement
         public void MoveCharacterDifferentDirection_ActivatesBothMovementAbilitiesForEachDirection()
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestMockDesktopCharacter;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
             //act
@@ -122,10 +122,10 @@ namespace HeroVirtualTabletop.Movement
         }     
         [TestMethod]
         [TestCategory("Movement")]
-        public void IncrementCharacteForward_IncrementsPosition() //to do with real calcs
+        public void IncrementCharacteForward_IncrementsPosition() 
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestMockDesktopCharacter;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
             Movement movement = TestObjectFactory.MovementUnderTest;
             //act
@@ -133,7 +133,7 @@ namespace HeroVirtualTabletop.Movement
             //assert
             DesktopNavigator desktopNavigator = character.DesktopNavigator;
             var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
-            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, new PositionImpl(character.Position.FacingVector),movement.Speed,false));
+            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, It.Is<PositionImpl>(p => p.Vector == character.Position.FacingVector),movement.Speed,movement.HasGravity));
         }
         [TestMethod]
         [TestCategory("Movement")]
@@ -180,7 +180,7 @@ namespace HeroVirtualTabletop.Movement
         public void SettingGravityOnMove_ThenNavigatesWithgravity()
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestMockDesktopCharacter;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
@@ -219,12 +219,22 @@ namespace HeroVirtualTabletop.Movement
                     typeof(MovElementImpl)));
             }
 
-            public MovableCharacter MovableCharacterUnderTest => StandardizedFixture.Build<MovableCharacterImpl>()
-                .Without(x => x.ActiveMovement)
-                .Without(x => x.DesktopNavigator)
-                .Create();
+            public MovableCharacter MovableCharacterUnderTest
+            {
+                get
+                {
+                    var movableCharacter = StandardizedFixture.Build<MovableCharacterImpl>()
+                    .Without(x => x.ActiveMovement)
+                    .Without(x => x.DesktopNavigator)
+                    .Create();
 
-            public MovableCharacter MovableCharacterUnderTestMockDesktopCharacter
+                movableCharacter.CharacterActionGroups = GetStandardCharacterActionGroup(movableCharacter);
+                    
+                    return movableCharacter;
+                }
+            }
+
+            public MovableCharacter MovableCharacterUnderTestWithMockDesktopNavigator
             {
                 get
                 {
@@ -269,6 +279,14 @@ namespace HeroVirtualTabletop.Movement
                 MovableCharacter character = MovableCharacterUnderTest;
                 character.Position.Vector = new Vector3(character.Position.X, character.Position.Y, character.Position.Z );
                 character.DesktopNavigator = DesktopNavigatorUnderTest;
+                IconInteractionUtility utility = MockInteractionUtility;
+                character.DesktopNavigator.CityOfHeroesInteractionUtility = utility;
+                character.DesktopNavigator.PositionBeingNavigated = PositionUnderTest;
+                character.DesktopNavigator.PositionBeingNavigated.Size = 0;
+                character.DesktopNavigator.Destination = PositionUnderTest;
+                character.DesktopNavigator.Destination.X = character.DesktopNavigator.PositionBeingNavigated.X * 4;
+                character.DesktopNavigator.Destination.Y = character.DesktopNavigator.PositionBeingNavigated.Y * 4;
+                character.DesktopNavigator.Destination.Z = character.DesktopNavigator.PositionBeingNavigated.Z * 4;
                 return character;
             }
             }

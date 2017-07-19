@@ -647,6 +647,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private void SelectedAnimationElement_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            bool resourceChanged = true;
             if (e.PropertyName == "Mov")
             {
                 MovElement element = sender as MovElement;
@@ -667,11 +668,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 ReferenceElement element = sender as ReferenceElement;
                 element.Name = element.Reference.Ability.Name;
             }
-            SaveAbility();
-            DemoAnimation();
-            //SaveResources();
-            //SaveUISettingsForResouce(element, element.Resource);
-            //this.UpdateReferenceTypeCommand.RaiseCanExecuteChanged();
+            else
+            {
+                resourceChanged = false;
+            }
+
+            if (resourceChanged)
+            {
+                SaveAbility();
+                DemoAnimation();
+                //SaveResources();
+                //SaveUISettingsForResouce(element, element.Resource);
+                //this.UpdateReferenceTypeCommand.RaiseCanExecuteChanged();
+            }
+
         }
 
         public void EnterAbilityEditMode(object state)

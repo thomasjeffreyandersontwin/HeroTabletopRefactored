@@ -154,6 +154,7 @@ namespace HeroVirtualTabletop.Attack
                 TestObjectsFactory
                     .AttackUnderTestWithUnitPauseElementWithMockDelayManagerAndWithCharacterUnderTestWithMockMemoryInstance;
             var attacker = attack.Attacker;
+            attacker.MemoryInstance.Position = TestObjectsFactory.MoqPosition;
             var defender = TestObjectsFactory.DefenderUnderTestWithMockMemoryInstance;
 
             //act
@@ -169,10 +170,11 @@ namespace HeroVirtualTabletop.Attack
                 select element)
             {
                 var pause = (PauseElement) animationElement;
+                var dist = attacker.Position.DistanceFrom(defender.Position);
                 Mock.Get(pause.DistanceDelayManager).Verify(
                     x => x.Duration);
                 Mock.Get(pause.DistanceDelayManager).VerifySet(
-                    x => x.Distance = attacker.Position.DistanceFrom(defender.Position));
+                    x => x.Distance = dist);
             }
         }
 
@@ -223,7 +225,7 @@ namespace HeroVirtualTabletop.Attack
                 var fx = (FXElement) animationElement;
                 string[] para =
                 {
-                    fx.ModifiedCostumeFilePath,
+                    Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
                     $"x={defender.Position.X} y={defender.Position.Y} z={defender.Position.Z}"
                 };
 
@@ -265,7 +267,7 @@ namespace HeroVirtualTabletop.Attack
                 var fx = (FXElement) animationElement;
                 string[] para =
                 {
-                    fx.ModifiedCostumeFilePath,
+                    Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
                     $"x={defender.Position.JustMissedPosition.X} y={defender.Position.JustMissedPosition.Y} z={defender.Position.JustMissedPosition.Z}"
                 };
 
@@ -301,7 +303,7 @@ namespace HeroVirtualTabletop.Attack
                 var fx = (FXElement) animationElement;
                 string[] para =
                 {
-                    fx.ModifiedCostumeFilePath,
+                    Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
                     $"x={desktopPosition.X} y={desktopPosition.Y} z={desktopPosition.Z}"
                 };
 
