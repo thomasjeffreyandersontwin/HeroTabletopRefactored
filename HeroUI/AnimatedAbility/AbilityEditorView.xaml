@@ -241,8 +241,8 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center" Grid.RowSpan="2">
-                <CheckBox Name="chkBoxPlayWithNext" IsEnabled="{Binding CanPlayWithNext}" IsChecked="{Binding SelectedAnimationElement.PlayWithNext}" Content="Play W/ Next" HorizontalAlignment="Left" Command="{Binding ChangePlayWithNextCommand}"/>
-                <CheckBox Name="chkBoxPlayOnTargeted" IsChecked="{Binding CurrentAbility.PlayOnTargeted}" Content="Play On Targeted" HorizontalAlignment="Left" Command="{Binding SaveAbilityCommand}"/>
+                <CheckBox x:Name="ChangePlayWithNext" IsEnabled="{Binding CanPlayWithNext}" IsChecked="{Binding SelectedAnimationElement.PlayWithNext}" Content="Play W/ Next" HorizontalAlignment="Left" />
+                <CheckBox Name="chkBoxPlayOnTargeted" IsChecked="{Binding PlayOnTargeted}" Content="Play On Targeted" HorizontalAlignment="Left" />
             </StackPanel>
             <!--<ComboBox Grid.Column="1" Name="cmbBoxAnimationResource" HorizontalAlignment="Stretch" Margin="5"/>-->
             <TextBox Grid.Column="1" Grid.RowSpan="2" Height="Auto" Name="txtBoxAnimationResourceFilter" HorizontalAlignment="Stretch" Margin="5"

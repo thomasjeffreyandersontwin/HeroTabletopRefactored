@@ -433,7 +433,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             if (!File.Exists(CostumeFilePath))
                 return;
-            if (File.Exists(ModifiedCostumeFilePath) && (target.LoadedFXs == null || target.LoadedFXs.Count == 0))
+            var originalTarget = Target;
+            Target = target;
+            if (File.Exists(ModifiedCostumeFilePath) && (Target.LoadedFXs == null || Target.LoadedFXs.Count == 0))
                 File.Delete(ModifiedCostumeFilePath);
             if (!File.Exists(ModifiedCostumeFilePath))
                 File.Copy(CostumeFilePath, ModifiedCostumeFilePath);
@@ -445,9 +447,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
             File.Delete(ModifiedCostumeFilePath);
             File.AppendAllText(ModifiedCostumeFilePath, fileStr);
-            loadCostumeWithFxInIt(target);
-            if (target.LoadedFXs != null && !target.LoadedFXs.Contains(this))
-                target.LoadedFXs.Add(this);
+            loadCostumeWithFxInIt(Target);
+            if (Target.LoadedFXs != null && !Target.LoadedFXs.Contains(this))
+                Target.LoadedFXs.Add(this);
+            Target = originalTarget;
         }
 
         private void removePreviousFXResource(FXResource fxResource)
@@ -1273,8 +1276,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
                         (animationElement as FXElement).FX = fxResource;
                         animationElement.Name = Path.GetFileNameWithoutExtension(fxResource.FullResourcePath);
                     }
-
-                    animationElement.Name = fullName;
                     break;
                 case AnimationElementType.Sound:
                     animationElement = new SoundElementImpl(this.Target, null);
@@ -1289,8 +1290,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
                         (animationElement as SoundElement).Sound = soundResource;
                         animationElement.Name = Path.GetFileNameWithoutExtension(soundResource.FullResourcePath);
                     }
-
-                    animationElement.Name = fullName;
                     break;
                 case AnimationElementType.Sequence:
                     animationElement = new SequenceElementImpl(Target);

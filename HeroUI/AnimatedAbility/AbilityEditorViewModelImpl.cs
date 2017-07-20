@@ -152,13 +152,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyOfPropertyChange(() => CanEnterAnimationElementEditMode);
                 //NotifyOfPropertyChange(() => CanRemoveAnimation);
                 //OnPropertyChanged("IsAnimationElementSelected");
-                //OnPropertyChanged("CanPlayWithNext");
+                
                 //if (selectedAnimationElement != null)
                 //    SetSavedUIFilter(selectedAnimationElement);
                 OnSelectionChanged(value, null);
                 NotifyOfPropertyChange(() => CanCloneAnimation);
                 NotifyOfPropertyChange(() => CanCutAnimation);
                 NotifyOfPropertyChange(() => CanPasteAnimation);
+                NotifyOfPropertyChange(() => CanPlayWithNext);
             }
         }
 
@@ -420,15 +421,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private void AddAnimationElement(AnimationElement animationElement)
         {
+            AnimationSequencer sequenceToAddTo = null;
             if (!this.IsSequenceAbilitySelected)
-                this.CurrentAbility.InsertElement(animationElement);
+                sequenceToAddTo = this.CurrentAbility;
             else
             {
                 if (this.SelectedAnimationElement is SequenceElement)
-                    (this.SelectedAnimationElement as SequenceElement).InsertElement(animationElement);
+                    sequenceToAddTo = this.SelectedAnimationElement as SequenceElement;
                 else
-                    (this.SelectedAnimationParent as SequenceElement).InsertElement(animationElement);
+                    sequenceToAddTo = this.SelectedAnimationParent as SequenceElement;
             }
+            if (SelectedAnimationElement != null && !(SelectedAnimationElement is SequenceElement))
+                sequenceToAddTo.InsertElementAfter(animationElement, SelectedAnimationElement);
+            else
+                sequenceToAddTo.InsertElement(animationElement);
             OnAnimationAdded(animationElement, null);
             this.SaveAbility();
             NotifyOfPropertyChange(() => CanCloneAnimation);
@@ -652,21 +658,25 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 MovElement element = sender as MovElement;
                 element.Name = element.Mov.Name;
+                MovElementImpl.LastMov = element.Mov;
             }
             else if (e.PropertyName == "FX")
             {
                 FXElement element = sender as FXElement;
                 element.Name = element.FX.Name;
+                FXElementImpl.LastFX = element.FX;
             }
             else if (e.PropertyName == "Sound")
             {
                 SoundElement element = sender as SoundElement;
                 element.Name = element.Sound.Name;
+                SoundElementImpl.LastSound = element.Sound;
             }
             else if (e.PropertyName == "Reference")
             {
                 ReferenceElement element = sender as ReferenceElement;
                 element.Name = element.Reference.Ability.Name;
+                ReferenceElementImpl.LastReference = element.Reference;
             }
             else
             {
@@ -918,6 +928,56 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             // UnLock character crowd Tree from updating
             this.LockModelAndMemberUpdate(false);
+        }
+
+        #endregion
+
+        #region Change Play with Next
+
+        public bool CanPlayWithNext
+        {
+            get
+            {
+                bool canPlayWithNext = false;
+                if (SelectedAnimationElement != null)
+                {
+                    if (SelectedAnimationElement.AnimationElementType == AnimationElementType.FX || SelectedAnimationElement.AnimationElementType == AnimationElementType.Mov)
+                    {
+                        AnimationElement next = SelectedAnimationElement.ParentSequence.AnimationElements.FirstOrDefault(x => x.Order > SelectedAnimationElement.Order);
+                        if (next != null && (next.AnimationElementType == AnimationElementType.FX || next.AnimationElementType == AnimationElementType.Mov))
+                            canPlayWithNext = true;
+                    }
+                }
+                return canPlayWithNext;
+            }
+        }
+        
+        public void ChangePlayWithNext()
+        {
+            //// OLD Logic to play one FX on top of another - to be used later if needed
+            //// first check if play with next is selected for an FX
+            //if (SelectedAnimationElement != null && SelectedAnimationElement is FXElement)
+            //{
+            //    var currentFxOrder = SelectedAnimationElement.Order;
+            //    if (currentFxOrder > 0)
+            //    {
+            //        // check if there is a fx after the current one
+            //        var nextFxElement = SelectedAnimationElement.ParentSequence.AnimationElements.FirstOrDefault(a => a.Order > currentFxOrder && a is FXElement);
+            //        if (nextFxElement != null)
+            //        {
+            //            //// now check if this fx is indeed intended to be played on top of the current fx
+            //            var nextFxOrder = nextFxElement.Order;
+            //            //// see if nothing comes between these two fxs except for a pause
+            //            var otherAnimationElementExists = SelectedAnimationElement.ParentSequence.AnimationElements.FirstOrDefault(a => !(a is PauseElement) && a.Order > currentFxOrder && a.Order < nextFxOrder) != null;
+            //            if (!otherAnimationElementExists)
+            //            {
+            //                FXElement fxElement = nextFxElement as FXElement;
+            //                fxElement.PlayOnTopOfPreviousFx = SelectedAnimationElement.PlayWithNext;
+            //            }
+            //        }
+            //    }
+            //}
+            this.SaveAbility();
         }
 
         #endregion
