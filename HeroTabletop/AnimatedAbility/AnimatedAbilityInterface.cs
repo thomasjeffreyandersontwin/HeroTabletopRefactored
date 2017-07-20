@@ -104,7 +104,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
         SequenceType Type { get; set; }
         ObservableCollection<AnimationElement> AnimationElements { get; }
         AnimationElement GetNewAnimationElement(AnimationElementType animationElementType);
-
         void InsertMany(List<AnimationElement> animationElements);
         void InsertElement(AnimationElement toInsert);
         void RemoveElement(AnimationElement animationElement);

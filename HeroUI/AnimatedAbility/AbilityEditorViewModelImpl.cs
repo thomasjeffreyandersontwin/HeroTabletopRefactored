@@ -923,14 +923,23 @@ namespace HeroVirtualTabletop.AnimatedAbility
         #endregion
 
         #region Drag Drop
-        public void MoveReferenceAbilityToAnimationElements(AnimatedAbility referenceAbility, SequenceElement targetElementParent, int order)
-        {
 
+        public void MoveReferenceResourceToAnimationElements(ReferenceResource movedResource, AnimationElement elementAfter)
+        {
+            ReferenceElement refElement = this.CurrentAbility.GetNewAnimationElement(AnimationElementType.Reference) as ReferenceElement;
+            refElement.Reference = movedResource;
+            refElement.Name = movedResource.Ability.Name;
+            elementAfter.ParentSequence.InsertElementAfter(refElement, elementAfter);
+            OnAnimationElementDraggedFromGrid(refElement, null);
+            SaveAbility();
+            NotifyOfPropertyChange(() => CanCloneAnimation);
         }
 
-        public void MoveSelectedAnimationElement(SequenceElement targetElementParent, int order)
+        public void MoveSelectedAnimationElementAfter(AnimationElement animationElement)
         {
-
+            animationElement.ParentSequence.InsertElementAfter(this.SelectedAnimationElement, animationElement);
+            OnAnimationAdded(this.SelectedAnimationElement, new CustomEventArgs<bool>() { Value = false });
+            this.SaveAbility();
         }
         #endregion
 

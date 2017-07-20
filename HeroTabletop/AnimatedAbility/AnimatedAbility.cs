@@ -310,7 +310,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 var cloningAbility = currentClipboardObject as AnimatedAbility;
                 AnimationSequencer sequencer = cloningAbility.Clone() as AnimationSequencer;
 
-                SequenceElementImpl sequenceElement = new HeroVirtualTabletop.AnimatedAbility.SequenceElementImpl(sequencer);
+                AnimatedCharacter target = null;
+                if (destinationSequence is AnimatedAbility)
+                    target = (destinationSequence as AnimatedAbility).Target;
+                else
+                    target = (destinationSequence as SequenceElement).Target;
+
+                SequenceElementImpl sequenceElement = new HeroVirtualTabletop.AnimatedAbility.SequenceElementImpl(sequencer, target);
                 sequenceElement.Type = sequencer.Type;
                 sequenceElement.Name = "Sequence: " + sequenceElement.Type.ToString();
                 clonedElement = sequenceElement;

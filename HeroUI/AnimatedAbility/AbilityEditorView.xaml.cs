@@ -607,29 +607,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (itemNode != null)
                 {
                     AnimationElement dropAnimationElement = (itemNode != null && itemNode.IsVisible ? itemNode.DataContext as AnimationElement : null);
-                    AnimationElement dragAnimationElement = e.Data.GetData(ANIMATION_DRAG_KEY) as AnimationElement;
-                    SequenceElement dropAnimationElementParent = null;
-                    if (dropAnimationElement is SequenceElement)
-                    {
-                        itemNodeParent = itemNode;
-                        dropAnimationElementParent = dropAnimationElement as SequenceElement;
-                    }
-                    else
-                    {
-                        itemNodeParent = GetImmediateTreeViewItemParent(itemNode);
-                        dropAnimationElementParent = itemNodeParent != null ? itemNodeParent.DataContext as SequenceElement : null;
-                    }
+                    var draggedObject = e.Data.GetData(ANIMATION_DRAG_KEY);
                     try
                     {
-                        if (dragAnimationElement is AnimatedAbility)
+                        if (draggedObject is ReferenceResource)
                         {
-                            // Drag drop of Reference Ability
-                            this.viewModel.MoveReferenceAbilityToAnimationElements(dragAnimationElement as AnimatedAbility, dropAnimationElementParent, dropAnimationElement.Order);
+                            // Drag drop of Reference Resource
+                            this.viewModel.MoveReferenceResourceToAnimationElements(draggedObject as ReferenceResource, dropAnimationElement);
                         }
                         else
                         {
                             // Drag drop of animations
-                            this.viewModel.MoveSelectedAnimationElement(dropAnimationElementParent, dropAnimationElement.Order);
+                            this.viewModel.MoveSelectedAnimationElementAfter(dropAnimationElement);
                         }
                     }
                     catch (Exception ex)
@@ -707,7 +696,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 ReferenceResource animationResource = dataGridAbilityReferences.Items[rowIndex] as ReferenceResource;
                 if (animationResource != null)
                 {
-                    DataObject dragData = new DataObject(ANIMATION_DRAG_KEY, animationResource.Ability);
+                    DataObject dragData = new DataObject(ANIMATION_DRAG_KEY, animationResource);
                     //DragDrop.DoDragDrop(dataGridAbilityReferences, dragData, DragDropEffects.Move);
                     if (DragDrop.DoDragDrop(dataGridAbilityReferences, dragData, DragDropEffects.Move)
                                         != DragDropEffects.None)

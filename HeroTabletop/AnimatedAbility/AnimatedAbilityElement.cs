@@ -960,13 +960,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
     {
         private AnimationSequencer _sequencer;
 
-        public SequenceElementImpl(AnimationSequencer cloneedSequence)
+        public SequenceElementImpl(AnimationSequencer cloneedSequence, AnimatedCharacter owner) : base(owner)
         {
             _sequencer = cloneedSequence;
             this.AnimationElementType = AnimationElementType.Sequence;
         }
-        public SequenceElementImpl() : this(null)
+        public SequenceElementImpl() : this(null, null)
         {
+        }
+        public SequenceElementImpl(AnimatedCharacter owner) : this(null, owner)
+        {
+
         }
 
         public ObservableCollection<AnimationElement> AnimationElements => Sequencer.AnimationElements;
@@ -1034,7 +1038,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override AnimationElement Clone(AnimatedCharacter target)
         {
             var sequencer = (Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
-            var clone = new SequenceElementImpl(sequencer);
+            var clone = new SequenceElementImpl(sequencer, target);
             clone = (SequenceElementImpl)cloneBaseAttributes(clone);
             return clone;
         }
@@ -1114,7 +1118,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 if (toInsert.ParentSequence != insertAfter.ParentSequence)
                 {
-                    toInsert.ParentSequence.RemoveElement(toInsert);
+                    toInsert.ParentSequence?.RemoveElement(toInsert);
                 }
                 InsertAfter(toInsert, insertAfter);
             }
@@ -1136,9 +1140,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (existingIndex >= 0)
                 {
                     AnimationElements.RemoveAt(existingIndex);
-                    position = index;
+                    if(index > 0)
+                        position = index;
                 }
                 AnimationElements.Insert(position, toInsert);
+                toInsert.ParentSequence = this;
             }
             FixOrders();
         }
@@ -1152,6 +1158,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     index -= 1;
             }
             AnimationElements.Insert(index, animationElement);
+            animationElement.ParentSequence = this;
             FixOrders();
         }
 
@@ -1286,7 +1293,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     animationElement.Name = fullName;
                     break;
                 case AnimationElementType.Sequence:
-                    animationElement = new SequenceElementImpl();
+                    animationElement = new SequenceElementImpl(Target);
                     //fullName = GetAppropriateAnimationName(AnimationElementType.Sequence, flattenedList);
                     //animationElement.Name = fullName;
                     (animationElement as SequenceElement).Type = SequenceType.And;
@@ -1471,9 +1478,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             var clonedSequence = (Reference?.Ability?.Sequencer as AnimationSequencerImpl)?.Clone(target) as AnimationSequencer;
 
-            SequenceElement clone = new SequenceElementImpl(clonedSequence);
+            SequenceElement clone = new SequenceElementImpl(clonedSequence, target);
             clone = (SequenceElement)cloneBaseAttributes(clone);
-            clone.Target = Target;
+            
             return clone;
         }
 

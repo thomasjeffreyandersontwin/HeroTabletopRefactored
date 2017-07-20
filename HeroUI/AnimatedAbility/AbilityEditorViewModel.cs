@@ -28,9 +28,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         bool IsSequenceAbilitySelected { get; set; }
         bool IsShowingAbilityEditor { get; set; }
-
-        void MoveReferenceAbilityToAnimationElements(AnimatedAbility referenceAbility, SequenceElement targetElementParent, int order);
-        void MoveSelectedAnimationElement(SequenceElement targetElementParent, int order);
+        void MoveSelectedAnimationElementAfter(AnimationElement animationElement);
+        void MoveReferenceResourceToAnimationElements(ReferenceResource movedResource, AnimationElement elementAfter);
         void LoadResources();
         IEventAggregator EventAggregator { get; set; }
     }
