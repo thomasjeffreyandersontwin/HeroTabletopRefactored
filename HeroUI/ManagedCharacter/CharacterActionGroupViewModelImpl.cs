@@ -327,7 +327,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 if (selectedAction as AnimatedAbility.AnimatedAbility != value as AnimatedAbility.AnimatedAbility)
                 {
                     AnimatedAbility.AnimatedAbility ability = selectedAction as AnimatedAbility.AnimatedAbility;
-                    if (!ability.Persistant)
+                    if (!ability.Persistent)
                         ability.Stop();
                 }
             }
@@ -387,7 +387,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     this.CharacterActionList.Active = (T)ability;
                     this.SpawnAndTargetOwnerCharacter();
                     ability.Play();
-                    TurnOffActiveStateForAbilityAfterPredefinedTime();
+                    if(!ability.Persistent)
+                        TurnOffActiveStateForAbilityAfterPredefinedTime();
                 }
             }
             else
@@ -425,6 +426,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     this.SpawnAndTargetOwnerCharacter();
                     ability.Stop();
+                    this.CharacterActionList.Active = default(T);
+                    this.SaveActionGroup();
                 }
             }
             else
@@ -455,7 +458,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 // If it's not persistent- play
                 // If it's persistent but hasn't been played yet - play
                 // If it's persistent and has been played already - stop
-                if (!(ability.Persistant && (ability.Owner as AnimatedAbility.AnimatedCharacter).ActiveStates.FirstOrDefault(state => state.Ability == ability && state.AbilityAlreadyPlayed) != null))
+                if (!(ability.Persistent && (ability.Owner as AnimatedAbility.AnimatedCharacter).ActiveStates.FirstOrDefault(state => state.Ability == ability && state.AbilityAlreadyPlayed) != null))
                 {
                     PlayAction(obj);
                 }

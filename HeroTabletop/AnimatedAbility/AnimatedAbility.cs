@@ -21,8 +21,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimatedAbilityImpl()
         {
         }
+        private bool persistent;
         [JsonProperty]
-        public bool Persistant { get; set; }
+        public bool Persistent
+        {
+            get
+            {
+                return persistent;
+            }
+            set
+            {
+                persistent = value;
+                NotifyOfPropertyChange(() => Persistent);
+            }
+        }
         [JsonProperty]
         public AnimatedCharacter Target
         {
@@ -79,7 +91,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         private void addStateToTargetsIfPersistent(AnimatedCharacter target)
         {
-            if (Persistant)
+            if (Persistent)
             {
                 AnimatableCharacterState newstate = new AnimatableCharacterStateImpl(this, Target);
                 newstate.AbilityAlreadyPlayed = true;
@@ -148,7 +160,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             clone.Target = target;
             clone.Name = Name;
             clone.KeyboardShortcut = KeyboardShortcut;
-            clone.Persistant = Persistant;
+            clone.Persistent = Persistent;
             clone.Target = Target;
             clone.StopAbility = StopAbility?.Clone(target);
             return clone;
@@ -162,7 +174,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (other.KeyboardShortcut != KeyboardShortcut) return false;
             if (other.Name != Name) return false;
             if (other.Order != Order) return false;
-            if (other.Persistant != Persistant) return false;
+            if (other.Persistent != Persistent) return false;
             if (other.Sequencer.Equals(Sequencer) == false) return false;
             return true;
         }

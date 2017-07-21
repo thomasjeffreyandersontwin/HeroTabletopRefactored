@@ -151,7 +151,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyOfPropertyChange(() => SelectedAnimationElement);
                 NotifyOfPropertyChange(() => CanEnterAnimationElementEditMode);
                 //NotifyOfPropertyChange(() => CanRemoveAnimation);
-                //OnPropertyChanged("IsAnimationElementSelected");
+                NotifyOfPropertyChange(() => IsAnimationElementSelected);
                 
                 //if (selectedAnimationElement != null)
                 //    SetSavedUIFilter(selectedAnimationElement);
@@ -190,6 +190,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 selectedAnimationParent = value;
                 NotifyOfPropertyChange(() => SelectedAnimationParent);
+            }
+        }
+
+        public bool IsAnimationElementSelected
+        {
+            get
+            {
+                return this.SelectedAnimationElement != null;
             }
         }
 
@@ -310,7 +318,21 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 currentReferenceElement = value;
                 NotifyOfPropertyChange(() => CurrentReferenceElement);
-                //this.UpdateReferenceTypeCommand.RaiseCanExecuteChanged();
+                NotifyOfPropertyChange(() => CanUpdateReferenceType);
+            }
+        }
+
+        private bool copyReference;
+        public bool CopyReference
+        {
+            get
+            {
+                return copyReference;
+            }
+            set
+            {
+                copyReference = value;
+                NotifyOfPropertyChange(() => CopyReference);
             }
         }
 
@@ -932,6 +954,37 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #endregion
 
+        #region Copy/Link Reference Element
+        private bool CanUpdateReferenceType
+        {
+            get
+            {
+                return this.CurrentReferenceElement != null && this.CurrentReferenceElement.Reference != null && !IS_ATTACK_EXECUTING;
+            }
+        }
+
+        public void UpdateReferenceType()
+        {
+            if (this.CurrentReferenceElement != null)
+            {
+                if (this.CopyReference)
+                {
+                    this.LockModelAndMemberUpdate(true);
+                    SequenceElement sequenceElement = this.CurrentReferenceElement.Copy(this.CurrentAbility.Target);
+                    CopyReference = false;
+                    this.RemoveAnimation();
+                    this.AddAnimationElement(sequenceElement);
+                    OnAnimationAdded(sequenceElement, null);
+                    this.SaveAbility();
+                    this.CurrentReferenceElement = null;
+                    this.IsReferenceAbilitySelected = false;
+                    this.LockModelAndMemberUpdate(false);
+                }
+            }
+        }
+
+        #endregion
+
         #region Change Play with Next
 
         public bool CanPlayWithNext
@@ -978,6 +1031,27 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //    }
             //}
             this.SaveAbility();
+        }
+
+        #endregion
+
+        #region Change Persistence
+
+        public void ChangePersistence()
+        {
+            if (!IsAnimationElementSelected)
+            {
+                foreach (var element in CurrentAbility.AnimationElements)
+                    element.Persistent = CurrentAbility.Persistent;
+            }
+            else
+            {
+                if (SelectedAnimationElement.Persistent && !CurrentAbility.Persistent)
+                    CurrentAbility.Persistent = true;
+                else if (!SelectedAnimationElement.Persistent && !CurrentAbility.AnimationElements.Any(a => a.Persistent))
+                    CurrentAbility.Persistent = false;
+            }
+            SaveAbility();
         }
 
         #endregion

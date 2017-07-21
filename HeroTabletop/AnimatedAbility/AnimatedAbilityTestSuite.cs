@@ -962,7 +962,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 return StandardizedFixture.Build<AnimatedAbilityImpl>()
                     .With(x => x.Target, AnimatedCharacterUnderTest)
-                    .With(x => x.Persistant, true)
+                    .With(x => x.Persistent, true)
                     .With(x => x.Sequencer, AnimationSequencerUnderTest)
                     .Without(x => x.Owner)
                     .Create();

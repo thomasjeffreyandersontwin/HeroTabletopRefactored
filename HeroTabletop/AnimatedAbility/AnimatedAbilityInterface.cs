@@ -117,7 +117,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
     {
         AnimatedCharacter Target { get; set; }
         string KeyboardShortcut { get; set; }
-        bool Persistant { get; set; }
+        bool Persistent { get; set; }
         AnimationSequencer Sequencer { get; }
         AnimatedAbility StopAbility { get; set; }
         

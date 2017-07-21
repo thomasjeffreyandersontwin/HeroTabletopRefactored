@@ -44,17 +44,34 @@ namespace HeroVirtualTabletop.AnimatedAbility
             get;
             set;
         }
+        private bool playWithNext;
         [JsonProperty]
         public bool PlayWithNext
         {
-            get;
-            set;
+            get
+            {
+                return playWithNext;
+            }
+            set
+            {
+                playWithNext = value;
+                NotifyOfPropertyChange(() => PlayWithNext);
+            }
         }
+        private bool persistent;
         [JsonProperty]
         public bool Persistent
         {
-            get;
-            set;
+            get
+            {
+                return persistent;
+            }
+            set
+            {
+                persistent = value;
+                NotifyOfPropertyChange(() => persistent);
+            }
+
         }
         [JsonProperty]
         public AnimationSequencer ParentSequence
@@ -397,7 +414,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void StopResource(AnimatedCharacter target)
         {
-            removePreviouslyLoadedFX(ModifiedCostumeText);
+            string fileStr = removePreviouslyLoadedFX(ModifiedCostumeText, true);
+            File.Delete(ModifiedCostumeFilePath);
+            File.AppendAllText(ModifiedCostumeFilePath, fileStr);
+
+            string[] para = new string[1];
+            para[0] = Path.GetFileNameWithoutExtension(ModifiedCostumeFilePath);
+
+
+            target.Generator?.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para);
+            if (completeEvent)
+                target.Generator?.CompleteEvent();
         }
 
         public override AnimationElement Clone(AnimatedCharacter target)
@@ -453,29 +480,29 @@ namespace HeroVirtualTabletop.AnimatedAbility
             Target = originalTarget;
         }
 
-        private void removePreviousFXResource(FXResource fxResource)
+        private void removePreviousFXResource(FXResource fxResource, bool removePersistent = false)
         {
             if (File.Exists(ModifiedCostumeFilePath) && !string.IsNullOrEmpty(ModifiedCostumeText))
             {
                 string fileStr = ModifiedCostumeText;
-                fileStr = removeFX(fileStr, this);
+                fileStr = removeFX(fileStr, this, removePersistent);
                 File.Delete(ModifiedCostumeFilePath);
                 File.AppendAllText(ModifiedCostumeFilePath, fileStr);
             }
         }
 
-        private string removePreviouslyLoadedFX(string fileStr)
+        private string removePreviouslyLoadedFX(string fileStr, bool removePersistent = false)
         {
             if (Target.LoadedFXs != null)
                 foreach (var fx in Target.LoadedFXs)
-                    fileStr = removeFX(fileStr, fx);
+                    fileStr = removeFX(fileStr, fx, removePersistent);
 
             return fileStr;
         }
 
-        private string removeFX(string fileStr, FXElement fx)
+        private string removeFX(string fileStr, FXElement fx, bool removePersistent = false)
         {
-            if (!fx.Persistent)
+            if (!fx.Persistent || removePersistent)
             {
                 var re = new Regex(Regex.Escape(fx.FX.FullResourcePath));
                 if (re.IsMatch(fileStr))
@@ -1143,7 +1170,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (existingIndex >= 0)
                 {
                     AnimationElements.RemoveAt(existingIndex);
-                    if(index > 0)
+                    if (index > 0)
                         position = index;
                 }
                 AnimationElements.Insert(position, toInsert);
@@ -1479,7 +1506,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
             SequenceElement clone = new SequenceElementImpl(clonedSequence, target);
             clone = (SequenceElement)cloneBaseAttributes(clone);
-            
+            clone.Name = "Sequence: " + clone.Type.ToString();
+
             return clone;
         }
 

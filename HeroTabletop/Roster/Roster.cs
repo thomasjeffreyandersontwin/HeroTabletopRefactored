@@ -953,7 +953,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         public AnimatedCharacter Target { get; set; }
-        public bool Persistant { get; set; }
+        public bool Persistent { get; set; }
         public AnimationSequencer Sequencer { get; }
         public AnimatedAbility.AnimatedAbility StopAbility { get; set; }
 
