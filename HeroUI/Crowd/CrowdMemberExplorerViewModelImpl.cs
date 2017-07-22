@@ -9,6 +9,7 @@ using HeroUI;
 using System.Threading.Tasks;
 using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.AnimatedAbility;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -341,7 +342,12 @@ namespace HeroVirtualTabletop.Crowd
                 {
                     if (SelectedCharacterCrowdMember != null)
                     {
-                        if (SelectedCharacterCrowdMember.Name != DEFAULT_CHARACTER_NAME && SelectedCharacterCrowdMember.Name != COMBAT_EFFECTS_CHARACTER_NAME)
+                        if (SelectedCharacterCrowdMember.Name != DefaultAbilities.CHARACTERNAME)
+                            canDeleteCharacterOrCrowd = true;
+                    }
+                    else if(SelectedCrowdMember != null)
+                    {
+                        if (SelectedCrowdMember.Name != DefaultAbilities.CROWDNAME)
                             canDeleteCharacterOrCrowd = true;
                     }
                     else
@@ -415,6 +421,7 @@ namespace HeroVirtualTabletop.Crowd
         public async void Handle(GameLaunchedEvent message)
         {
             await this.LoadCrowdCollectionAsync();
+            this.CrowdRepository.AddDefaultCharacter();
             this.SyncCrowdMembersWithRoster();
         }
 

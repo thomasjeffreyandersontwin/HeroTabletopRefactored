@@ -49,7 +49,7 @@ namespace HeroVirtualTabletop.Attack
             Play(Attacker);
             playDefenderAnimation(instructions);
             playAttackeffectsOnDefender(instructions);
-            instructions.Defender.RemoveStateByName(DefaultAbilities.UnderAttack);
+            instructions.Defender.RemoveStateByName(DefaultAbilities.UNDERATTACK);
             return null;
         }
         public KnockbackCollisionInfo PlayCompleteAttackCycle(AttackInstructions instructions)
@@ -88,25 +88,27 @@ namespace HeroVirtualTabletop.Attack
         }
         private static void playAttackeffectsOnDefender(AttackInstructions instructions)
         {
+            // TODO: NEED TO CHANGE TO USE DEFAULT CHARACTER OR OVERRIDE INDEXER FOR ABILITIES
             if (instructions.Impacts.Contains(AttackEffects.Dead))
-                instructions.Defender.Abilities[DefaultAbilities.Dead].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Dying))
-                instructions.Defender.Abilities[DefaultAbilities.Dying].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Unconsious))
-                instructions.Defender.Abilities[DefaultAbilities.Unconsious].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Stunned))
-                instructions.Defender.Abilities[DefaultAbilities.Stunned].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
         }
         private void playDefenderAnimation(AttackInstructions instructions)
         {
+            // TODO: NEED TO CHANGE TO USE DEFAULT CHARACTER OR OVERRIDE INDEXER FOR ABILITIES
             if (instructions.AttackHit == false)
             {
-                instructions.Defender.Abilities[DefaultAbilities.Miss].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.MISS].Play(instructions.Defender);
             }
             else
             {
                 if (OnHitAnimation == null)
-                    instructions.Defender.Abilities[DefaultAbilities.Hit].Play(instructions.Defender);
+                    instructions.Defender.Abilities[DefaultAbilities.HIT].Play(instructions.Defender);
                 else
                     OnHitAnimation.Play(instructions.Defender);
             }
@@ -158,14 +160,14 @@ namespace HeroVirtualTabletop.Attack
             AnimatedCharacter firstOrDefault = instructions.Defenders.FirstOrDefault();
             if (firstOrDefault != null)
             {
-                var miss = firstOrDefault.Abilities[DefaultAbilities.Miss];
+                var miss = firstOrDefault.Abilities[DefaultAbilities.MISS];
                 miss.Play(instructions.DefendersMissed);
             }
 
             AnimatedCharacter animatedCharacter = instructions.Defenders.FirstOrDefault();
             if (animatedCharacter != null)
             {
-                var defaultHit = animatedCharacter.Abilities[DefaultAbilities.Hit];
+                var defaultHit = animatedCharacter.Abilities[DefaultAbilities.HIT];
                 if (OnHitAnimation == null)
                     defaultHit.Play(instructions.DefendersHit);
                 else
@@ -189,7 +191,7 @@ namespace HeroVirtualTabletop.Attack
             set
             {
                 _defender = value;
-                Defender.AddDefaultState(DefaultAbilities.UnderAttack);
+                Defender.AddDefaultState(DefaultAbilities.UNDERATTACK);
             }
         }
         public List<string> Impacts { get; }

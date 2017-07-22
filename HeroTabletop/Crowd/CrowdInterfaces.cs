@@ -27,7 +27,7 @@ namespace HeroVirtualTabletop.Crowd
         Crowd NewCrowd(Crowd parent = null, string name = "Character");
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");
         string CreateUniqueName(string name, IEnumerable<CrowdMember> context);
-        void AddDefaultCharacters();
+        void AddDefaultCharacter();
         Task LoadCrowdsAsync();
         Task SaveCrowdsAsync();
         void AddCrowd(Crowd crowd);

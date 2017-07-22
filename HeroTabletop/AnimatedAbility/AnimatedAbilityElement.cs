@@ -2104,7 +2104,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void LoadReferenceResource()
         {
             this.referenceElements = null; // to force reload
-            ReferenceElementsCVS = new CollectionViewSource();
+            referenceElementsCVS = new CollectionViewSource();
             referenceElementsCVS.Source = this.ReferenceElements;
             referenceElementsCVS.View.Filter += ReferenceResourcesCVS_Filter;
             NotifyOfPropertyChange(() => ReferenceElementsCVS);

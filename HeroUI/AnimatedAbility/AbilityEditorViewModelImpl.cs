@@ -377,8 +377,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void Handle(EditAnimatedAbilityEvent message)
         {
+            InitializeAnimationElementSelections();
+
             this.CurrentAbility = message.EditedAbility;
             this.OpenEditor();
+            
             this.AnimatedResourceMananger.LoadReferenceResource();
         }
 
@@ -391,6 +394,32 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             this.IsShowingAbilityEditor = false;
             this.CurrentAbility = null;
+        }
+
+        private void InitializeAnimationElementSelections()
+        {
+            this.SelectedAnimationElement = null;
+            this.SelectedAnimationParent = null;
+            this.IsSequenceAbilitySelected = false;
+            this.IsReferenceAbilitySelected = false;
+            this.IsPauseElementSelected = false;
+            this.IsFxElementSelected = false;
+            this.CurrentSequenceElement = null;
+            this.CurrentReferenceElement = null;
+            this.CurrentPauseElement = null;
+            this.CurrentFxElement = null;
+            this.CurrentAbility = null;
+            
+
+            //if (availableKeys == null)
+            //{
+            //    availableKeys = new ObservableCollection<System.Windows.Forms.Keys>();
+            //    foreach (var key in Enum.GetValues(typeof(System.Windows.Forms.Keys)).Cast<System.Windows.Forms.Keys>())
+            //    {
+            //        if (!IsAbilityKey(key))
+            //            availableKeys.Add(key);
+            //    }
+            //}
         }
 
         #endregion

@@ -49,7 +49,7 @@ namespace HeroVirtualTabletop.Attack
             //assert
             var element = attack.AnimationElements.FirstOrDefault();
             Mock.Get(element).Verify(x => x.Play(attacker));
-            Mock.Get(defender.Abilities[DefaultAbilities.Miss]).Verify(x => x.Play(defender));
+            Mock.Get(defender.Abilities[DefaultAbilities.MISS]).Verify(x => x.Play(defender));
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace HeroVirtualTabletop.Attack
             //assert
             var element = attack.AnimationElements.FirstOrDefault();
             Mock.Get(element).Verify(x => x.Play(attacker));
-            Mock.Get(defender.Abilities[DefaultAbilities.Hit]).Verify(x => x.Play(defender));
+            Mock.Get(defender.Abilities[DefaultAbilities.HIT]).Verify(x => x.Play(defender));
         }
 
         [TestMethod]
@@ -111,37 +111,37 @@ namespace HeroVirtualTabletop.Attack
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
-            Mock.Get(defender.Abilities[DefaultAbilities.Stunned])
+            Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Unconsious])
+            Mock.Get(defender.Abilities[DefaultAbilities.UNCONSCIOUS])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Dying])
+            Mock.Get(defender.Abilities[DefaultAbilities.DYING])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Dead])
+            Mock.Get(defender.Abilities[DefaultAbilities.DEAD])
                 .Verify(x => x.Play(defender), Times.Once);
 
             //act-assert
             instructions.Impacts.Remove(AttackEffects.Dead);
             attack.CompleteTheAttackCycle(instructions);
-            Mock.Get(defender.Abilities[DefaultAbilities.Stunned])
+            Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Unconsious])
+            Mock.Get(defender.Abilities[DefaultAbilities.UNCONSCIOUS])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Dying])
+            Mock.Get(defender.Abilities[DefaultAbilities.DYING])
                 .Verify(x => x.Play(defender), Times.Once);
 
             //act-assert
             instructions.Impacts.Remove(AttackEffects.Dying);
             attack.CompleteTheAttackCycle(instructions);
-            Mock.Get(defender.Abilities[DefaultAbilities.Stunned])
+            Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
                 .Verify(x => x.Play(defender), Times.Never);
-            Mock.Get(defender.Abilities[DefaultAbilities.Unconsious])
+            Mock.Get(defender.Abilities[DefaultAbilities.UNCONSCIOUS])
                 .Verify(x => x.Play(defender), Times.Once);
 
             //act-assert
             instructions.Impacts.Remove(AttackEffects.Unconsious);
             attack.CompleteTheAttackCycle(instructions);
-            Mock.Get(defender.Abilities[DefaultAbilities.Stunned])
+            Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
                 .Verify(x => x.Play(defender), Times.Once);
         }
 
@@ -375,7 +375,7 @@ namespace HeroVirtualTabletop.Attack
             var firstOrDefault = defenders.FirstOrDefault();
             if (firstOrDefault == null) return;
             var missAbility =
-            firstOrDefault.Abilities[DefaultAbilities.Miss];
+            firstOrDefault.Abilities[DefaultAbilities.MISS];
             Mock.Get(missAbility).Verify(x => x.Play(instructions.DefendersMissed), Times.Once);
            
         }
@@ -400,7 +400,7 @@ namespace HeroVirtualTabletop.Attack
             foreach (var defender in defenders)
             {
                 var state = (from s in defender.ActiveStates
-                    where s.StateName == DefaultAbilities.UnderAttack
+                    where s.StateName == DefaultAbilities.UNDERATTACK
                     select s).FirstOrDefault();
                 Assert.IsNotNull(state);
             }
@@ -538,13 +538,13 @@ namespace HeroVirtualTabletop.Attack
             get
             {
                 var character = AnimatedCharacterUnderTest;
-                addMockAbilityToCharacter(character, DefaultAbilities.Miss);
-                addMockAbilityToCharacter(character, DefaultAbilities.Hit);
-                addMockAbilityToCharacter(character, DefaultAbilities.Stunned);
-                addMockAbilityToCharacter(character, DefaultAbilities.Unconsious);
-                addMockAbilityToCharacter(character, DefaultAbilities.Dying);
-                addMockAbilityToCharacter(character, DefaultAbilities.Dead);
-                addMockAbilityToCharacter(character, DefaultAbilities.UnderAttack);
+                addMockAbilityToCharacter(character, DefaultAbilities.MISS);
+                addMockAbilityToCharacter(character, DefaultAbilities.HIT);
+                addMockAbilityToCharacter(character, DefaultAbilities.STUNNED);
+                addMockAbilityToCharacter(character, DefaultAbilities.UNCONSCIOUS);
+                addMockAbilityToCharacter(character, DefaultAbilities.DYING);
+                addMockAbilityToCharacter(character, DefaultAbilities.DEAD);
+                addMockAbilityToCharacter(character, DefaultAbilities.UNDERATTACK);
                 return character;
             }
         }

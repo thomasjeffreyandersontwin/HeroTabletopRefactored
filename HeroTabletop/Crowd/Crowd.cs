@@ -208,9 +208,20 @@ namespace HeroVirtualTabletop.Crowd
             return flattened;
         }
 
-        public void AddDefaultCharacters()
+        public void AddDefaultCharacter()
         {
-            throw new NotImplementedException();
+            var systemCrowd = this.Crowds.FirstOrDefault(m => m.Name == DefaultAbilities.CROWDNAME);
+            if(systemCrowd == null || systemCrowd.Members == null || systemCrowd.Members.Count == 0)
+            {
+                List<Crowd> crowds = LoadSystemCrowdWithDefaultCharacter();
+                systemCrowd = crowds.FirstOrDefault(c => c.Name == DefaultAbilities.CROWDNAME);
+                if(systemCrowd != null)
+                {
+                    systemCrowd.CrowdRepository = this;
+                    this.AddCrowd(systemCrowd);
+                    RefreshAllmembersCrowd();
+                }
+            }
         }
 
         public async Task LoadCrowdsAsync()

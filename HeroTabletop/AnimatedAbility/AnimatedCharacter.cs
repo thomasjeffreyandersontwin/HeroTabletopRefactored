@@ -81,9 +81,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void loadDefaultAbilities()
         {
             if (Repository != null)
-                if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CharacterName))
+                if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CHARACTERNAME))
                 {
-                    var defaultCharacter = Repository.CharacterByName[DefaultAbilities.CharacterName];
+                    var defaultCharacter = Repository.CharacterByName[DefaultAbilities.CHARACTERNAME];
                     foreach (var defaultAbility in defaultCharacter.Abilities)
                         if (Abilities.Contains(defaultAbility) == false)
                             if (defaultCharacter.Abilities.Contains(defaultAbility))
@@ -192,10 +192,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void AddDefaultState(string defaultState, bool playImmediately = true)
         {
-            if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CharacterName))
+            if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CHARACTERNAME))
             {
 
-                AnimatedAbility defaultAbility = Repository?.CharacterByName?[DefaultAbilities.CharacterName]
+                AnimatedAbility defaultAbility = Repository?.CharacterByName?[DefaultAbilities.CHARACTERNAME]
                     ?.Abilities?[defaultState];
 
                 if (defaultAbility != null)

@@ -783,8 +783,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var character = repo.CharacterByName["Custom"];
            
             //assert
-            foreach (var defaultAbility in repo.CharacterByName[DefaultAbilities.CharacterName].Abilities)
-                if (defaultAbility.Name == DefaultAbilities.Dodge)
+            foreach (var defaultAbility in repo.CharacterByName[DefaultAbilities.CHARACTERNAME].Abilities)
+                if (defaultAbility.Name == DefaultAbilities.DODGE)
                     Assert.AreNotEqual(defaultAbility, character.Abilities[defaultAbility.Name]);
                 else
                     Assert.AreEqual(defaultAbility, character.Abilities[defaultAbility.Name]);
@@ -1054,22 +1054,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
                 var defaultCharacter = AnimatedCharacterUnderTest;
                 defaultCharacter.Repository = repo;
-                defaultCharacter.Name = DefaultAbilities.CharacterName;
+                defaultCharacter.Name = DefaultAbilities.CHARACTERNAME;
 
                 var defaultAbility = MockAnimatedAbility;
-                defaultAbility.Name = DefaultAbilities.Dodge;
+                defaultAbility.Name = DefaultAbilities.DODGE;
                 defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
-                defaultAbility.Name = DefaultAbilities.Strike;
+                defaultAbility.Name = DefaultAbilities.STRIKE;
                 defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
-                defaultAbility.Name = DefaultAbilities.Miss;
+                defaultAbility.Name = DefaultAbilities.MISS;
                 defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 defaultAbility = MockAnimatedAbility;
-                defaultAbility.Name = DefaultAbilities.UnderAttack;
+                defaultAbility.Name = DefaultAbilities.UNDERATTACK;
                 defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 repo.Characters.Add(defaultCharacter);
@@ -1079,8 +1079,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 ((AnimatedCharacterImpl) character).loadDefaultAbilities();
 
                 var dodge = MockAnimatedAbility;
-                dodge.Name = DefaultAbilities.Dodge;
-                character.Abilities[DefaultAbilities.Dodge] = dodge;
+                dodge.Name = DefaultAbilities.DODGE;
+                character.Abilities[DefaultAbilities.DODGE] = dodge;
 
                 character.Name = "Custom";
 

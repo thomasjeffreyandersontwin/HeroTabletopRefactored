@@ -173,6 +173,7 @@
   <ItemGroup>
     <EmbeddedResource Include="AnimatedAbility\FXElements.csv" />
     <EmbeddedResource Include="AnimatedAbility\MOVElements.csv" />
+    <EmbeddedResource Include="AnimatedAbility\AnimatedCharacterRepository.data" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

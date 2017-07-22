@@ -25,16 +25,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class DefaultAbilities
     {
-        public static string UnderAttack => "UnderAttack";
-        public static string Strike => "Strike";
-        public static string Dodge => "Dodge";
-        public static string Stunned => "Stunned";
-        public static string Unconsious => "Unconsious";
-        public static string Hit => "Hit";
-        public static string Miss => "Miss";
-        public static string Dead => "Dead";
-        public static string Dying => "Dying";
-        public static string CharacterName => "Default";
+        public const string UNDERATTACK = "UnderAttack";
+        public const string STRIKE = "Strike";
+        public const string DODGE = "Dodge";
+        public const string STUNNED = "Stunned";
+        public const string UNCONSCIOUS = "Unconscious";
+        public const string HIT = "Hit";
+        public const string MISS = "Miss";
+        public const string DEAD = "Dead";
+        public const string DYING = "Dying";
+        public const string CHARACTERNAME = "DEFAULT";
+        public const string CROWDNAME = "System Characters";
     }
     public interface AnimatedCharacterRepository
     {
