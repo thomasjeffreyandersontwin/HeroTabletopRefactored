@@ -406,6 +406,9 @@ namespace HeroUI
 
     public class ControlUtilities
     {
+        public const string RESOURCE_DICTIONARY_PATH = "/HeroResourceDictionary.xaml";
+        public const string CUSTOM_MODELESS_TRANSPARENT_WINDOW_STYLENAME = "CustomModelessTransparentWindow";
+
         #region TreeView
 
         public static object GetCurrentSelectedCrowdInCrowdCollectionInTreeView(Object tv, out CrowdMember crowdMember)
@@ -563,6 +566,33 @@ namespace HeroUI
             }
             while (current != null);
             return null;
+        }
+
+        #endregion
+
+        #region Resource Dictionary and Style related
+        public static System.Windows.Style GetCustomStyle(string styleName)
+        {
+            System.Windows.ResourceDictionary resource = new System.Windows.ResourceDictionary
+            {
+                Source = new Uri(RESOURCE_DICTIONARY_PATH, UriKind.RelativeOrAbsolute)
+            };
+            var windowStyle = (System.Windows.Style)resource[styleName];
+            return windowStyle;
+        }
+        public static System.Windows.Style GetCustomStyle(Type targetType)
+        {
+            System.Windows.ResourceDictionary resource = new System.Windows.ResourceDictionary
+            {
+                Source = new Uri(RESOURCE_DICTIONARY_PATH, UriKind.RelativeOrAbsolute)
+            };
+            var windowStyle = (System.Windows.Style)resource[targetType];
+            return windowStyle;
+        }
+
+        public static System.Windows.Style GetCustomWindowStyle()
+        {
+            return GetCustomStyle(typeof(Window));
         }
 
         #endregion

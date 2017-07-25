@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
+using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.ManagedCharacter;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace HeroVirtualTabletop.Roster
 {
@@ -87,6 +89,7 @@ namespace HeroVirtualTabletop.Roster
             NotifyOfPropertyChange(() => CanToggleTargeted);
             NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
             NotifyOfPropertyChange(() => CanMoveCameraToTarget);
+            NotifyOfPropertyChange(() => CanActivate);
         }
 
         #endregion
@@ -273,6 +276,7 @@ namespace HeroVirtualTabletop.Roster
         {
             this.Roster.Selected?.PlaceOnTableTop();
             SelectNextCharacterInCrowdCycle();
+            RefreshRosterCommandsEligibility();
         }
 
         #endregion
@@ -327,11 +331,50 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
-        #region Activate 
+        #region Activate/Deactivate 
+
+        public bool CanActivate
+        {
+            get
+            {
+                return this.Roster.Selected?.Participants?.Count > 0 && !Roster.Participants.Any(p => p.ActiveAttack != null);
+            }
+        }
 
         public void Activate()
         {
-            this.Roster.Selected?.Activate();
+            if (CanActivate)
+                ActivateCharacter(this.Roster.Selected?.Participants?[0]);
+        }
+
+        private void ActivateCharacter(CharacterCrowdMember character, string selectedOptionGroupName = null, string selectedOptionName = null)
+        {
+            if(this.Roster.Selected?.Participants?.Count > 0)
+            {
+                if(this.Roster.Selected.Participants[0] != character)
+                {
+                    this.Roster.ClearAllSelections();
+                    this.Roster.SelectParticipant(character);
+                }
+                this.Roster.Selected.Activate();
+            }
+            this.EventAggregator.Publish(new ActivateCharacterEvent(character, selectedOptionGroupName, selectedOptionName), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            SelectNextCharacterInCrowdCycle();
+        }
+
+        private void DeactivateCharacter(CharacterCrowdMember character = null)
+        {
+            if (this.Roster.Selected?.Participants?.Count > 0)
+            {
+                if (this.Roster.Selected.Participants[0] != character)
+                {
+                    this.Roster.ClearAllSelections();
+                    this.Roster.SelectParticipant(character);
+                }
+                this.Roster.Selected.DeActivate();
+            }
+            this.EventAggregator.Publish(new DeActivateCharacterEvent(character), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            SelectNextCharacterInCrowdCycle();
         }
 
         #endregion

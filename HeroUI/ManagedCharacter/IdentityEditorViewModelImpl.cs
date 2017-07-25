@@ -250,7 +250,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         private void LoadIdentity(Identity identity)
         {
             UnloadIdentity();
-            Filter = null;
+            //Filter = null;
             this.EditedIdentity = identity;
             this.Owner.Identities.CollectionChanged += AvailableIdentities_CollectionChanged;
             this.IsShowingIdentityEditor = true;

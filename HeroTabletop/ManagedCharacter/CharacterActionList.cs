@@ -299,6 +299,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             identity.Name = GetNewValidActionName();
             identity.Type = SurfaceType.Costume;
             identity.Surface = identity.Name;
+            identity.Generator = this.Generator;
 
             return identity;
         }
@@ -361,7 +362,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var obj = this.First(a => a.Name == oldName);
             obj.Name = newName;
             if (Type == CharacterActionType.Identity)
-                (obj as Identity).Surface = newName;
+            {
+                var identity = obj as Identity;
+                if (identity.Surface == null)
+                    identity.Surface = newName;
+            }
         }
 
         public void Rename(string newName)
@@ -420,7 +425,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
         [JsonIgnore]
         public string KeyboardShortcut { get; set; }
         [JsonIgnore]
-        public virtual KeyBindCommandGenerator Generator { get; set; }
+        public virtual KeyBindCommandGenerator Generator
+        {
+            get;
+            set;
+        }
 
         private string _name;
         [JsonProperty]

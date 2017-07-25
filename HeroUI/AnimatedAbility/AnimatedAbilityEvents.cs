@@ -6,14 +6,40 @@ using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class BeginLoadAbilitiesEvent
+    public class ShowActivateCharacterWidgetEvent
     {
+        public AnimatedCharacter ActivatedCharacter { get; set; }
+        public string SelectedActionGroupName { get; set; }
+        public string SelectedActionName { get; set; }
 
+        public ShowActivateCharacterWidgetEvent(AnimatedCharacter character, string selectedActionGroupName, string selectedActionName)
+        {
+            this.ActivatedCharacter = character;
+            this.SelectedActionGroupName = selectedActionGroupName;
+            this.SelectedActionName = selectedActionName;
+        }
+    }
+    public class ActivateCharacterEvent
+    {
+        public AnimatedCharacter ActivatedCharacter { get; set; }
+        public string SelectedActionGroupName { get; set; }
+        public string SelectedActionName { get; set; }
+
+        public ActivateCharacterEvent(AnimatedCharacter character, string selectedActionGroupName, string selectedActionName)
+        {
+            this.ActivatedCharacter = character;
+            this.SelectedActionGroupName = selectedActionGroupName;
+            this.SelectedActionName = selectedActionName;
+        }
     }
 
-    public class EndLoadAbilitiesEvent
+    public class DeActivateCharacterEvent
     {
-        public List<AnimatedAbility> LoadedAbilities { get; set; }
+        public AnimatedCharacter DeActivatedCharacter { get; set; }
+        public DeActivateCharacterEvent(AnimatedCharacter character)
+        {
+            this.DeActivatedCharacter = character;
+        }
     }
 
     public class EditAnimatedAbilityEvent

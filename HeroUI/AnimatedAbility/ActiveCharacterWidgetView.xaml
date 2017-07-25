@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="HeroVirtualTabletop.AnimatedAbility.ActiveCharacterWidgetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:roster="clr-namespace:HeroVirtualTabletop.Roster"
+             xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter"
+             mc:Ignorable="d">
+<UserControl.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</UserControl.Resources>
+<Grid>
+    <GroupBox Header="{Binding ActiveCharacter.Name}" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+        <Grid>
+            <ListView Grid.Row="1" x:Name="listViewOptionGroup"
+                    ItemsSource="{Binding CharacterActionGroups, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedValuePath="ActionGroup" ItemContainerStyle="{StaticResource ListViewtemStyleNoHighlighting}">
+                <ListView.Style>
+                    <Style TargetType="ListView">
+                        <Setter Property="Background" Value="Transparent"></Setter>
+                        <Setter Property="BorderThickness" Value="0"></Setter>
+                    </Style>
+                </ListView.Style>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <managedcharacter:CharacterActionGroupView ActionGroupWidth="500" ActionListBoxWidth="480" NumberOfActionsPerRow="10">
+
+                        </managedcharacter:CharacterActionGroupView>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+            </ListView>
+        </Grid>
+    </GroupBox>
+</Grid>
+</UserControl>
+

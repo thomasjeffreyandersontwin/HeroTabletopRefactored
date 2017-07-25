@@ -701,13 +701,71 @@ namespace HeroVirtualTabletop.Roster
 
         public void Activate()
         {
-            foreach (var crowdMember in Participants)
-                crowdMember.Activate();
+            var currentActiveCharacter = Participants.FirstOrDefault(p => p.IsActive);
+            CharacterCrowdMember firstCharacter = Participants[0] as CharacterCrowdMember;
+            if (currentActiveCharacter != null && currentActiveCharacter == firstCharacter)
+            {
+                DeactivateCharacter(firstCharacter);
+            }
+            else
+            {
+                if (currentActiveCharacter != null)
+                    DeactivateCharacter(currentActiveCharacter);
+                ActivateCharacter(firstCharacter);
+            }
         }
+
         public void DeActivate()
         {
-            foreach (var crowdMember in Participants)
-                crowdMember.DeActivate();
+            CharacterCrowdMember firstCharacter = Participants[0] as CharacterCrowdMember;
+            DeactivateCharacter(firstCharacter);
+        }
+
+        private void ActivateCharacter(CharacterCrowdMember character)
+        {
+            if (!character.IsSpawned)
+                character.SpawnToDesktop();
+            //// Pause movements from other characters that were active
+            //if (Helper.GlobalVariables_CharacterMovement != null && Helper.GlobalVariables_CharacterMovement.Character == this.ActiveCharacter)
+            //{
+            //    Helper.GlobalVariables_CharacterMovement.IsPaused = true;
+            //    Helper.GlobalVariables_FormerActiveCharacterMovement = Helper.GlobalVariables_CharacterMovement;
+            //}
+            //// Deactivate movements from other characters that are not active
+            //if (Helper.GlobalVariables_CharacterMovement != null && Helper.GlobalVariables_CharacterMovement.Character != this.ActiveCharacter)
+            //{
+            //    var otherCharacter = Helper.GlobalVariables_CharacterMovement.Character;
+            //    if (otherCharacter != Helper.GlobalVariables_ActiveCharacter)
+            //    {
+            //        Helper.GlobalVariables_CharacterMovement.DeactivateMovement();
+            //    }
+            //}
+            character.Activate();
+            //// Now resume any paused movements for the activated character
+            //var pausedMovement = character.Movements.FirstOrDefault(cm => cm.IsPaused && Helper.GlobalVariables_FormerActiveCharacterMovement == cm);
+            //if (pausedMovement != null)
+            //{
+            //    pausedMovement.IsPaused = false;
+            //}
+            //this.eventAggregator.GetEvent<ActivateCharacterEvent>().Publish(new Tuple<Character, string, string>(character, selectedActionGroupName, selectedActionName));
+            //SelectNextCharacterInCrowdCycle();
+        }
+
+        public void DeactivateCharacter(CharacterCrowdMember character)
+        {
+            if (character.IsActive)
+            {
+                character.DeActivate();
+                //// Resume movements from other characters that were paused
+                //if (Helper.GlobalVariables_FormerActiveCharacterMovement != null)
+                //{
+                //    Helper.GlobalVariables_FormerActiveCharacterMovement.IsPaused = false;
+                //    Helper.GlobalVariables_CharacterMovement = Helper.GlobalVariables_FormerActiveCharacterMovement;
+                //}
+                //this.ActiveCharacter = null;
+                //this.eventAggregator.GetEvent<DeactivateCharacterEvent>().Publish(character);
+                //SelectNextCharacterInCrowdCycle();
+            }
         }
         
         public void SaveCurrentTableTopPosition()

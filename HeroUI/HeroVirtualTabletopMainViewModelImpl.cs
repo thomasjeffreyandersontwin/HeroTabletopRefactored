@@ -14,16 +14,19 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace HeroUI
 {
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
-        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>
+        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>,
+        IHandle<ActivateCharacterEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
         private IconInteractionUtility iconInteractionUtility;
         private Camera camera;
+        private PopupService popupService;
         System.Threading.Timer gameInitializeTimer;
 
         private const string GAME_EXE_FILENAME = "cityofheroes.exe";
@@ -224,12 +227,26 @@ namespace HeroUI
             }
         }
 
+        private ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel;
+        public ActiveCharacterWidgetViewModel ActiveCharacterWidgetViewModel
+        {
+            get
+            {
+                return activeCharacterWidgetViewModel;
+            }
+            set
+            {
+                activeCharacterWidgetViewModel = value;
+                NotifyOfPropertyChange(() => ActiveCharacterWidgetViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
             RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
-            AbilityEditorViewModel abilityEditorViewModel,
+            AbilityEditorViewModel abilityEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, PopupService popupService,
             IconInteractionUtility iconInteractionUtility, Camera camera)
         {
             this.eventAggregator = eventAggregator;
@@ -238,8 +255,11 @@ namespace HeroUI
             this.CharacterEditorViewModel = characterEditorViewModel;
             this.IdentityEditorViewModel = identityEditorViewModel;
             this.AbilityEditorViewModel = abilityEditorViewModel;
+            this.ActiveCharacterWidgetViewModel = activeCharacterWidgetViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
+            this.popupService = popupService;
+            RegisterPopups();
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             LaunchGame();
             this.eventAggregator.Subscribe(this);
@@ -255,6 +275,12 @@ namespace HeroUI
         #endregion
 
         #region Methods
+
+        private void RegisterPopups()
+        {
+            this.popupService.Register("ActiveCharacterWidgetView", typeof(ActiveCharacterWidgetView));
+            //this.popupService.Register("ActiveAttackView", typeof(ActiveAttackView));
+        }
        
         private void CollapsePanel(object state)
         {
@@ -549,6 +575,49 @@ namespace HeroUI
         public void Handle(EditAnimatedAbilityEvent message)
         {
             this.IsAbilityEditorExpanded = true;
+        }
+
+        #endregion
+
+        #region Open/Close Popups
+
+        public void Handle(ActivateCharacterEvent message)
+        {
+            ShowActivateCharacterWidgetPopup(message.ActivatedCharacter, message.SelectedActionGroupName, message.SelectedActionName);
+        }
+
+        private void ShowActivateCharacterWidgetPopup(AnimatedCharacter character, string optionGroupName, string optionName)
+        {
+            if (character != null && popupService.IsOpen("ActiveCharacterWidgetView") == false)
+            {
+                System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
+                double minwidth = 80;
+                style.Setters.Add(new Setter(Window.MinWidthProperty, minwidth));
+                var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+                double left = desktopWorkingArea.Right - 500;
+                double top = desktopWorkingArea.Bottom - 80 * character.CharacterActionGroups.Count;
+                object savedPos = popupService.GetPosition("ActiveCharacterWidgetView", character.Name);
+                if (savedPos != null)
+                {
+                    double[] posArray = (double[])savedPos;
+                    left = posArray[0];
+                    top = posArray[1];
+                }
+                style.Setters.Add(new Setter(Window.LeftProperty, left));
+                style.Setters.Add(new Setter(Window.TopProperty, top));
+                popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual);
+                this.eventAggregator.PublishOnUIThread(new ShowActivateCharacterWidgetEvent(character, optionGroupName, optionName));
+            }
+            else if (character == null && popupService.IsOpen("ActiveCharacterWidgetView"))
+            {
+                this.CloseActiveCharacterWidgetPopup(null);
+            }
+        }
+
+        private void CloseActiveCharacterWidgetPopup(AnimatedCharacter character)
+        {
+            popupService.SavePosition("ActiveCharacterWidgetView", character != null ? character.Name : null);
+            popupService.CloseDialog("ActiveCharacterWidgetView");
         }
 
         #endregion

@@ -535,7 +535,8 @@ namespace HeroVirtualTabletop.Crowd
         {
             var clone = CrowdRepository.NewCrowd();
 
-            var crowds = (from crowd in CrowdRepository.Crowds select crowd as CrowdMember).ToList();
+            //var crowds = (from crowd in CrowdRepository.Crowds select crowd as CrowdMember).ToList();
+            var crowds = CrowdRepository.AllMembersCrowd.Members.Where(m => m is Crowd && m != clone).ToList();
             clone.Name = CrowdRepository.CreateUniqueName(Name, crowds);
 
             clone.UseRelativePositioning = UseRelativePositioning;
@@ -754,6 +755,10 @@ namespace HeroVirtualTabletop.Crowd
         [OnDeserialized]
         private void AfterDeserialized(StreamingContext stream)
         {
+            foreach(var group in this.CharacterActionGroups)
+            {
+                group.Generator = this.Generator;
+            }
             if (Identities != null && Identities.Count() > 0)
             {
                 foreach (var identity in Identities)

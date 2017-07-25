@@ -15,7 +15,7 @@
     <local:BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
 
     <FontFamily x:Key="FontFamily_FontAwesome">/Fonts/#FontAwesome</FontFamily>
-    <FontFamily x:Key="MontDemiBold">//Fonts/#Montreal DemiBold</FontFamily>
+    <FontFamily x:Key="MontDemiBold">/Fonts/#Montreal DemiBold</FontFamily>
     <FontFamily x:Key="ParagonCity">/Fonts/#Paragon City</FontFamily>
     <System:Double x:Key="FontSize_ExtraSmall">10</System:Double>
     <System:Double x:Key="FontSize_Small">12</System:Double>

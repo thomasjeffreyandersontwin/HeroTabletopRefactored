@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Caliburn.Micro;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace HeroUI
 
     }
 
-    public class BusyServiceImpl : BusyService
+    public class BusyServiceImpl : BusyService, IHandle<PopupOpenedEvent>
     {
         #region Properties
         
@@ -27,6 +28,8 @@ namespace HeroUI
         private List<BusyControl> busyControls;
         private List<Window> targetWindows;
         private List<FrameworkElement> targetElements;
+
+        private IEventAggregator eventAggregator;
 
         public bool IsShowingBusy
         {
@@ -37,10 +40,11 @@ namespace HeroUI
 
         #region Constructors
 
-        public BusyServiceImpl()
+        public BusyServiceImpl(IEventAggregator eventAggregator) 
         {
             counter = 0;
-            //isShowingBusy = false;
+
+            this.eventAggregator = eventAggregator;
 
             busyControls = new List<BusyControl>();
             targetWindows = new List<Window>();
@@ -50,11 +54,12 @@ namespace HeroUI
         }
 
         #endregion Constructors
-        void PopupOpened(Window win)
+
+        public void Handle(PopupOpenedEvent message)
         {
             if (!IsShowingBusy)
                 return;
-
+            Window win = message.PopupWindow;
             win.Loaded += this.win_Loaded;
         }
 
@@ -181,7 +186,7 @@ namespace HeroUI
             if (counter > 0)  // continue showing busy until counter == 0
                 return;
 
-            Action d =
+            System.Action d =
                 delegate ()
                 {
                     for (int i = 0; i < targetWindows.Count; i++)

@@ -77,6 +77,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     public interface CharacterActionGroup //CharacterActionGroup = Former IOptionGroup
     {
         ManagedCharacter Owner { get; set; }
+        KeyBindCommandGenerator Generator { get; set; }
         string Name { get; set; }
         CharacterActionType Type { get; set; }
         bool IsStandardActionGroup { get; }

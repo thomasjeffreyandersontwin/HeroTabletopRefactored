@@ -89,7 +89,7 @@
             <WrapPanel Grid.Row="1">
                 <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
                 <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
-                <Button x:Name="btActivate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
+                <Button x:Name="Activate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
                 <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>
                 <Button x:Name="btResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
             </WrapPanel>

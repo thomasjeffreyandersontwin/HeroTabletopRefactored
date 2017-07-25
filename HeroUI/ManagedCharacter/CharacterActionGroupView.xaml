@@ -32,7 +32,7 @@
     <Expander Style="{StaticResource HorizontalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="{Binding Path=ActionGroup.Name}"
-                  IsExpanded="{Binding ShowOptions}"
+                  IsExpanded="{Binding ShowActions}"
                   >
         <Grid>
             <Grid.RowDefinitions>
@@ -99,7 +99,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Expander Name="ExpanderOptionGroup" Grid.RowSpan="2" Grid.Column="1" Style="{StaticResource ExpanderWithoutToggleButtonStyle}"
-                  OverridesDefaultStyle="True" IsExpanded="{Binding ShowOptions}" VerticalAlignment="Top"
+                  OverridesDefaultStyle="True" IsExpanded="{Binding ShowActions}" VerticalAlignment="Top"
                   >
                         <Grid VerticalAlignment="Top">
                             <local:ActionListBoxControl x:Name="optionListBox" ItemsSource="{Binding Path=ActionGroup}" SelectedItem="{Binding Path=SelectedAction}"

@@ -91,17 +91,31 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        private bool showOptions;
-        public bool ShowOptions
+        private bool showActions;
+        public bool ShowActions
         {
             get
             {
-                return showOptions;
+                return showActions;
             }
             set
             {
-                showOptions = value;
-                NotifyOfPropertyChange(() => ShowOptions);
+                showActions = value;
+                NotifyOfPropertyChange(() => ShowActions);
+            }
+        }
+
+        private string loadedActionName;
+        public string LoadedActionName
+        {
+            get
+            {
+                return loadedActionName;
+            }
+            set
+            {
+                loadedActionName = value;
+                NotifyOfPropertyChange(() => LoadedActionName);
             }
         }
 
@@ -209,7 +223,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (this.NewActionGroupAdded)
             {
                 this.NewActionGroupAdded = false;
-                this.ShowOptions = true;
+                this.ShowActions = true;
                 System.Action d = delegate ()
                 {
                     this.EnterEditMode(null);

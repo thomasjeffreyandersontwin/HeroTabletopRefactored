@@ -301,7 +301,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (DesktopLabel != null && DesktopLabel != "")
                 spawnText = DesktopLabel;
             
-            var active = Identities.Active;
+            var active = Identities.Active ?? Identities.Default;
             string model = "model_statesman";
             if (active.Type == SurfaceType.Model)
             {

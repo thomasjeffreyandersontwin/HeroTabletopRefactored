@@ -8,6 +8,7 @@ using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Roster;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -50,7 +51,7 @@ namespace HeroVirtualTabletop.Crowd
         void RemoveMember(CrowdMember member);
         void SortMembers();
     }
-    public interface CharacterCrowdMember : AnimatedCharacter, CrowdMember, RosterParticipant
+    public interface CharacterCrowdMember : MovableCharacter, CrowdMember, RosterParticipant
     {
         new string Name { get; set; }
         new int Order { get; set; }

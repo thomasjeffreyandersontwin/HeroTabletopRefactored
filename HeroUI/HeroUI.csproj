@@ -75,6 +75,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Windows.Forms" />
@@ -129,6 +130,11 @@
     </Compile>
     <Compile Include="AnimatedAbility\AbilityEditorViewModel.cs" />
     <Compile Include="AnimatedAbility\AbilityEditorViewModelImpl.cs" />
+    <Compile Include="AnimatedAbility\ActiveCharacterWidgetView.xaml.cs">
+      <DependentUpon>ActiveCharacterWidgetView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModel.cs" />
+    <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModelImpl.cs" />
     <Compile Include="AnimatedAbility\AnimatedAbilityEvents.cs" />
     <Compile Include="ManagedCharacter\ActionListBoxControl.cs" />
     <Compile Include="ManagedCharacter\CharacterActionGroupView.xaml.cs">
@@ -155,11 +161,16 @@
     </Compile>
     <Compile Include="Roster\RosterExplorerViewModel.cs" />
     <Compile Include="Roster\RosterExplorerViewModelImpl.cs" />
+    <Compile Include="Services\PopupService.cs" />
     <Page Include="AnimatedAbility\AbilityEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="BusyService\BusyControl.xaml">
+    <Page Include="AnimatedAbility\ActiveCharacterWidgetView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Services\BusyControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -183,12 +194,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BusyService\AdornerBehavior.cs" />
-    <Compile Include="BusyService\BusyControl.xaml.cs">
+    <Compile Include="Services\AdornerBehavior.cs" />
+    <Compile Include="Services\BusyControl.xaml.cs">
       <DependentUpon>BusyControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BusyService\BusyService.cs" />
-    <Compile Include="BusyService\ControlAdorner.cs" />
+    <Compile Include="Services\BusyService.cs" />
+    <Compile Include="Services\ControlAdorner.cs" />
     <Compile Include="Crowd\CrowdEvents.cs" />
     <Compile Include="HeroVirtualTabletopMainViewModel.cs" />
     <Compile Include="Common.cs" />

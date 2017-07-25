@@ -175,7 +175,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void DeActivate()
         {
-            throw new NotImplementedException();
+            IsActive = false;
         }
 
         private List<AnimatableCharacterState> _activeStates;

@@ -57,6 +57,7 @@ namespace HeroUI
             container.Singleton<IdentityEditorViewModel, IdentityEditorViewModelImpl>();
             container.Singleton<AbilityEditorViewModel, AbilityEditorViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
+            container.Singleton<PopupService, PopupServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();
             container.Singleton<Camera, CameraImpl>();
             container.Singleton<Roster, RosterImpl>();
@@ -64,6 +65,7 @@ namespace HeroUI
             container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
             container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
             container.Singleton<AbilityClipboard, AbilityClipboardImpl>();
+            container.Singleton<ActiveCharacterWidgetViewModel, ActiveCharacterWidgetViewModelImpl>();
 
             container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();
