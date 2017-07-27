@@ -67,8 +67,7 @@ namespace HeroVirtualTabletop.Roster
     public interface RosterSelection : CharacterActionContainer, ManagedCharacterCommands, AnimatedCharacterCommands, CrowdMemberCommands
     {
         List<CharacterCrowdMember> Participants { get;set; }
-        //void Target();
-        //void ToggleTargeted();
+        Roster Roster { get; set; }
     }
     public interface RosterSelectionAttackInstructions : AttackInstructions
     {

@@ -80,7 +80,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private void LoadActivatedCharacter(AnimatedCharacter activatedCharacter, string actionGroupName, string actionName)
         {
-            this.UnloadActivatedCharacter();
+            this.UnloadPreviousActivatedCharacter();
 
             this.ActiveCharacter = activatedCharacter;
             if (activatedCharacter != null)
@@ -132,12 +132,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
 
         }
-        private void UnloadActivatedCharacter()
+        private void UnloadPreviousActivatedCharacter()
         {
             if (ActiveCharacter != null)
             {
-                ActiveCharacter.DeActivate();
-
                 foreach (var ogv in this.CharacterActionGroups)
                     ogv.UnloadActionGroup();
             }

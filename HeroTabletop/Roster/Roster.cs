@@ -30,7 +30,7 @@ namespace HeroVirtualTabletop.Roster
             this.CrowdClipboard = clipboard;
 
             Groups = new OrderedCollectionImpl<RosterGroup>();
-            Selected = new RosterSelectionImpl();
+            Selected = new RosterSelectionImpl(this);
         }
 
         public CrowdRepository CrowdRepository { get; set; }
@@ -410,6 +410,7 @@ namespace HeroVirtualTabletop.Roster
             set
             {
                 activeCharacter = value;
+                NotifyOfPropertyChange(() => ActiveCharacter);
             }
         }
 
@@ -485,8 +486,9 @@ namespace HeroVirtualTabletop.Roster
 
     public class RosterSelectionImpl : RosterSelection
     {
-        public RosterSelectionImpl()
+        public RosterSelectionImpl(Roster roster)
         {
+            this.Roster = roster;
             Participants = new List<CharacterCrowdMember>();
         }
 
@@ -502,6 +504,8 @@ namespace HeroVirtualTabletop.Roster
 
             }
         }
+
+        public Roster Roster { get; set; }
 
         public CharacterCrowdMember FirstSpawnedCharacter
         {
@@ -701,8 +705,8 @@ namespace HeroVirtualTabletop.Roster
 
         public void Activate()
         {
-            var currentActiveCharacter = Participants.FirstOrDefault(p => p.IsActive);
-            CharacterCrowdMember firstCharacter = Participants[0] as CharacterCrowdMember;
+            var currentActiveCharacter = Roster.Participants.FirstOrDefault(p => p.IsActive);
+            CharacterCrowdMember firstCharacter = this.Participants[0] as CharacterCrowdMember;
             if (currentActiveCharacter != null && currentActiveCharacter == firstCharacter)
             {
                 DeactivateCharacter(firstCharacter);

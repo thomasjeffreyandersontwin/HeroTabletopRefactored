@@ -588,29 +588,32 @@ namespace HeroUI
 
         private void ShowActivateCharacterWidgetPopup(AnimatedCharacter character, string optionGroupName, string optionName)
         {
-            if (character != null && popupService.IsOpen("ActiveCharacterWidgetView") == false)
+            if (character != null && character.IsActive)
             {
-                System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
-                double minwidth = 80;
-                style.Setters.Add(new Setter(Window.MinWidthProperty, minwidth));
-                var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
-                double left = desktopWorkingArea.Right - 500;
-                double top = desktopWorkingArea.Bottom - 80 * character.CharacterActionGroups.Count;
-                object savedPos = popupService.GetPosition("ActiveCharacterWidgetView", character.Name);
-                if (savedPos != null)
+                if (!popupService.IsOpen("ActiveCharacterWidgetView"))
                 {
-                    double[] posArray = (double[])savedPos;
-                    left = posArray[0];
-                    top = posArray[1];
+                    System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
+                    double minwidth = 80;
+                    style.Setters.Add(new Setter(Window.MinWidthProperty, minwidth));
+                    var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+                    double left = desktopWorkingArea.Right - 500;
+                    double top = desktopWorkingArea.Bottom - 80 * character.CharacterActionGroups.Count;
+                    object savedPos = popupService.GetPosition("ActiveCharacterWidgetView", character.Name);
+                    if (savedPos != null)
+                    {
+                        double[] posArray = (double[])savedPos;
+                        left = posArray[0];
+                        top = posArray[1];
+                    }
+                    style.Setters.Add(new Setter(Window.LeftProperty, left));
+                    style.Setters.Add(new Setter(Window.TopProperty, top));
+                    popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual); 
                 }
-                style.Setters.Add(new Setter(Window.LeftProperty, left));
-                style.Setters.Add(new Setter(Window.TopProperty, top));
-                popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual);
                 this.eventAggregator.PublishOnUIThread(new ShowActivateCharacterWidgetEvent(character, optionGroupName, optionName));
             }
-            else if (character == null && popupService.IsOpen("ActiveCharacterWidgetView"))
+            else if ((character != null && !character.IsActive) && popupService.IsOpen("ActiveCharacterWidgetView"))
             {
-                this.CloseActiveCharacterWidgetPopup(null);
+                this.CloseActiveCharacterWidgetPopup(character);
             }
         }
 

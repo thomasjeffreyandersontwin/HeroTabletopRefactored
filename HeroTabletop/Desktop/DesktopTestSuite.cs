@@ -384,7 +384,9 @@ namespace HeroVirtualTabletop.Desktop
             Assert.AreEqual(move.Y, test.Y);
         }
     }
-
+    /// <summary>
+    /// RUN THE TESTS IN THIS CLASS WITHOUT CITY OF HEROES RUNNING. OTHERWISE TESTS WOULD FAIL
+    /// </summary>
     [TestClass]
     public class DesktopCharacterNavigatorTestSuite
     {
@@ -566,6 +568,7 @@ namespace HeroVirtualTabletop.Desktop
             get
             {
                 Position p = CustomizedMockFixture.Create<PositionImpl>();
+                
                 //stand straight up and face 0 degrees
                 Matrix m = new Matrix();
                 m.M11 = 1;

@@ -379,20 +379,22 @@ namespace HeroVirtualTabletop.Roster
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
-        public void SelectionWithMultipleCharacters_CanInvokAnimatedCharacterCommandsOnAllSelected()
+        public void SelectionWithMultipleCharacters_ActivatesOrDeactivatesFirstSelectedOnly()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
+            foreach(var p in r.Participants)
+            {
+                p.IsActive = false;
+            }
             r.ClearAllSelections();
             r.SelectAllParticipants();
 
             r.Selected.Activate();
-            r.Selected.Participants.ForEach(
-                participant => Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.Activate()));
-
+            var participant = r.Selected.Participants[0];
+            Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.Activate());
+            participant.IsActive = true;
             r.Selected.DeActivate();
-            r.Selected.Participants.ForEach(
-                participant => Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.DeActivate()));
-
+            Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.DeActivate());
             Assert.AreEqual(r.Selected.Participants.Count, 3);
         }
         [TestMethod]
@@ -537,6 +539,7 @@ namespace HeroVirtualTabletop.Roster
             .Without(x => x.AttackingCharacter)
             .Without(x => x.LastSelectedCharacter)
             .Without(x => x.Participants)
+            .Without(x => x.Selected)
             .Create();
 
         public Roster MockRoster => CustomizedMockFixture.Create<Roster>();

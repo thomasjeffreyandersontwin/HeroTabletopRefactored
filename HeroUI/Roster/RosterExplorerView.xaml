@@ -170,24 +170,8 @@
                         <TextBlock Name="txtBlockCharacterName" Text="{Binding Name}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                         <Label Grid.Column="1" Foreground="Green"
                                FontFamily="{StaticResource ResourceKey=FontFamily_FontAwesome}"
-                               FontSize="26" Content="&#xf00c;" VerticalAlignment="Center"
+                               Content="&#xf00c;" VerticalAlignment="Center" Visibility="{Binding IsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
                                >
-                            <Label.Style>
-                                <Style TargetType="Label">
-                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Value="true">
-                                            <DataTrigger.Binding>
-                                                <MultiBinding Converter="{StaticResource ResourceKey=characterComparer}">
-                                                    <Binding></Binding>
-                                                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}" Path="DataContext.ActiveCharacter"></Binding>
-                                                </MultiBinding>
-                                            </DataTrigger.Binding>
-                                            <Setter Property="Visibility" Value="Visible"></Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Label.Style>
                         </Label>
                         <!--<TextBlock Grid.Column="2" FontFamily="{StaticResource FontFamily_FontAwesome}" Visibility="{Binding ActiveAttackConfiguration.AttackMode, Converter={StaticResource ActiveAttackModeToVisibilityConverter}}" Text="{Binding ActiveAttackConfiguration.AttackMode, Converter={StaticResource ActiveAttackModeToAnimationIconTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Center">
                         </TextBlock>-->
