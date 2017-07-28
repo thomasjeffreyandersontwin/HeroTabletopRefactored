@@ -127,6 +127,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         void Stop(bool completedEvent = true);
         AnimatedAbility Clone(AnimatedCharacter target);
         void Rename(string newName);
+        AnimatedAttack TransformToAttack();
     }
    
     

@@ -13,15 +13,17 @@ using System.Windows.Media;
 using System.Windows.Data;
 using System.IO;
 using HeroVirtualTabletop.Roster;
+using HeroVirtualTabletop.Attack;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>
     {
-        #region Private Fields
+        #region Fields
 
-        public bool isUpdatingCollection = false;
-        public object lastAnimationElementsStateToUpdate = null;
+        private bool isUpdatingCollection = false;
+        private object lastAnimationElementsStateToUpdate = null;
+        
 
         public static bool IS_ATTACK_EXECUTING;
 
@@ -226,6 +228,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 isFxElementSelected = value;
                 NotifyOfPropertyChange(() => IsFxElementSelected);
+                NotifyOfPropertyChange(() => CanToggleDirectionalFx);
             }
         }
 
@@ -336,6 +339,51 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        public bool isAttack;
+        public bool IsAttack
+        {
+            get
+            {
+                return isAttack;
+            }
+            set
+            {
+                isAttack = value;
+                NotifyOfPropertyChange(() => IsAttack);
+                NotifyOfPropertyChange(() => CanConfigureAttack);
+                NotifyOfPropertyChange(() => CanConfigureOnHit);
+            }
+        }
+
+        public bool isAreaEffect;
+        public bool IsAreaEffect
+        {
+            get
+            {
+                return isAreaEffect;
+            }
+            set
+            {
+                isAreaEffect = value;
+                NotifyOfPropertyChange(() => IsAreaEffect);
+            }
+        }
+
+        private bool isConfiguringOnHit;
+        public bool IsConfiguringOnHit
+        {
+            get
+            {
+                return isConfiguringOnHit;
+            }
+            set
+            {
+                isConfiguringOnHit = value;
+                NotifyOfPropertyChange(() => IsConfiguringOnHit);
+                NotifyOfPropertyChange(() => CanEnterAbilityEditMode);
+            }
+        }
+
         public IEventAggregator EventAggregator { get; set; }
 
         private bool isShowingAbilityEditor;
@@ -380,6 +428,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
             InitializeAnimationElementSelections();
 
             this.CurrentAbility = message.EditedAbility;
+            if(this.CurrentAbility is AnimatedAttack)
+            {
+                this.IsAttack = true;
+                if (this.CurrentAbility is AreaEffectAttack)
+                    this.IsAreaEffect = true;
+            }
+            else
+            {
+                this.IsAttack = this.IsAreaEffect = false;
+            }
+            this.IsConfiguringOnHit = false;
             this.OpenEditor();
             
             this.AnimatedResourceMananger.LoadReferenceResource();
@@ -745,6 +804,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         }
 
+        public bool CanEnterAbilityEditMode
+        {
+            get
+            {
+                return !IsConfiguringOnHit;
+            }
+        }
+
         public void EnterAbilityEditMode(object state)
         {
             this.OriginalName = CurrentAbility.Name;
@@ -790,6 +857,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return;
             }
             CurrentAbility.Rename(updatedName);
+            if(IsAttack && CurrentAbility is AnimatedAttack)
+            {
+                (CurrentAbility as AnimatedAttack).OnHitAnimation?.Rename(updatedName + AnimatedAbilityImpl.ATTACK_ONHIT_NAME_EXTENSION);
+            }
             OriginalName = null;
         }
 
@@ -1106,6 +1177,23 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         #endregion
 
+        #region Toggle Directional FX
+
+        private bool CanToggleDirectionalFx
+        {
+            get
+            {
+                return this.IsFxElementSelected && !IS_ATTACK_EXECUTING;
+            }
+        }
+
+        private void ToggleDirectionalFx(object state)
+        {
+            this.SaveAbility();
+        }
+
+        #endregion
+
         #region Save
 
         public void SaveAbility()
@@ -1120,6 +1208,97 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 this.CurrentSequenceElement.Name = "Sequence: " + this.CurrentSequenceElement.Type.ToString();
             }
             this.SaveAbility();
+        }
+
+        #endregion
+
+        #region Attack Transformations
+        public void ToggleAttack()
+        {
+            if (IsAttack && CurrentAbility is AnimatedAbility)
+            {
+                AnimatedAttack attack = this.CurrentAbility.TransformToAttack();
+                this.CurrentAbility = attack;
+            }
+            else if(!IsAttack)
+            {
+                if(CurrentAbility is AnimatedAttack)
+                {
+                    AnimatedAbility ability = (this.CurrentAbility as AnimatedAttack).TransformToAbility();
+                    this.CurrentAbility = ability;
+                }
+                else if(CurrentAbility is AnimatedAbility && IsConfiguringOnHit) // OnHit ability
+                {
+                    ConfigureAttack();
+                }
+                this.IsAreaEffect = false;
+            }
+
+            (this.CurrentAbility.Owner as AnimatedCharacter).Abilities[this.CurrentAbility.Name] = this.CurrentAbility;
+
+            SaveAbility();
+        }
+
+        public void ToggleAreaEffectAttack()
+        {
+            if(IsAreaEffect && CurrentAbility is AnimatedAttack)
+            {
+                AreaEffectAttack areaEffectAttack = (this.CurrentAbility as AnimatedAttack).TransformToAreaEffectAttack();
+                this.CurrentAbility = areaEffectAttack;
+            }
+            else if(!IsAreaEffect && CurrentAbility is AreaEffectAttack)
+            {
+                AnimatedAttack attack = (this.CurrentAbility as AreaEffectAttack).TransformToAttack();
+                this.CurrentAbility = attack;
+            }
+
+            (this.CurrentAbility.Owner as AnimatedCharacter).Abilities[this.CurrentAbility.Name] = this.CurrentAbility;
+
+            SaveAbility();
+        }
+
+        #endregion
+
+        #region Configure Attack/OnHit
+
+        public bool CanConfigureAttack
+        {
+            get
+            {
+                return this.IsAttack && !IS_ATTACK_EXECUTING;
+            }
+        }
+
+        public void ConfigureAttack()
+        {
+            if (IsConfiguringOnHit)
+            {
+                this.IsConfiguringOnHit = false;
+                string attackName = this.CurrentAbility.Name.Replace(AnimatedAbilityImpl.ATTACK_ONHIT_NAME_EXTENSION, "");
+                this.CurrentAbility = (this.CurrentAbility.Owner as AnimatedCharacter).Abilities[attackName];
+
+                //this.SaveAbility();
+            }
+
+        }
+
+        public bool CanConfigureOnHit
+        {
+            get
+            {
+                return this.IsAttack && !IS_ATTACK_EXECUTING;
+            }
+        }
+
+        public void ConfigureOnHit()
+        {
+            if (!IsConfiguringOnHit)
+            {
+                this.IsConfiguringOnHit = true;
+                this.CurrentAbility = (this.CurrentAbility as AnimatedAttack)?.OnHitAnimation;
+
+                //this.SaveAbility(); 
+            }
         }
 
         #endregion

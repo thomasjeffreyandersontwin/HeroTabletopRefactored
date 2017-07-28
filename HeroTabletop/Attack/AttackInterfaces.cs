@@ -37,10 +37,10 @@ namespace HeroVirtualTabletop.Attack
         AttackInstructions StartAttackCycle();
         KnockbackCollisionInfo PlayCompleteAttackCycle(AttackInstructions instructions);
         KnockbackCollisionInfo CompleteTheAttackCycle(AttackInstructions instructions);
-
         KnockbackCollisionInfo AnimateKnockBack();
-
         void FireAtDesktop(Position desktopPosition);
+        AreaEffectAttack TransformToAreaEffectAttack();
+        AnimatedAbility.AnimatedAbility TransformToAbility();
     }
     
     public interface AreaAttackInstructions : AttackInstructions

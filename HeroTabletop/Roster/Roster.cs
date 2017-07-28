@@ -1028,6 +1028,11 @@ namespace HeroVirtualTabletop.Roster
         {
             throw new NotImplementedException();
         }
+
+        public AnimatedAttack TransformToAttack()
+        {
+            throw new NotImplementedException();
+        }
     }
     class RosterSelectionIdentityWrapper : RosterSelectionCharacterActionsWrapper, Identity
     {
@@ -1112,6 +1117,16 @@ namespace HeroVirtualTabletop.Roster
             {
                 ((AnimatedAttack)attack).FireAtDesktop(desktopPosition);
             }
+        }
+
+        public AreaEffectAttack TransformToAreaEffectAttack()
+        {
+            throw new NotImplementedException();
+        }
+
+        public AnimatedAbility.AnimatedAbility TransformToAbility()
+        {
+            throw new NotImplementedException();
         }
     }
     class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions

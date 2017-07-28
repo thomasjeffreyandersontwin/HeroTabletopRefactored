@@ -114,8 +114,8 @@
                 </Grid.ColumnDefinitions>
                 <CheckBox Grid.Row="0" Grid.Column="0" cal:Message.Attach="ChangePersistence()" IsChecked="{Binding CurrentAbility.Persistent}" Content="Persistent"  HorizontalAlignment="Left" Visibility="{Binding IsAnimationElementSelected, Converter={StaticResource BooleanToVisibilityInvertConverter}}"/>
                 <CheckBox Grid.Row="0" Grid.Column="0" cal:Message.Attach="ChangePersistence()" IsChecked="{Binding SelectedAnimationElement.Persistent}" Content="Persistent"  HorizontalAlignment="Left" Visibility="{Binding IsAnimationElementSelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                <CheckBox Grid.Row="0" Grid.Column="1" Name="chkBoxAreaEffect" IsChecked="{Binding CurrentAbility.IsAreaEffect}" IsEnabled="{Binding CurrentAttackAbility.IsAttack}" Content="Area Effect"  HorizontalAlignment="Left" Command="{Binding SaveAbilityCommand}"/>
-                <CheckBox Grid.Row="0" Grid.Column="2" Name="chkBoxIsAttack" IsChecked="{Binding CurrentAttackAbility.IsAttack}" Content="Attack" Command="{Binding ToggleAttackCommand}" HorizontalAlignment="Left"/>
+                <CheckBox x:Name="ToggleAreaEffectAttack" Grid.Row="0" Grid.Column="1" IsChecked="{Binding IsAreaEffect}" IsEnabled="{Binding IsAttack}" Content="Area Effect"  HorizontalAlignment="Left" Command="{Binding SaveAbilityCommand}"/>
+                <CheckBox x:Name="ToggleAttack" Grid.Row="0" Grid.Column="2" IsChecked="{Binding IsAttack}" Content="Attack" Command="{Binding ToggleAttackCommand}" HorizontalAlignment="Left"/>
                 <CheckBox Grid.Row="0" Grid.Column="3" Name="chkBoxIsNonDirectionalFx" IsChecked="{Binding CurrentFxElement.IsNonDirectional, Converter={StaticResource InvertBooleanConverter}}" Content="Directional" Command="{Binding ToggleDirectionalFxCommand}" Visibility="{Binding IsFxElementSelected, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Left"/>
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Sequence" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultStyle}"/>
                 <RadioButton cal:Message.Attach="SaveAbility()" Grid.Row="1" Grid.Column="1" Content="And" IsChecked="{Binding Path=CurrentAbility.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=And}" GroupName="AbilityGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsSequenceAbilitySelected, Converter={StaticResource BooleanToVisibilityInvertConverter}}"/>
@@ -201,28 +201,28 @@
             <Button x:Name="PasteAnimation" Content="&#xf0ea;" ToolTip="Paste (Alt+Ctrl+V)"/>
             <Button x:Name="RemoveAnimation" Content="&#xf056;" ToolTip="Remove (Alt+Ctrl+Backspace)" />
             <Button x:Name="DemoAnimation" Content="&#xf04b;" ToolTip="Demo Animation (Alt+Ctrl+Enter)" />
-            <Button x:Name="btnAttack" Grid.Column="0" Content="&#xf0e7;" ToolTip="Attack (Alt+Ctrl+A)" Margin="2" Command="{Binding ConfigureAttackAnimationCommand}" CommandParameter="Attack">
+            <Button x:Name="ConfigureAttack" Grid.Column="0" Content="&#xf0e7;" ToolTip="Attack (Alt+Ctrl+A)" Margin="2">
                 <Button.Style >
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsAttackSelected}" Value="True">
+                            <DataTrigger Binding="{Binding Path=IsConfiguringOnHit}" Value="False">
                                 <Setter Property="Opacity" Value="1"/>
                             </DataTrigger>
-                            <DataTrigger  Binding="{Binding Path=IsAttackSelected}" Value="False">
+                            <DataTrigger  Binding="{Binding Path=IsConfiguringOnHit}" Value="True">
                                 <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
             </Button>
-            <Button x:Name="btnOnHit" Grid.Column="1" Content="&#xf132;" ToolTip="On Hit (Alt+Ctrl+H)" Margin="2" Command="{Binding ConfigureAttackAnimationCommand}" CommandParameter="OnHit">
+            <Button x:Name="ConfigureOnHit" Grid.Column="1" Content="&#xf132;" ToolTip="On Hit (Alt+Ctrl+H)" Margin="2">
                 <Button.Style >
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=IsHitSelected}" Value="False">
+                            <DataTrigger Binding="{Binding Path=IsConfiguringOnHit}" Value="False">
                                 <Setter Property="Opacity" Value="0.5"/>
                             </DataTrigger>
-                            <DataTrigger  Binding="{Binding Path=IsHitSelected}" Value="True">
+                            <DataTrigger  Binding="{Binding Path=IsConfiguringOnHit}" Value="True">
                                 <Setter Property="Opacity" Value="1"/>
                             </DataTrigger>
                         </Style.Triggers>

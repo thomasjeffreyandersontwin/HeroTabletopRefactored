@@ -138,7 +138,7 @@
     <Compile Include="AnimatedAbility\AnimatedCharacterRepository.cs" />
     <Compile Include="Attack\AnimatedAttack.cs" />
     <Compile Include="Attack\AttackDistanceDelayManager.cs" />
-    <Compile Include="Attack\AttackIntefaces.cs" />
+    <Compile Include="Attack\AttackInterfaces.cs" />
     <Compile Include="Attack\AttackTestsuite.cs" />
     <Compile Include="Common\AsyncDelegateExecuter.cs" />
     <Compile Include="Desktop\MemoryManager.cs" />

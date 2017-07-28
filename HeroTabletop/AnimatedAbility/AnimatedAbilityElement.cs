@@ -350,6 +350,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        private bool isNonDirectional;
+        public bool IsNonDirectional
+        {
+            get
+            {
+                return isNonDirectional;
+            }
+            set
+            {
+                isNonDirectional = value;
+                NotifyOfPropertyChange(() => IsNonDirectional);
+            }
+        }
+
         public Position AttackDirection { get; set; }
 
         public string CostumeText => File.ReadAllText(CostumeFilePath);

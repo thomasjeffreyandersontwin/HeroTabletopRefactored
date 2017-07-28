@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using HeroVirtualTabletop.Crowd;
 using System.Linq;
+using HeroVirtualTabletop.Attack;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -14,6 +15,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
     {
         private AnimationSequencer _sequencer;
         private AnimatedCharacter _target;
+        public const string ATTACK_ONHIT_NAME_EXTENSION = " - OnHit";
         public AnimatedAbilityImpl(AnimationSequencer clonedsequencer)
         {
             _sequencer = clonedsequencer;
@@ -182,6 +184,25 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Rename(string newName)
         {
             this.Name = newName;
+        }
+
+        public AnimatedAttack TransformToAttack()
+        {
+            AnimatedAttackImpl attack = new AnimatedAttackImpl();
+            attack.Name = this.Name;
+            attack.Order = this.Order;
+            attack.Owner = this.Owner;
+            attack.Sequencer = this.Sequencer;
+            attack.OnHitAnimation = new AnimatedAbilityImpl();
+            attack.OnHitAnimation.Rename(attack.Name + ATTACK_ONHIT_NAME_EXTENSION);
+            attack.OnHitAnimation.Target = this.Target;
+            attack.Persistent = this.Persistent;
+            attack.Generator = this.Generator;
+            attack.KeyboardShortcut = this.KeyboardShortcut;
+            attack.Target = this.Target;
+            attack.Type = this.Type;
+
+            return attack;
         }
     }
 

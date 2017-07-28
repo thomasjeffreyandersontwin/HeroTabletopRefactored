@@ -149,6 +149,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     {
                         this.Remove(existing);
                         this.InsertAction(value);
+                        if (this.Active?.Name == existing.Name)
+                            this.Active = value;
+                        if (this.Default?.Name == existing.Name)
+                            this.Default = value;
                     }
                 }
             }

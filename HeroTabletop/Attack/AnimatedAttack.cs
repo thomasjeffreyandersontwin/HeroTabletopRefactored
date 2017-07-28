@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Desktop;
+using Newtonsoft.Json;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -24,6 +25,7 @@ namespace HeroVirtualTabletop.Attack
         }
         public bool IsActive { get;
             set; }
+        [JsonProperty]
         public AnimatedAbility.AnimatedAbility OnHitAnimation { get;
             set; }
 
@@ -128,7 +130,38 @@ namespace HeroVirtualTabletop.Attack
             setDistanceForUnitPauseElementsInAttacks(desktopPosition);
             Play(Attacker);
         }
-    
+        public AreaEffectAttack TransformToAreaEffectAttack()
+        {
+            AreaEffectAttackImpl areaAttack = new AreaEffectAttackImpl();
+            areaAttack.Name = this.Name;
+            areaAttack.Order = this.Order;
+            areaAttack.Owner = this.Owner;
+            areaAttack.Sequencer = this.Sequencer;
+            areaAttack.OnHitAnimation = this.OnHitAnimation;
+            areaAttack.Persistent = this.Persistent;
+            areaAttack.Generator = this.Generator;
+            areaAttack.KeyboardShortcut = this.KeyboardShortcut;
+            areaAttack.Target = this.Target;
+            areaAttack.Type = this.Type;
+
+            return areaAttack;
+        }
+
+        public AnimatedAbility.AnimatedAbility TransformToAbility()
+        {
+            AnimatedAbilityImpl ability = new AnimatedAbilityImpl();
+            ability.Name = this.Name;
+            ability.Order = this.Order;
+            ability.Owner = this.Owner;
+            ability.Sequencer = this.Sequencer;
+            ability.Persistent = this.Persistent;
+            ability.Generator = this.Generator;
+            ability.KeyboardShortcut = this.KeyboardShortcut;
+            ability.Target = this.Target;
+            ability.Type = this.Type;
+
+            return ability;
+        }
     }
 
     public class AreaEffectAttackImpl : AnimatedAttackImpl, AreaEffectAttack
