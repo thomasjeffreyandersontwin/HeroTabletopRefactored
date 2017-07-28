@@ -122,9 +122,9 @@
                 <RadioButton cal:Message.Attach="SaveAbility()" Grid.Row="1" Grid.Column="2" Content="Or" IsChecked="{Binding Path=CurrentAbility.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Or}" GroupName="AbilityGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsSequenceAbilitySelected, Converter={StaticResource BooleanToVisibilityInvertConverter}}"/>
                 <RadioButton cal:Message.Attach="SaveSequence()" Grid.Row="1" Grid.Column="1" Content="And" IsChecked="{Binding Path=CurrentSequenceElement.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=And}" GroupName="SequenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsSequenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 <RadioButton cal:Message.Attach="SaveSequence()" Grid.Row="1" Grid.Column="2" Content="Or" IsChecked="{Binding Path=CurrentSequenceElement.Type, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Or}" GroupName="SequenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsSequenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <CheckBox Grid.Row="1" Grid.Column="3" Name="chkboxUnitPause" VerticalAlignment="Center" IsChecked="{Binding CurrentPauseElement.IsUnitPause}" Visibility="{Binding IsPauseElementSelected, Converter={StaticResource BooleanToVisibilityConverter}}" IsEnabled="{Binding CurrentAttackAbility.IsAttack}" Content="Unit Pause"  HorizontalAlignment="Left" Command="{Binding ConfigureUnitPauseCommand}"/>
+                <CheckBox x:Name="ConfigureUnitPause" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" IsChecked="{Binding CurrentPauseElement.IsUnitPause}" Visibility="{Binding IsPauseElementSelected, Converter={StaticResource BooleanToVisibilityConverter}}" IsEnabled="{Binding IsAttack}" Content="Unit Pause"  HorizontalAlignment="Left"/>
             </Grid>
-            <Grid Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Visibility="{Binding ElementName=chkboxUnitPause, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Visibility="{Binding ElementName=ConfigureUnitPause, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Grid ToolTip="Delay for 10 unit distance">
                         <Grid.ColumnDefinitions>
@@ -132,7 +132,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Close" Foreground="White" Margin="3 2 0 0" />
-                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="100" Minimum="0" Value="{Binding CurrentPauseElement.CloseDistanceDelay}" behaviors:CommandBehavior.Event="ValueChanged" behaviors:CommandBehavior.Command="{Binding SaveAbilityCommand}"/>
+                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="100" Minimum="0" Value="{Binding CurrentPauseElement.CloseDistanceDelay}" cal:Message.Attach="[Event ValueChanged] = [Action SaveAbility()]"/>
                     </Grid>
                     <Grid ToolTip="Delay for 20 unit distance">
                         <Grid.ColumnDefinitions>
@@ -140,7 +140,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Short" Foreground="White" Margin="3 2 0 0" />
-                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="60" Minimum="0" Value="{Binding CurrentPauseElement.ShortDistanceDelay}" behaviors:CommandBehavior.Event="ValueChanged" behaviors:CommandBehavior.Command="{Binding SaveAbilityCommand}"/>
+                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="60" Minimum="0" Value="{Binding CurrentPauseElement.ShortDistanceDelay}" cal:Message.Attach="[Event ValueChanged] = [Action SaveAbility()]"/>
                     </Grid>
                     <Grid ToolTip="Delay for 50 unit distance">
                         <Grid.ColumnDefinitions>
@@ -148,7 +148,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Medium" Foreground="White"/>
-                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="30" Minimum="0" Value="{Binding CurrentPauseElement.MediumDistanceDelay}" behaviors:CommandBehavior.Event="ValueChanged" behaviors:CommandBehavior.Command="{Binding SaveAbilityCommand}"/>
+                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="30" Minimum="0" Value="{Binding CurrentPauseElement.MediumDistanceDelay}" cal:Message.Attach="[Event ValueChanged] = [Action SaveAbility()]"/>
                     </Grid>
                     <Grid ToolTip="Delay for 100 unit distance">
                         <Grid.ColumnDefinitions>
@@ -156,7 +156,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Long" Foreground="White"/>
-                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="20" Minimum="0" Value="{Binding CurrentPauseElement.LongDistanceDelay}" behaviors:CommandBehavior.Event="ValueChanged" behaviors:CommandBehavior.Command="{Binding SaveAbilityCommand}"/>
+                        <xctk:IntegerUpDown Grid.Column="1" Increment="1" DefaultValue="20" Minimum="0" Value="{Binding CurrentPauseElement.LongDistanceDelay}" cal:Message.Attach="[Event ValueChanged] = [Action SaveAbility()]"/>
                     </Grid>
                 </StackPanel>
             </Grid>

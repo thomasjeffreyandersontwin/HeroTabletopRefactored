@@ -825,12 +825,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             get
             {
-                if (IsUnitPause == false)
+                if (IsUnitPause && TargetPosition != null)
+                {
+                    var delayManager = new DelayManager(this);
+                    var distance = Target.Position.DistanceFrom(TargetPosition);
+                    var delay = (int)delayManager.GetDelayForDistance(distance);
+                    return delay;
+                }
+                else
                     return _dur;
-                var delayManager = new DelayManager(this);
-                var distance = Target.Position.DistanceFrom(TargetPosition);
-                var delay = (int)delayManager.GetDelayForDistance(distance);
-                return delay;
             }
             set { _dur = value; }
         }
@@ -870,7 +873,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
-            if (IsUnitPause)
+            if (IsUnitPause && TargetPosition != null)
             {
                 DistanceDelayManager.Distance = target.Position.DistanceFrom(TargetPosition);
                 Thread.Sleep((int)DistanceDelayManager.Duration);
@@ -1315,7 +1318,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     else
                     {
                         (animationElement as FXElement).FX = fxResource;
-                        animationElement.Name = Path.GetFileNameWithoutExtension(fxResource.FullResourcePath);
+                        animationElement.Name = Path.GetFileNameWithoutExtension(fxResource.Name);
                     }
                     break;
                 case AnimationElementType.Sound:
@@ -1334,16 +1337,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     break;
                 case AnimationElementType.Sequence:
                     animationElement = new SequenceElementImpl(Target);
-                    //fullName = GetAppropriateAnimationName(AnimationElementType.Sequence, flattenedList);
-                    //animationElement.Name = fullName;
                     (animationElement as SequenceElement).Type = SequenceType.And;
                     animationElement.Name = "Sequence: " + (animationElement as SequenceElement).Type.ToString();
                     break;
                 case AnimationElementType.Pause:
                     animationElement = new PauseElementImpl();
-                    //fullName = GetAppropriateAnimationName(AnimationElementType.Pause, flattenedList);
-                    //animationElement.Name = fullName;
                     (animationElement as PauseElement).Duration = 1;
+                    animationElement.Target = this.Target;
                     animationElement.Name = "Pause " + (animationElement as PauseElement).Duration.ToString();
                     break;
                 case AnimationElementType.Reference:

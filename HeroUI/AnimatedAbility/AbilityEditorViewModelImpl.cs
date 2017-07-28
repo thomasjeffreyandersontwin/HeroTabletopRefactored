@@ -759,7 +759,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #endregion
 
-        #region Rename Animation Element
+        #region Rename Ability/Animation Element
 
         private void SelectedAnimationElement_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -773,7 +773,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             else if (e.PropertyName == "FX")
             {
                 FXElement element = sender as FXElement;
-                element.Name = element.FX.Name;
+                element.Name = Path.GetFileNameWithoutExtension(element.FX.Name);
                 FXElementImpl.LastFX = element.FX;
             }
             else if (e.PropertyName == "Sound")
@@ -1299,6 +1299,30 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
                 //this.SaveAbility(); 
             }
+        }
+
+        #endregion
+
+        #region Unit Pause
+
+        public bool CanConfigureUnitPause
+        {
+            get
+            {
+                return !IS_ATTACK_EXECUTING;
+            }
+        }
+
+        public void ConfigureUnitPause()
+        {
+            if (this.CurrentPauseElement != null)
+            {
+                if (this.CurrentPauseElement.IsUnitPause)
+                    this.CurrentPauseElement.Name = "Pause 1";
+                else
+                    this.CurrentPauseElement.Name = "Pause " + this.CurrentPauseElement.Duration.ToString();
+            }
+            this.SaveAbility();
         }
 
         #endregion
