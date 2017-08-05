@@ -50,4 +50,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.EditedAbility = editedAbility;
         }
     }
+
+    public class ExecuteAnimatedAbilityEvent
+    {
+        public AnimatedAbility AbilityToExecute { get; set; }
+        public ExecuteAnimatedAbilityEvent(AnimatedAbility ability)
+        {
+            this.AbilityToExecute = ability;
+        }
+    }
 }

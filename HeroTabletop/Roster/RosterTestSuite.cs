@@ -540,6 +540,7 @@ namespace HeroVirtualTabletop.Roster
             .Without(x => x.LastSelectedCharacter)
             .Without(x => x.Participants)
             .Without(x => x.Selected)
+            .Without(x => x.CurrentAttackInstructions)
             .Create();
 
         public Roster MockRoster => CustomizedMockFixture.Create<Roster>();

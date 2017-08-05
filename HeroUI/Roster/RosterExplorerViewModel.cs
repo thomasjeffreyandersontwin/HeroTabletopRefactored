@@ -21,7 +21,7 @@ namespace HeroVirtualTabletop.Roster
         void SavePosition();
         void Place();
         void ToggleTargeted();
-        void ToggleManueverWithCamera();
+        void ToggleManeuverWithCamera();
         void MoveCameraToTarget();
         void Activate();
         void ResetOrientation();

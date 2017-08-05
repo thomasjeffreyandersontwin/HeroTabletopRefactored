@@ -78,8 +78,18 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        // public Dictionary<string, RosterGroup> GroupsByName { get; }
-        // public Dictionary<string, CharacterCrowdMember> ParticipantsByName { get; }
+        private AttackInstructions currentAttackInstructions;
+        public AttackInstructions CurrentAttackInstructions
+        {
+            get
+            {
+                return currentAttackInstructions;
+            }
+            set
+            {
+                currentAttackInstructions = value;
+            }
+        }
 
         public RosterSelection Selected { get; set; }
         public void SelectParticipant(CharacterCrowdMember participant)
@@ -419,13 +429,12 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                //if (attackingCharacter == null)
-                //    attackingCharacter = Participants.FirstOrDefault(p => p.IsActive);
                 return attackingCharacter;
             }
             set
             {
                 attackingCharacter = value;
+                NotifyOfPropertyChange(() => AttackingCharacter);
             }
         }
         private CharacterCrowdMember targetedCharacter;
@@ -433,8 +442,13 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                //if (targetedCharacter == null)
-                //    targetedCharacter = Participants.FirstOrDefault(p => p.IsTargeted);
+                if(targetedCharacter != null)
+                {
+                    DesktopMemoryCharacter memoryInstance = new DesktopMemoryCharacterImpl();
+                    if (memoryInstance.IsReal && targetedCharacter.Name != memoryInstance.Name)
+                        targetedCharacter = Participants.FirstOrDefault(p => p.Name == memoryInstance.Name);
+                }
+                
                 return targetedCharacter;
             }
             set
@@ -589,7 +603,7 @@ namespace HeroVirtualTabletop.Roster
                     actionPropertyName = "Identities";
                     break;
                 case CharacterActionType.Ability:
-                    actionPropertyName = "Abilities";
+                    actionPropertyName = "Powers";
                     break;
                 case CharacterActionType.Movement:
                     actionPropertyName = "Movements";
@@ -771,7 +785,15 @@ namespace HeroVirtualTabletop.Roster
                 //SelectNextCharacterInCrowdCycle();
             }
         }
-        
+
+        public void AddAsAttackTarget(AttackInstructions instructions)
+        {
+            foreach(var p in this.Participants)
+            {
+                p.AddAsAttackTarget(instructions);
+            }
+        }
+
         public void SaveCurrentTableTopPosition()
         {
             foreach (var crowdMember in Participants)
@@ -796,10 +818,10 @@ namespace HeroVirtualTabletop.Roster
             FirstSpawnedCharacter?.ToggleTargeted();
         }
 
-        public void ToggleManueveringWithCamera()
+        public void ToggleManeuveringWithCamera()
         {
             if(Participants.Count > 0)
-                Participants[0].ToggleManueveringWithCamera();
+                Participants[0].ToggleManeuveringWithCamera();
         }
 
         public void TargetAndMoveCameraToCharacter(bool completeEvent = true)

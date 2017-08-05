@@ -179,9 +179,9 @@ namespace HeroVirtualTabletop.Roster
             var rosterVM = RosterExplorerViewModelUnderTest;
             SelectTwoMockParticipants(rosterVM);
 
-            rosterVM.ToggleManueverWithCamera();
+            rosterVM.ToggleManeuverWithCamera();
 
-            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ToggleManueveringWithCamera());
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ToggleManeuveringWithCamera());
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]

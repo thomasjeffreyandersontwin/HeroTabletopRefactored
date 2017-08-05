@@ -142,6 +142,27 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             _activeAttack = null;
         }
+
+        public void AddAsAttackTarget(AttackInstructions instructions)
+        {
+            if(instructions is AreaAttackInstructions)
+            {
+                AreaAttackInstructions areaAttackInstructions = instructions as AreaAttackInstructions;
+                if(areaAttackInstructions.IndividualTargetInstructions.FirstOrDefault(iti => iti.Defender == this) == null)
+                {
+                    areaAttackInstructions.IndividualTargetInstructions.Add(
+                    new AttackInstructionsImpl
+                    {
+                        Defender = this
+                    });
+                }
+            }
+            else
+            {
+                instructions.Defender = this;
+            }
+        }
+
         public KnockbackCollisionInfo PlayCompleteExternalAttack(AnimatedAttack attack, AttackInstructions instructions)
         {
             throw new NotImplementedException();
@@ -184,7 +205,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void AddState(AnimatableCharacterState state, bool playImmediately = true)
         {
             ActiveStates.Add(state);
-            if (state.AbilityAlreadyPlayed == false)
+            if (playImmediately && state.AbilityAlreadyPlayed == false)
             {
                 state.Ability.Play(this);
                 state.AbilityAlreadyPlayed = true;
@@ -201,7 +222,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (defaultAbility != null)
                 {
                     AnimatableCharacterState state = new AnimatableCharacterStateImpl(defaultAbility, this);
-                    AddState(state);
+                    AddState(state, playImmediately);
                 }
             }
 
@@ -212,7 +233,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             state.Ability.Stop(this);
             state.AbilityAlreadyPlayed = false;
             var remove = state.Ability.StopAbility;
-            remove.Play(this);
+            if(playImmediately)
+                remove.Play(this);
         }
         public void ResetAllAbiltitiesAndState()
         {

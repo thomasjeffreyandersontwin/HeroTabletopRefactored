@@ -21,6 +21,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         List<AnimatableCharacterState> ActiveStates { get; }
         void RemoveStateByName(string stateName);
+        void AddAsAttackTarget(AttackInstructions instructions);
     }
 
     public class DefaultAbilities
@@ -36,6 +37,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public const string DYING = "Dying";
         public const string CHARACTERNAME = "DEFAULT";
         public const string CROWDNAME = "System Characters";
+
+        public static AnimatedCharacter DefaultCharacter { get; set;}
     }
     public interface AnimatedCharacterRepository
     {

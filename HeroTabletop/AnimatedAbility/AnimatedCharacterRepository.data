@@ -57,7 +57,7 @@
                     "Owner": {
                       "$ref": "5"
                     },
-                    "Count": 98,
+                    "Count": 99,
                     "Name": "Powers",
                     "Type": 1,
                     "Actions": [
@@ -68,7 +68,9 @@
                         "Target": {
                           "$ref": "5"
                         },
-                        "StopAbility": null,
+                        "StopAbility": {
+                          "$ref": "136"
+                        },
                         "Sequencer": {
                           "$id": "10",
                           "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
@@ -139,7 +141,9 @@
                         "Target": {
                           "$ref": "5"
                         },
-                        "StopAbility": null,
+                        "StopAbility": {
+                          "$ref": "136"
+                        },
                         "Sequencer": {
                           "$id": "16",
                           "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
@@ -436,7 +440,9 @@
                         "Target": {
                           "$ref": "5"
                         },
-                        "StopAbility": null,
+                        "StopAbility": {
+                          "$ref": "136"
+                        },
                         "Sequencer": {
                           "$id": "41",
                           "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
@@ -537,7 +543,9 @@
                         "Target": {
                           "$ref": "5"
                         },
-                        "StopAbility": null,
+                        "StopAbility": {
+                          "$ref": "410"
+                        },
                         "Sequencer": {
                           "$id": "49",
                           "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
@@ -885,7 +893,9 @@
                         "Target": {
                           "$ref": "5"
                         },
-                        "StopAbility": null,
+                        "StopAbility": {
+                          "$ref": "136"
+                        },
                         "Sequencer": {
                           "$id": "73",
                           "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
@@ -5149,6 +5159,49 @@
                         },
                         "Type": 1,
                         "Name": "Beast Still"
+                      },
+                      {
+                        "$id": "410",
+                        "$type": "HeroVirtualTabletop.AnimatedAbility.AnimatedAbilityImpl, HeroVirtualTabletop",
+                        "Persistent": false,
+                        "Target": {
+                          "$ref": "5"
+                        },
+                        "StopAbility": null,
+                        "Sequencer": {
+                          "$id": "411",
+                          "$type": "HeroVirtualTabletop.AnimatedAbility.AnimationSequencerImpl, HeroVirtualTabletop",
+                          "Name": "Sequencer 0",
+                          "AnimationElements": [
+                            {
+                              "$id": "412",
+                              "$type": "HeroVirtualTabletop.AnimatedAbility.MovElementImpl, HeroVirtualTabletop",
+                              "Mov": null,
+                              "Order": 1,
+                              "Target": {
+                                "$ref": "5"
+                              },
+                              "PlayWithNext": false,
+                              "Persistent": false,
+                              "ParentSequence": {
+                                "$ref": "411"
+                              },
+                              "Name": "Mov Element 1",
+                              "AnimationElementType": 0
+                            }
+                          ],
+                          "Type": 0,
+                          "Order": 0,
+                          "Target": {
+                            "$ref": "5"
+                          },
+                          "PlayWithNext": false,
+                          "Persistent": false,
+                          "ParentSequence": null,
+                          "AnimationElementType": 0
+                        },
+                        "Type": 0,
+                        "Name": "None"
                       }
                     ],
                     "Active": null,
@@ -5157,7 +5210,7 @@
                     }
                   },
                   {
-                    "$id": "410",
+                    "$id": "413",
                     "$type": "HeroVirtualTabletop.ManagedCharacter.CharacterActionListImpl`1[[HeroVirtualTabletop.Movement.CharacterMovement, HeroVirtualTabletop]], HeroVirtualTabletop",
                     "Owner": {
                       "$ref": "5"
@@ -5172,7 +5225,7 @@
                 ],
                 "AllCrowdMembershipParents": [
                   {
-                    "$id": "411",
+                    "$id": "414",
                     "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
                     "Order": 1,
                     "ParentCrowd": {
@@ -5184,7 +5237,7 @@
                     "SavedPosition": null
                   },
                   {
-                    "$id": "412",
+                    "$id": "415",
                     "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
                     "Order": 0,
                     "ParentCrowd": {
@@ -5196,24 +5249,12 @@
                     "SavedPosition": null
                   }
                 ],
-                "RosterParent": {
-                  "$id": "413",
-                  "$type": "HeroVirtualTabletop.Roster.RosterParentImpl, HeroVirtualTabletop",
-                  "Name": "System Characters",
-                  "Order": 1,
-                  "RosterGroup": {
-                    "$id": "414",
-                    "$type": "HeroVirtualTabletop.Roster.RostergroupImpl, HeroVirtualTabletop",
-                    "DEFAULT": {
-                      "$ref": "5"
-                    }
-                  }
-                }
+                "RosterParent": null
               },
               "SavedPosition": null
             },
             {
-              "$id": "415",
+              "$id": "416",
               "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
               "Order": 0,
               "ParentCrowd": {
@@ -5234,7 +5275,7 @@
     ],
     "MemberShips": [
       {
-        "$id": "416",
+        "$id": "417",
         "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
         "Order": 0,
         "ParentCrowd": {

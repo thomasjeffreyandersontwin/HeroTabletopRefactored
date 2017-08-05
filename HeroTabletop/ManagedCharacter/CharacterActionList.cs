@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Movement;
+using HeroVirtualTabletop.AnimatedAbility;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -134,7 +135,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             get
             {
-                return this.FirstOrDefault(a => a.Name == key);
+                return GetByKey(key);
             }
             set
             {
@@ -156,6 +157,21 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     }
                 }
             }
+        }
+
+        public T GetByKey(string key)
+        {
+            if(Type == CharacterActionType.Ability)
+            {
+                T ability = this.FirstOrDefault(a => a.Name == key);
+                if(ability == null)
+                {
+                    return (T)DefaultAbilities.DefaultCharacter?.Abilities?.FirstOrDefault(a => a.Name == key);
+                }
+                return ability;
+            }
+            else
+                return this.FirstOrDefault(a => a.Name == key);
         }
 
         [JsonIgnore]

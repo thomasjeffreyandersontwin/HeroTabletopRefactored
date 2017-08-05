@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
 using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Movement;
@@ -8,8 +9,10 @@ using HeroVirtualTabletop.Roster;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -400,8 +403,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     this.CharacterActionList.Active = (T)ability;
                     this.SpawnAndTargetOwnerCharacter();
-                    ability.Play();
-                    if(!ability.Persistent)
+                    this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(ability), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                    if (!ability.Persistent && !(ability is AnimatedAttack))
                         TurnOffActiveStateForAbilityAfterPredefinedTime();
                 }
             }

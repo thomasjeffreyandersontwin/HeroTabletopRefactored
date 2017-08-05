@@ -206,7 +206,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Target();
             Camera.MoveToTarget();
         }
-        public void ToggleManueveringWithCamera()
+        public void ToggleManeuveringWithCamera()
         {
             IsManueveringWithCamera = !IsManueveringWithCamera;
         }

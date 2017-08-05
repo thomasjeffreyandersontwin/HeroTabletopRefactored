@@ -221,6 +221,7 @@ namespace HeroVirtualTabletop.Crowd
                     this.AddCrowd(systemCrowd);
                     RefreshAllmembersCrowd();
                 }
+                DefaultAbilities.DefaultCharacter = systemCrowd?.Members?.FirstOrDefault(m => m.Name == DefaultAbilities.CHARACTERNAME) as AnimatedCharacter;
             }
         }
 

@@ -158,4 +158,13 @@ namespace HeroVirtualTabletop.Common
             return CommonLibrary.CompareStrings(s1, s2);
         }
     }
+
+    #region EventArgs
+
+    public class CustomEventArgs<T> : EventArgs
+    {
+        public T Value { get; set; }
+    }
+
+    #endregion
 }

@@ -27,6 +27,7 @@ namespace HeroUI
         private IconInteractionUtility iconInteractionUtility;
         private Camera camera;
         private PopupService popupService;
+        private DesktopContextMenu desktopContextMenu;
         System.Threading.Timer gameInitializeTimer;
 
         private const string GAME_EXE_FILENAME = "cityofheroes.exe";
@@ -247,7 +248,7 @@ namespace HeroUI
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
             RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
             AbilityEditorViewModel abilityEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, PopupService popupService,
-            IconInteractionUtility iconInteractionUtility, Camera camera)
+            IconInteractionUtility iconInteractionUtility, DesktopContextMenu desktopContextMenu, Camera camera)
         {
             this.eventAggregator = eventAggregator;
             this.CrowdMemberExplorerViewModel = crowdMemberExplorerViewModel;
@@ -259,6 +260,7 @@ namespace HeroUI
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             this.popupService = popupService;
+            this.desktopContextMenu = desktopContextMenu;
             RegisterPopups();
             gameInitializeTimer = new System.Threading.Timer(gameInitializeTimer_Callback, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             LaunchGame();
@@ -398,9 +400,17 @@ namespace HeroUI
                 camera.ActivateCameraIdentity();
 
                 SetGamePathForAnimationElements();
+
+                ConfigureDesktopContextMenu();
                 //LoadMainView();
             };
             Application.Current.Dispatcher.BeginInvoke(d);
+        }
+
+        private void ConfigureDesktopContextMenu()
+        {
+            DesktopContextMenuImpl.GameDirectoryPath = Properties.Settings.Default.GameDirectory;
+            this.desktopContextMenu.Configure();
         }
 
         private void LoadRequiredKeybinds()
@@ -446,7 +456,7 @@ namespace HeroUI
 
             if (!File.Exists(enableCameraFile))
             {
-                var resourceName = "Module.HeroVirtualTabletop.Resources.enable_camera.txt";
+                var resourceName = "HeroVirtualTabletop.ManagedCharacter.enable_camera.txt";
 
                 using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                 using (StreamReader reader = new StreamReader(stream))
@@ -460,7 +470,7 @@ namespace HeroUI
 
             if (!File.Exists(disableCameraFile))
             {
-                var resourceName = "Module.HeroVirtualTabletop.Resources.disable_camera.txt";
+                var resourceName = "HeroVirtualTabletop.ManagedCharacter.disable_camera.txt";
 
                 using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                 using (StreamReader reader = new StreamReader(stream))
@@ -489,7 +499,7 @@ namespace HeroUI
 
             if (!File.Exists(fileAreaAttackMenu))
             {
-                var resourceName = "Module.HeroVirtualTabletop.Resources.areaattack.mnu";
+                var resourceName = "HeroVirtualTabletop.Desktop.areaattack.mnu";
 
                 using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                 using (StreamReader reader = new StreamReader(stream))
@@ -531,7 +541,7 @@ namespace HeroUI
             }
             else
             {
-                var resourceName = "HeroVirtualTabletop.Common.costumes.zip";
+                var resourceName = "HeroVirtualTabletop.ManagedCharacter.costumes.zip";
                 var assembly = Assembly.GetExecutingAssembly();
                 using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                 using (StreamReader reader = new StreamReader(stream))

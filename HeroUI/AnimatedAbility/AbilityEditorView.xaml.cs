@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Framework.WPF.Extensions;
 using System.Windows.Controls.Primitives;
+using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {

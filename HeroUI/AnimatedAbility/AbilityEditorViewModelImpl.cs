@@ -14,10 +14,11 @@ using System.Windows.Data;
 using System.IO;
 using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>
+    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<ExecuteAnimatedAbilityEvent>
     {
         #region Fields
 
@@ -928,7 +929,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void DemoAnimatedAbility()
         {
             AnimatedCharacter currentTarget = GetCurrentTarget();
-            this.CurrentAbility.Play(currentTarget);
+            this.ExecuteAnimatedAbility(this.CurrentAbility);
+        }
+
+        public void Handle(ExecuteAnimatedAbilityEvent message)
+        {
+            this.ExecuteAnimatedAbility(message.AbilityToExecute);
+        }
+
+        public void ExecuteAnimatedAbility(AnimatedAbility ability)
+        {
+            //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
+            if (ability is AreaEffectAttack)
+            {
+                AreaAttackInstructions areaAttackInstructions = (ability as AreaEffectAttack).StartAttackCycle();
+                //Mouse.OverrideCursor = cursor;
+                this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, areaAttackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+            }
+            else if (ability is AnimatedAttack)
+            {
+                AttackInstructions attackInstructions = (ability as AnimatedAttack).StartAttackCycle();
+                //Mouse.OverrideCursor = cursor;
+                this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, attackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+            }
+            else
+            {
+                ability.Play();
+            }
         }
 
         public void DemoAnimation()

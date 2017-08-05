@@ -141,6 +141,10 @@
     <Compile Include="Attack\AttackInterfaces.cs" />
     <Compile Include="Attack\AttackTestsuite.cs" />
     <Compile Include="Common\AsyncDelegateExecuter.cs" />
+    <Compile Include="Desktop\DesktopContextMenu.cs" />
+    <Compile Include="Desktop\DesktopMouseEventHandler.cs" />
+    <Compile Include="Desktop\DesktopMouseHoverElement.cs" />
+    <Compile Include="Desktop\DesktopTargetObserver.cs" />
     <Compile Include="Desktop\MemoryManager.cs" />
     <Compile Include="ManagedCharacter\Camera.cs" />
     <Compile Include="ManagedCharacter\CharacterActionList.cs" />
@@ -175,6 +179,9 @@
     <EmbeddedResource Include="AnimatedAbility\MOVElements.csv" />
     <EmbeddedResource Include="AnimatedAbility\AnimatedCharacterRepository.data" />
     <None Include="app.config" />
+    <EmbeddedResource Include="Desktop\areaattack.mnu" />
+    <EmbeddedResource Include="Desktop\character.mnu" />
+    <EmbeddedResource Include="ManagedCharacter\costumes.zip" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +189,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Fasm.NET.xml" />
+    <EmbeddedResource Include="ManagedCharacter\disable_camera.txt" />
+    <EmbeddedResource Include="ManagedCharacter\enable_camera.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

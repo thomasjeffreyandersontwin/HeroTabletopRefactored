@@ -48,7 +48,7 @@ namespace HeroVirtualTabletop.Roster
 
         void GroupSelectedParticpants();
 
-
+        AttackInstructions CurrentAttackInstructions { get; set; }
 
     }
 

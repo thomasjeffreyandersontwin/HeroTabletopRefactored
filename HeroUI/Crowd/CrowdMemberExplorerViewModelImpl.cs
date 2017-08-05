@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -423,6 +424,7 @@ namespace HeroVirtualTabletop.Crowd
             await this.LoadCrowdCollectionAsync();
             this.CrowdRepository.AddDefaultCharacter();
             this.SyncCrowdMembersWithRoster();
+            this.EventAggregator.PublishOnUIThread(new ListenForDesktopTargetChangeEvent());
         }
 
         public async void Handle(CrowdCollectionModifiedEvent message)

@@ -4,6 +4,7 @@ using HeroVirtualTabletop.Common;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Collections;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -24,7 +25,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void Follow(bool completeEvent = true);
         void UnFollow(bool completeEvent = true);
         void SyncWithGame();
-        void ToggleManueveringWithCamera();
+        void ToggleManeuveringWithCamera();
         void InitializeActionGroups();
         void AddActionGroup(CharacterActionGroup actionGroup);
         void InsertActionGroup(int index, CharacterActionGroup actionGroup);

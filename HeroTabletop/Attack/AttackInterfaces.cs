@@ -10,7 +10,7 @@ namespace HeroVirtualTabletop.Attack
         List<string> Impacts { get; }
         int KnockbackDistance { get; set; }
         bool AttackHit { get; set; }
-        bool isCenterOfAreaEffectattack { get; set; }
+        bool IsCenterOfAreaEffectattack { get; set; }
     }
     public class AttackEffects
     {

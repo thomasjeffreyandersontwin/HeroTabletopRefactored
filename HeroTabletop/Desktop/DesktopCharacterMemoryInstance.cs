@@ -34,9 +34,12 @@ namespace HeroVirtualTabletop.Desktop
             get
             {
                 string label = Label;
-                int start = 7;
-                int end = 1 + label.IndexOf("]", start);
-                return label.Substring(start, end - start);
+                if (!string.IsNullOrEmpty(label))
+                {
+                    int upto = label.IndexOf("[");
+                    return label.Substring(0, upto -1).Trim();
+                }
+                return null;
             }
         }
         public float MemoryAddress { get; set; }

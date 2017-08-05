@@ -1,5 +1,6 @@
 ﻿using Framework.WPF.Extensions;
 using HeroUI;
+using HeroVirtualTabletop.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;

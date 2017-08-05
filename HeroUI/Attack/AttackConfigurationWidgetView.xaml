@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="HeroVirtualTabletop.Attack.AttackConfigurationWidgetView"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HeroUI"
+             xmlns:ability="clr-namespace:HeroVirtualTabletop.AnimatedAbility"             
+             xmlns:attack="clr-namespace:HeroVirtualTabletop.Attack"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+            <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:BooleanToVisibilityInvertConverter x:Key="BooleanToVisibilityInvertConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <GroupBox Header="Configure Active Attack" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <ListView Grid.Row="0" Margin="1" Name="lvAttackConfig" ItemsSource="{Binding DefendingCharacters}" Background="Transparent" BorderBrush="Transparent" ItemContainerStyle="{StaticResource ListBoxtemStyleNoHighlighting}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <WrapPanel>
+                            <GroupBox Header="{Binding Name}" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+                                <GroupBox.Content>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Content="Center Target" IsChecked="{Binding Path=ActiveAttackConfiguration.IsCenterTarget}" Command="{Binding DataContext.CenterTargetChangedCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=attack:AttackConfigurationWidgetView}}" CommandParameter="{Binding Path=DataContext, RelativeSource={RelativeSource Self}}" IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=attack:AttackConfigurationWidgetView}, Path=DataContext.ActiveAttack.IsAreaEffect}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
+                                            <RadioButton Content="Hit" IsChecked="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Hit}" GroupName="AttackResultGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White"/>
+                                            <RadioButton Content="Miss" IsChecked="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Miss}" GroupName="AttackResultGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding Path=ActiveAttackConfiguration.IsStunned}" Content="Stunned" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Hit}"/>
+                                            <CheckBox IsChecked="{Binding Path=ActiveAttackConfiguration.IsUnconcious}" Content="Unconcious" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Hit}"/>
+                                            <CheckBox IsChecked="{Binding Path=ActiveAttackConfiguration.IsDying}" Content="Dying" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Hit}"/>
+                                            <CheckBox IsChecked="{Binding Path=ActiveAttackConfiguration.IsDead}" Content="Dead" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=ActiveAttackConfiguration.AttackResult, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Hit}"/>
+
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal">
+                                            <xctk:IntegerUpDown Increment="1" DefaultValue="0" Minimum="0" Value="{Binding ActiveAttackConfiguration.KnockBackDistance}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </GroupBox.Content>
+                            </GroupBox>
+                        </WrapPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2">
+                <Button x:Name="btnOk"  Margin="2" Content="OK" Command="{Binding SetActiveAttackCommand}" Style="{StaticResource ButtonDefaultStyle}"/>
+                <Button x:Name="btnCancel"  Margin="2"  Content="Cancel" Command="{Binding CancelActiveAttackCommand}" Style="{StaticResource ButtonDefaultStyle}"/>
+            </StackPanel>
+        </Grid>
+    </GroupBox>
+
+
+</UserControl>

@@ -4,6 +4,8 @@ using System.Linq;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Desktop;
 using Newtonsoft.Json;
+using System.Windows.Data;
+using System.Globalization;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -90,7 +92,6 @@ namespace HeroVirtualTabletop.Attack
         }
         private static void playAttackeffectsOnDefender(AttackInstructions instructions)
         {
-            // TODO: NEED TO CHANGE TO USE DEFAULT CHARACTER OR OVERRIDE INDEXER FOR ABILITIES
             if (instructions.Impacts.Contains(AttackEffects.Dead))
                 instructions.Defender.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Dying))
@@ -102,7 +103,6 @@ namespace HeroVirtualTabletop.Attack
         }
         private void playDefenderAnimation(AttackInstructions instructions)
         {
-            // TODO: NEED TO CHANGE TO USE DEFAULT CHARACTER OR OVERRIDE INDEXER FOR ABILITIES
             if (instructions.AttackHit == false)
             {
                 instructions.Defender.Abilities[DefaultAbilities.MISS].Play(instructions.Defender);
@@ -229,7 +229,7 @@ namespace HeroVirtualTabletop.Attack
         }
         public List<string> Impacts { get; }
         public int KnockbackDistance { get; set; }
-        public bool isCenterOfAreaEffectattack { get; set; }
+        public bool IsCenterOfAreaEffectattack { get; set; }
     }
 
     public class AreaAttackInstructionsImpl : AttackInstructionsImpl, AreaAttackInstructions
@@ -243,7 +243,7 @@ namespace HeroVirtualTabletop.Attack
             get
             {
                 foreach (var instructions in IndividualTargetInstructions)
-                    if (instructions.isCenterOfAreaEffectattack)
+                    if (instructions.IsCenterOfAreaEffectattack)
                         if (instructions.AttackHit)
                             return instructions.Defender.Position;
                         else
@@ -277,6 +277,19 @@ namespace HeroVirtualTabletop.Attack
             instructions.Defender = defender;
             IndividualTargetInstructions.Add(instructions);
             return instructions;
+        }
+    }
+
+    public class AttackInstructionsDefenderWithTargetCharacterComparer : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -391,15 +391,7 @@ namespace HeroUI
           };
         }
     }
-    #endregion
-
-    #region EventArgs
-
-    public class CustomEventArgs<T> : EventArgs
-    {
-        public T Value { get; set; }
-    }
-
+    
     #endregion
 
     #region Control Utility Methods

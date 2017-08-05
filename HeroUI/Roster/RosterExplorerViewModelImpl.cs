@@ -1,22 +1,35 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
 using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.Roster
 {
     public class RosterExplorerViewModelImpl : PropertyChangedBase, RosterExplorerViewModel, IShell
         , IHandle<AddToRosterEvent>, IHandle<SyncWithRosterEvent>, IHandle<DeleteCrowdMemberEvent>, IHandle<RenameCrowdMemberEvent>
+        , IHandle<ListenForDesktopTargetChangeEvent>, IHandle<StopListeningForDesktopTargetChangeEvent>
+        , IHandle<AttackStartedEvent>
     {
         #region Private Fields
+
+        private DesktopMouseEventHandler desktopMouseEventHandler;
+        private DesktopMouseHoverElement mouseHoverElement;
+        private DesktopTargetObserver desktopTargetObserver;
+        private DesktopContextMenu desktopContextMenu;
 
         #endregion
 
@@ -48,7 +61,7 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        private IList selectedParticipants = new ArrayList();
+        private IList selectedParticipants = new ObservableCollection<object>();
         public IList SelectedParticipants
         {
             get
@@ -95,17 +108,28 @@ namespace HeroVirtualTabletop.Roster
         #endregion
 
         #region Constructor
-        public RosterExplorerViewModelImpl(Roster roster, IEventAggregator eventAggregator)
+        public RosterExplorerViewModelImpl(Roster roster, DesktopTargetObserver desktopTargetObserver, DesktopMouseEventHandler desktopMouseEventHandler, 
+            DesktopMouseHoverElement desktopMouseHoverElement, DesktopContextMenu desktopContextMenu, IEventAggregator eventAggregator)
         {
+            this.desktopMouseEventHandler = desktopMouseEventHandler;
+            this.mouseHoverElement = desktopMouseHoverElement;
+            this.desktopTargetObserver = desktopTargetObserver;
+            this.desktopContextMenu = desktopContextMenu;
+
             this.Roster = roster;
             this.EventAggregator = eventAggregator;
 
             this.EventAggregator.Subscribe(this);
+
+            this.RegisterMouseHandlers();
+            this.RegisterDesktopContextMenuEventHandlers();
         }
 
         #endregion
 
         #region Event Handlers
+
+       
 
         #region Add to Roster
         public void Handle(AddToRosterEvent message)
@@ -154,6 +178,42 @@ namespace HeroVirtualTabletop.Roster
             OnRosterUpdated(null, null);
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
+        #endregion
+
+        #region Listen for Desktop Target Change
+
+        public void Handle(ListenForDesktopTargetChangeEvent message)
+        {
+            this.desktopTargetObserver.TargetChanged += DesktopTargetObserver_TargetChanged;
+        }
+
+        public void Handle(StopListeningForDesktopTargetChangeEvent message)
+        {
+            this.desktopTargetObserver.TargetChanged -= DesktopTargetObserver_TargetChanged;
+        }
+
+        private void DesktopTargetObserver_TargetChanged(object sender, CustomEventArgs<string> e)
+        {
+            System.Action d = delegate ()
+            {
+                var characterName = e.Value;
+                if (characterName == null && this.Roster.LastSelectedCharacter != null && this.Roster.LastSelectedCharacter.IsManueveringWithCamera)
+                    return;
+                CharacterCrowdMember currentTarget = this.Roster.Participants.FirstOrDefault(p => p.Name == characterName);
+                this.SelectCharacter(currentTarget);
+            };
+            Application.Current.Dispatcher.Invoke(d);
+        }
+
+        #endregion
+
+        #region Attack Initialization
+
+        public void Handle(AttackStartedEvent message)
+        {
+            
+        }
+
         #endregion
 
         #endregion
@@ -307,9 +367,9 @@ namespace HeroVirtualTabletop.Roster
                     && ((SelectedParticipants[0] as CharacterCrowdMember).IsSpawned || (SelectedParticipants[0] as CharacterCrowdMember).IsManueveringWithCamera);
             }
         }
-        public void ToggleManueverWithCamera()
+        public void ToggleManeuverWithCamera()
         {
-            this.Roster.Selected?.ToggleManueveringWithCamera();
+            this.Roster.Selected?.ToggleManeuveringWithCamera();
             SelectNextCharacterInCrowdCycle();
         }
 
@@ -464,6 +524,199 @@ namespace HeroVirtualTabletop.Roster
         {
             var editingMember = SelectedParticipants[0] as CharacterCrowdMember;
             this.EventAggregator.Publish(new EditCharacterEvent(editingMember), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        }
+
+        #endregion
+
+        #region Select Character
+
+        private void SelectCharacter(CharacterCrowdMember character)
+        {
+            if (Keyboard.Modifiers != ModifierKeys.Control && Keyboard.Modifiers != ModifierKeys.Shift)
+                this.SelectedParticipants.Clear();
+            this.SelectedParticipants.Add(character);
+            this.UpdateRosterSelection();
+            NotifyOfPropertyChange(() => SelectedParticipants);
+        }
+
+        #endregion
+
+        #region Desktop Mouse Event Handlers
+
+        private void RegisterMouseHandlers()
+        {
+            desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
+            //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
+            desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
+            //desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
+            desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
+            desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
+        }
+
+        private void DisplayCharacterPopupMenu()
+        {
+            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+        }
+
+        private void RespondToDesktopLeftClick()
+        {
+            if (desktopContextMenu.IsDisplayed == false && desktopMouseEventHandler.IsDesktopActive)
+            {
+                if (this.Roster.AttackingCharacter == null)
+                {
+                    //if (CharacterIsMoving == true)
+                    //{
+                    //    MoveCharacterToDesktopPositionClicked();
+                    //}
+                    //else
+                    //    ContinueDraggingCharacter();
+                }
+                else
+                {
+                    Position position = new PositionImpl();
+                    position.Vector = this.mouseHoverElement.PositionVector;
+                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(position);
+                }
+            }
+            else
+                desktopContextMenu.IsDisplayed = false;
+        }
+
+        private void PlayDefaultAbility()
+        {
+            if (this.Roster.AttackingCharacter != null)
+                return;
+            var abilityPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
+            var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
+            this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
+        }
+
+        #endregion
+
+        #region Desktop Context Menu Event Handlers
+
+        private void RegisterDesktopContextMenuEventHandlers()
+        {
+            desktopContextMenu.ActivateCharacterOptionMenuItemSelected += desktopContextMenu_ActivateCharacterOptionMenuItemSelected;
+            desktopContextMenu.ActivateMenuItemSelected += desktopContextMenu_ActivateMenuItemSelected;
+            desktopContextMenu.AreaAttackContextMenuDisplayed += desktopContextMenu_AreaAttackContextMenuDisplayed;
+            desktopContextMenu.AreaAttackTargetAndExecuteMenuItemSelected += desktopContextMenu_AreaAttackTargetAndExecuteMenuItemSelected;
+            desktopContextMenu.AreaAttackTargetMenuItemSelected += desktopContextMenu_AreaAttackTargetMenuItemSelected;
+            desktopContextMenu.ClearFromDesktopMenuItemSelected += desktopContextMenu_ClearFromDesktopMenuItemSelected;
+            desktopContextMenu.CloneAndLinkMenuItemSelected += desktopContextMenu_CloneAndLinkMenuItemSelected;
+            desktopContextMenu.DefaultContextMenuDisplayed += desktopContextMenu_DefaultContextMenuDisplayed;
+            desktopContextMenu.ManueverWithCameraMenuItemSelected += desktopContextMenu_ManueverWithCameraMenuItemSelected;
+            desktopContextMenu.MoveCameraToTargetMenuItemSelected += desktopContextMenu_MoveCameraToTargetMenuItemSelected;
+            desktopContextMenu.MoveTargetToCameraMenuItemSelected += desktopContextMenu_MoveTargetToCameraMenuItemSelected;
+            desktopContextMenu.MoveTargetToCharacterMenuItemSelected += desktopContextMenu_MoveTargetToCharacterMenuItemSelected;
+            desktopContextMenu.PlaceMenuItemSelected += desktopContextMenu_PlaceMenuItemSelected;
+            desktopContextMenu.ResetOrientationMenuItemSelected += desktopContextMenu_ResetOrientationMenuItemSelected;
+            desktopContextMenu.SavePositionMenuItemSelected += desktopContextMenu_SavePositionMenuItemSelected;
+            desktopContextMenu.SpawnMenuItemSelected += desktopContextMenu_SpawnMenuItemSelected;
+        }
+
+        private void desktopContextMenu_ActivateCharacterOptionMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            Object[] parameters = e.Value as Object[];
+            if (parameters != null && parameters.Length == 3)
+            {
+                CharacterCrowdMember character = parameters[0] as CharacterCrowdMember;
+                string optionGroupName = parameters[1] as string;
+                string optionName = parameters[2] as string;
+                this.ActivateCharacter(character, optionGroupName, optionName);
+            }
+        }
+
+        void desktopContextMenu_SpawnMenuItemSelected(object sender, EventArgs e)
+        {
+            this.Spawn();
+        }
+
+        void desktopContextMenu_SavePositionMenuItemSelected(object sender, EventArgs e)
+        {
+            this.SavePosition();
+        }
+
+        void desktopContextMenu_ResetOrientationMenuItemSelected(object sender, EventArgs e)
+        {
+            this.ResetOrientation();
+        }
+
+        void desktopContextMenu_PlaceMenuItemSelected(object sender, EventArgs e)
+        {
+            this.Place();
+        }
+
+        private void desktopContextMenu_MoveTargetToCharacterMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            string destharacterName = e.Value as string;
+            ManagedCharacter.ManagedCharacter character = this.Roster.Participants.FirstOrDefault(p => p.Name == destharacterName) as CharacterCrowdMember;
+            if (character != null)
+            {
+                foreach (CharacterCrowdMember c in this.SelectedParticipants)
+                {
+                    c.MoveForwardTo(character.Position);
+                }
+            }
+            
+        }
+
+        void desktopContextMenu_MoveTargetToCameraMenuItemSelected(object sender, EventArgs e)
+        {
+            this.MoveToCamera();
+        }
+
+        void desktopContextMenu_MoveCameraToTargetMenuItemSelected(object sender, EventArgs e)
+        {
+            this.MoveCameraToTarget();
+        }
+
+        void desktopContextMenu_ManueverWithCameraMenuItemSelected(object sender, EventArgs e)
+        {
+            this.ToggleManeuverWithCamera();
+        }
+
+        void desktopContextMenu_DefaultContextMenuDisplayed(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+                SelectCharacter(character);
+        }
+
+        void desktopContextMenu_CloneAndLinkMenuItemSelected(object sender, EventArgs e)
+        {
+            CharacterCrowdMember character = this.Roster.Selected?.Participants[0];
+            //this.eventAggregator.GetEvent<CloneLinkCrowdMemberEvent>().Publish(character);
+        }
+
+        void desktopContextMenu_ClearFromDesktopMenuItemSelected(object sender, EventArgs e)
+        {
+            this.ClearFromDesktop();
+        }
+
+        void desktopContextMenu_AreaAttackTargetMenuItemSelected(object sender, EventArgs e)
+        {
+            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+        }
+
+        void desktopContextMenu_AreaAttackTargetAndExecuteMenuItemSelected(object sender, EventArgs e)
+        {
+            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+            this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+        }
+
+        private void desktopContextMenu_AreaAttackContextMenuDisplayed(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+                SelectCharacter(character);
+        }
+
+        private void desktopContextMenu_ActivateMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+                this.ActivateCharacter(character);
         }
 
         #endregion

@@ -31,4 +31,14 @@ namespace HeroVirtualTabletop.Roster
             this.MembersToSync = membersToSync;
         }
     }
+
+    public class ListenForDesktopTargetChangeEvent
+    {
+
+    }
+
+    public class StopListeningForDesktopTargetChangeEvent
+    {
+
+    }
 }

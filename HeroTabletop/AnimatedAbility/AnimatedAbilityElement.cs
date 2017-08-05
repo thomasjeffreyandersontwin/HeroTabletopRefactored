@@ -231,7 +231,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override void PlayResource(AnimatedCharacter target)
         {
             var generator = target.Generator;
-            string[] para = { Mov.FullResourcePath };
+            string[] para = { Mov?.FullResourcePath ?? "none"};
             generator.GenerateDesktopCommandText(DesktopCommand.Move, para);
             if (completeEvent)
                 if (PlayWithNext == false)

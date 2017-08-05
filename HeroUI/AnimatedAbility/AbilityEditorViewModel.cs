@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using HeroUI;
+using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using System;
 using System.Collections.Generic;

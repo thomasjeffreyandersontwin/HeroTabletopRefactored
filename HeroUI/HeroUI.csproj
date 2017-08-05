@@ -60,6 +60,7 @@
       <HintPath>..\HeroTabletop\packages\Microsoft.Windows.Shell.3.0.1.0\lib\net40\Microsoft.Windows.Shell.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Moq, Version=4.7.9.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\HeroTabletop\packages\Moq.4.7.9\lib\net45\Moq.dll</HintPath>
       <Private>True</Private>
@@ -136,6 +137,12 @@
     <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModel.cs" />
     <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModelImpl.cs" />
     <Compile Include="AnimatedAbility\AnimatedAbilityEvents.cs" />
+    <Compile Include="Attack\AttackConfigurationWidgetView.xaml.cs">
+      <DependentUpon>AttackConfigurationWidgetView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Attack\AttackConfigurationWidgetViewModel.cs" />
+    <Compile Include="Attack\AttackConfigurationWidgetViewModelImpl.cs" />
+    <Compile Include="Attack\AttackEvents.cs" />
     <Compile Include="ManagedCharacter\ActionListBoxControl.cs" />
     <Compile Include="ManagedCharacter\CharacterActionGroupView.xaml.cs">
       <DependentUpon>CharacterActionGroupView.xaml</DependentUpon>
@@ -167,6 +174,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="AnimatedAbility\ActiveCharacterWidgetView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Attack\AttackConfigurationWidgetView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
