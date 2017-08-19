@@ -79,13 +79,31 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        private bool showAttackContextMenu;
         public bool ShowAttackContextMenu
         {
             get
-            { 
+            {
+                bool showAttackContextMenu = false;
+                if (this.Roster.CurrentAttackInstructions is AreaAttackInstructions)
+                {
+                    showAttackContextMenu = true;
+                    foreach (var participant in this.SelectedParticipants)
+                    {
+                        if (!(participant as CharacterCrowdMember).IsSpawned)
+                        {
+                            showAttackContextMenu = false;
+                            break;
+                        }
+                    }
+                }
+
                 return showAttackContextMenu;
             }
+        }
+
+        public bool StopSyncingWithDesktop
+        {
+            get;set;
         }
 
         #endregion
@@ -128,8 +146,6 @@ namespace HeroVirtualTabletop.Roster
         #endregion
 
         #region Event Handlers
-
-       
 
         #region Add to Roster
         public void Handle(AddToRosterEvent message)
@@ -200,7 +216,10 @@ namespace HeroVirtualTabletop.Roster
                 if (characterName == null && this.Roster.LastSelectedCharacter != null && this.Roster.LastSelectedCharacter.IsManueveringWithCamera)
                     return;
                 CharacterCrowdMember currentTarget = this.Roster.Participants.FirstOrDefault(p => p.Name == characterName);
-                this.SelectCharacter(currentTarget);
+                if (!this.StopSyncingWithDesktop)
+                    this.SelectCharacter(currentTarget);
+                else
+                    this.StopSyncingWithDesktop = false;
             };
             Application.Current.Dispatcher.Invoke(d);
         }
@@ -211,7 +230,7 @@ namespace HeroVirtualTabletop.Roster
 
         public void Handle(AttackStartedEvent message)
         {
-            
+            this.Roster.CurrentAttackInstructions = message.AttackInstructions;
         }
 
         #endregion
@@ -475,6 +494,7 @@ namespace HeroVirtualTabletop.Roster
         {
             if (this.Roster.CommandMode == RosterCommandMode.CycleCharacter && this.SelectedParticipants != null && this.SelectedParticipants.Count == 1)
             {
+                this.StopSyncingWithDesktop = true;
                 CharacterCrowdMember cCurrent = null;
                 cCurrent = this.SelectedParticipants[0] as CharacterCrowdMember;
                 CharacterCrowdMember cNext = GetNextRosterMemberAfterSelectedMember();
@@ -536,6 +556,11 @@ namespace HeroVirtualTabletop.Roster
                 this.SelectedParticipants.Clear();
             this.SelectedParticipants.Add(character);
             this.UpdateRosterSelection();
+            if (!ShowAttackContextMenu && this.Roster.AttackingCharacter != null && character != this.Roster.AttackingCharacter && this.Roster.CurrentAttackInstructions.Defender == null)
+            {
+                this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+                this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+            }
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 
@@ -548,7 +573,7 @@ namespace HeroVirtualTabletop.Roster
             desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
             //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
             desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
-            //desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
+            desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
             desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
             desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
         }
@@ -573,9 +598,7 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else
                 {
-                    Position position = new PositionImpl();
-                    position.Vector = this.mouseHoverElement.PositionVector;
-                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(position);
+                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(this.mouseHoverElement.Position);
                 }
             }
             else
@@ -587,8 +610,28 @@ namespace HeroVirtualTabletop.Roster
             if (this.Roster.AttackingCharacter != null)
                 return;
             var abilityPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
-            var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
-            this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
+            if(abilityPlayingCharacter != null)
+            {
+                var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
+                this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
+            }
+        }
+
+        private void TargetHoveredCharacter()
+        {
+            CharacterCrowdMember hoveredCharacter = GetHoveredCharacter(null);
+            if (hoveredCharacter != null)
+            {
+                this.SelectCharacter(hoveredCharacter);
+            }
+        }
+        private CharacterCrowdMember GetHoveredCharacter(object state)
+        {
+            if (this.mouseHoverElement.CurrentHoveredInfo != "")
+            {
+                return this.Roster.Participants.FirstOrDefault(p => p.Name == this.mouseHoverElement.Name);
+            }
+            return null;
         }
 
         #endregion
@@ -696,13 +739,12 @@ namespace HeroVirtualTabletop.Roster
 
         void desktopContextMenu_AreaAttackTargetMenuItemSelected(object sender, EventArgs e)
         {
-            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+            this.AddSelectedAsAttackTarget();
         }
 
         void desktopContextMenu_AreaAttackTargetAndExecuteMenuItemSelected(object sender, EventArgs e)
         {
-            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
-            this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+            this.AddSelectedAsAttackTargetAndExecute();
         }
 
         private void desktopContextMenu_AreaAttackContextMenuDisplayed(object sender, CustomEventArgs<Object> e)
@@ -721,5 +763,25 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
+        #region Attack Integration
+
+        public void AddSelectedAsAttackTarget()
+        {
+            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+        }
+
+        public void AddSelectedAsAttackTargetAndExecute()
+        {
+            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+            this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+        }
+
+        public void UpdateCharacterState(CharacterCrowdMember character, string stateName)
+        {
+            AnimatableCharacterState state = character.ActiveStates.First(s => s.StateName == stateName);
+            character.RemoveState(state);
+        }
+
+        #endregion
     }
 }

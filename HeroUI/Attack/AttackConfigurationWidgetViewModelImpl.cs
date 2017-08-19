@@ -7,11 +7,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace HeroVirtualTabletop.Attack
 {
-    public class AttackConfigurationWidgetViewModelImpl : PropertyChangedBase, AttackConfigurationWidgetViewModel
+    public class AttackConfigurationWidgetViewModelImpl : PropertyChangedBase, AttackConfigurationWidgetViewModel, IHandle<ConfigureAttackEvent>
     {
         #region Private Fields
 
@@ -21,17 +22,26 @@ namespace HeroVirtualTabletop.Attack
 
         public IEventAggregator EventAggregator { get; set; }
 
-        private AnimatedAttack activeAttack;
-        public AnimatedAttack ActiveAttack
+        private AnimatedCharacter attacker;
+        public AnimatedCharacter Attacker
         {
             get
             {
-                return activeAttack;
+                return attacker;
             }
             set
             {
-                activeAttack = value;
-                NotifyOfPropertyChange(() => ActiveAttack);
+                attacker = value;
+                NotifyOfPropertyChange(() => Attacker);
+                NotifyOfPropertyChange(() => IsConfiguringAreaEffect);
+            }
+        }
+
+        public bool IsConfiguringAreaEffect
+        {
+            get
+            {
+                return this.Attacker.ActiveAttack is AreaEffectAttack;
             }
         }
 
@@ -46,6 +56,21 @@ namespace HeroVirtualTabletop.Attack
             {
                 attackInstructionscollection = value;
                 NotifyOfPropertyChange(() => AttackInstructionsCollection);
+                NotifyOfPropertyChange(() => IsConfiguringAreaEffect);
+            }
+        }
+
+        private AttackInstructions currentAttackInstructions;
+        public AttackInstructions CurrentAttackInstructions
+        {
+            get
+            {
+                return currentAttackInstructions;
+            }
+            set
+            {
+                currentAttackInstructions = value;
+                NotifyOfPropertyChange(() => CurrentAttackInstructions);
             }
         }
 
@@ -66,79 +91,58 @@ namespace HeroVirtualTabletop.Attack
         
         #region Methods
 
-        private void ChangeCenterTarget(object state)
+        public void ChangeCenterTarget(object state)
         {
             AttackInstructions ins = state as AttackInstructions;
-            foreach(AttackInstructions ai in this.AttackInstructionsCollection.Where(instr => instr != ins))
+            if (ins.IsCenterOfAreaEffectAttack)
             {
-                ai.IsCenterOfAreaEffectattack = false;
+                foreach (AttackInstructions ai in this.AttackInstructionsCollection.Where(instr => instr != ins))
+                {
+                    ai.IsCenterOfAreaEffectAttack = false;
+                }
             }
+            
         }
 
-        private void ConfigureActiveAttack(AnimatedAttack attack, List<AttackInstructions> instructionsList)
+        public void UpdateAttackImpacts(AttackInstructions instructions, string impactName, bool isEffectEnabled)
         {
-            this.AttackInstructionsCollection = new ObservableCollection<AttackInstructions>(instructionsList);
-            this.ActiveAttack = attack;
+            if (isEffectEnabled)
+                instructions.AddImpact(impactName);
+            else
+                instructions.RemoveImpact(impactName);
         }
 
-        private void SetActiveAttack(object state)
+        public void Handle(ConfigureAttackEvent message)
         {
-            SetActiveAttack();
-        }
-        private void SetActiveAttack()
-        {
-            foreach (AttackInstructions ai in this.AttackInstructionsCollection)
+            this.Attacker = message.Attacker;
+            this.CurrentAttackInstructions = message.AttackInstructions;
+            if (CurrentAttackInstructions is AreaAttackInstructions)
             {
-                SetAttackEffect(ai);
+                AreaAttackInstructions areaAttackInstructions = CurrentAttackInstructions as AreaAttackInstructions;
+                this.AttackInstructionsCollection = areaAttackInstructions.IndividualTargetInstructions;
+                
             }
-            // Change mouse pointer to back to bulls eye
-            Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
-            Mouse.OverrideCursor = cursor;
+            else
+                this.AttackInstructionsCollection = new ObservableCollection<AttackInstructions> { CurrentAttackInstructions };
+        }
 
-            //this.eventAggregator.GetEvent<CloseActiveAttackEvent>().Publish(this.ActiveAttack);
-            //this.eventAggregator.GetEvent<SetActiveAttackEvent>().Publish(new Tuple<List<Character>, Attack>(this.DefendingCharacters.ToList(), this.ActiveAttack));
-        }
-        private void SetAttackEffect(AttackInstructions instructions)
+        public void LaunchAttack()
         {
-            if (instructions.Impacts.Contains(DefaultAbilities.STUNNED))
-            {
-                AnimatedAbility.AnimatedAbility stunAbility = instructions.Defender.Abilities[DefaultAbilities.STUNNED];
-                AnimatableCharacterState state = new AnimatableCharacterStateImpl(stunAbility, instructions.Defender);
-                instructions.Defender.AddState(state, false);
-            }
-            if (instructions.Impacts.Contains(DefaultAbilities.UNCONSCIOUS))
-            {
-                AnimatedAbility.AnimatedAbility unconsciousAbility = instructions.Defender.Abilities[DefaultAbilities.UNCONSCIOUS];
-                AnimatableCharacterState state = new AnimatableCharacterStateImpl(unconsciousAbility, instructions.Defender);
-                instructions.Defender.AddState(state, false);
-            }
-            if (instructions.Impacts.Contains(DefaultAbilities.DYING))
-            {
-                AnimatedAbility.AnimatedAbility dyingAbility = instructions.Defender.Abilities[DefaultAbilities.DYING];
-                AnimatableCharacterState state = new AnimatableCharacterStateImpl(dyingAbility, instructions.Defender);
-                instructions.Defender.AddState(state, false);
-            }
-            if (instructions.Impacts.Contains(DefaultAbilities.DEAD))
-            {
-                AnimatedAbility.AnimatedAbility deadAbility = instructions.Defender.Abilities[DefaultAbilities.DEAD];
-                AnimatableCharacterState state = new AnimatableCharacterStateImpl(deadAbility, instructions.Defender);
-                instructions.Defender.AddState(state, false);
-            }
+            //// Change mouse pointer to back to bulls eye
+            //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
+            //Mouse.OverrideCursor = cursor;
+
+            this.EventAggregator.Publish(new CloseAttackConfigurationWidgetEvent(), action => Application.Current.Dispatcher.Invoke(action));
+            this.EventAggregator.Publish(new LaunchAttackEvent(this.Attacker, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
         }
-        private void CancelActiveAttack()
+       
+        public void CancelAttack()
         {
-            foreach (var ins in this.AttackInstructionsCollection)
-            {
-                ins.Defender.RemoveStateByName(DefaultAbilities.DEAD);
-                ins.Defender.RemoveStateByName(DefaultAbilities.DYING);
-                ins.Defender.RemoveStateByName(DefaultAbilities.STUNNED);
-                ins.Defender.RemoveStateByName(DefaultAbilities.UNCONSCIOUS);
-                ins.Defender = null;
-                ins.Impacts.Clear();
-                ins.IsCenterOfAreaEffectattack = false;
-                ins.KnockbackDistance = 0;
-            }
-            //this.eventAggregator.GetEvent<CloseActiveAttackEvent>().Publish(this.DefendingCharacters.ToList());
+            if (IsConfiguringAreaEffect)
+                (this.Attacker.ActiveAttack as AreaEffectAttack).Cancel(this.CurrentAttackInstructions as AreaAttackInstructions);
+            else
+                this.Attacker.ActiveAttack.Cancel(this.CurrentAttackInstructions);
+            this.EventAggregator.Publish(new CancelAttackEvent(this.Attacker, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
         }
 
         #endregion

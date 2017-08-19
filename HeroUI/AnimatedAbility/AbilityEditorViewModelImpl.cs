@@ -18,7 +18,8 @@ using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<ExecuteAnimatedAbilityEvent>
+    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<ExecuteAnimatedAbilityEvent>,
+        IHandle<LaunchAttackEvent>
     {
         #region Fields
 
@@ -353,6 +354,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyOfPropertyChange(() => IsAttack);
                 NotifyOfPropertyChange(() => CanConfigureAttack);
                 NotifyOfPropertyChange(() => CanConfigureOnHit);
+                NotifyOfPropertyChange(() => CanToggleAreaEffectAttack);
             }
         }
 
@@ -382,6 +384,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 isConfiguringOnHit = value;
                 NotifyOfPropertyChange(() => IsConfiguringOnHit);
                 NotifyOfPropertyChange(() => CanEnterAbilityEditMode);
+                NotifyOfPropertyChange(() => CanToggleAttack);
+                NotifyOfPropertyChange(() => CanToggleAreaEffectAttack);
             }
         }
 
@@ -954,7 +958,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else
             {
-                ability.Play();
+                ability?.Play();
             }
         }
 
@@ -1206,7 +1210,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #region Toggle Directional FX
 
-        private bool CanToggleDirectionalFx
+        public bool CanToggleDirectionalFx
         {
             get
             {
@@ -1214,7 +1218,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        private void ToggleDirectionalFx(object state)
+        public void ToggleDirectionalFx(object state)
         {
             this.SaveAbility();
         }
@@ -1240,6 +1244,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
         #endregion
 
         #region Attack Transformations
+
+        public bool CanToggleAttack
+        {
+            get
+            {
+                return !IsConfiguringOnHit;
+            }
+        }
+
         public void ToggleAttack()
         {
             if (IsAttack && CurrentAbility is AnimatedAbility)
@@ -1264,6 +1277,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
             (this.CurrentAbility.Owner as AnimatedCharacter).Abilities[this.CurrentAbility.Name] = this.CurrentAbility;
 
             SaveAbility();
+        }
+
+        public bool CanToggleAreaEffectAttack
+        {
+            get
+            {
+                return IsAttack && !IsConfiguringOnHit;
+            }
         }
 
         public void ToggleAreaEffectAttack()
@@ -1350,6 +1371,24 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     this.CurrentPauseElement.Name = "Pause " + this.CurrentPauseElement.Duration.ToString();
             }
             this.SaveAbility();
+        }
+
+        #endregion
+
+        #region Launch Attack
+
+        public void Handle(LaunchAttackEvent message)
+        {
+            AnimatedCharacter attacker = message.Attacker;
+            AttackInstructions attackInstructions = message.AttackInstructions;
+            if (attackInstructions is AreaAttackInstructions)
+            {
+                AreaAttackInstructions areaInstructions = attackInstructions as AreaAttackInstructions;
+                AreaEffectAttack areaAttack = attacker.ActiveAttack as AreaEffectAttack;
+                areaAttack.CompleteTheAttackCycle(areaInstructions);
+            }
+            else
+                attacker.ActiveAttack.CompleteTheAttackCycle(attackInstructions);
         }
 
         #endregion

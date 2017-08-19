@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using HeroVirtualTabletop.AnimatedAbility;
+using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
@@ -20,7 +21,7 @@ namespace HeroUI
 {
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
         IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>,
-        IHandle<ActivateCharacterEvent>
+        IHandle<ActivateCharacterEvent>, IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
@@ -242,12 +243,27 @@ namespace HeroUI
             }
         }
 
+        private AttackConfigurationWidgetViewModel attackConfigurationWidgetViewModel;
+        public AttackConfigurationWidgetViewModel AttackConfigurationWidgetViewModel
+        {
+            get
+            {
+                return attackConfigurationWidgetViewModel;
+            }
+            set
+            {
+                attackConfigurationWidgetViewModel = value;
+                NotifyOfPropertyChange(() => AttackConfigurationWidgetViewModel);
+            }
+        }
+
         #endregion
 
         #region Constructor
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
             RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
-            AbilityEditorViewModel abilityEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, PopupService popupService,
+            AbilityEditorViewModel abilityEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, 
+            AttackConfigurationWidgetViewModel attackConfigurationWidgetViewModel, PopupService popupService,
             IconInteractionUtility iconInteractionUtility, DesktopContextMenu desktopContextMenu, Camera camera)
         {
             this.eventAggregator = eventAggregator;
@@ -257,6 +273,7 @@ namespace HeroUI
             this.IdentityEditorViewModel = identityEditorViewModel;
             this.AbilityEditorViewModel = abilityEditorViewModel;
             this.ActiveCharacterWidgetViewModel = activeCharacterWidgetViewModel;
+            this.AttackConfigurationWidgetViewModel = attackConfigurationWidgetViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
             this.camera = camera;
             this.popupService = popupService;
@@ -281,7 +298,7 @@ namespace HeroUI
         private void RegisterPopups()
         {
             this.popupService.Register("ActiveCharacterWidgetView", typeof(ActiveCharacterWidgetView));
-            //this.popupService.Register("ActiveAttackView", typeof(ActiveAttackView));
+            this.popupService.Register("AttackConfigurationWidgetView", typeof(AttackConfigurationWidgetView));
         }
        
         private void CollapsePanel(object state)
@@ -596,6 +613,21 @@ namespace HeroUI
             ShowActivateCharacterWidgetPopup(message.ActivatedCharacter, message.SelectedActionGroupName, message.SelectedActionName);
         }
 
+        public void Handle(ConfigureAttackEvent message)
+        {
+            ShowAttackConfigurationWidgetPopup();
+        }
+
+        public void Handle(CancelAttackEvent message)
+        {
+            this.CloseAttackConfigurationWidgetPopup();
+        }
+
+        public void Handle(CloseAttackConfigurationWidgetEvent message)
+        {
+            this.CloseAttackConfigurationWidgetPopup();
+        }
+
         private void ShowActivateCharacterWidgetPopup(AnimatedCharacter character, string optionGroupName, string optionName)
         {
             if (character != null && character.IsActive)
@@ -627,10 +659,24 @@ namespace HeroUI
             }
         }
 
+        private void ShowAttackConfigurationWidgetPopup()
+        {
+            if (!popupService.IsOpen("AttackConfigurationWidgetView"))
+            {
+                System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
+                popupService.ShowDialog("AttackConfigurationWidgetView", AttackConfigurationWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style);
+            }
+        }
+
         private void CloseActiveCharacterWidgetPopup(AnimatedCharacter character)
         {
             popupService.SavePosition("ActiveCharacterWidgetView", character != null ? character.Name : null);
             popupService.CloseDialog("ActiveCharacterWidgetView");
+        }
+
+        private void CloseAttackConfigurationWidgetPopup()
+        {
+            popupService.CloseDialog("AttackConfigurationWidgetView");
         }
 
         #endregion

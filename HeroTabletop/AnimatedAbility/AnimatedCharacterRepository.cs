@@ -22,7 +22,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             get { return Characters.ToDictionary(x => x.Name, y => y); }
         }
 
-        public List<AnimatedCharacter> Characters { get; }
+        public virtual List<AnimatedCharacter> Characters { get; }
 
         public List<Crowd.Crowd> LoadSystemCrowdWithDefaultCharacter()
         {

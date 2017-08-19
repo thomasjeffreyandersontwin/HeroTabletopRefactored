@@ -80,22 +80,61 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void Play(List<AnimatedCharacter> targets)
         {
-            Sequencer.Play(targets);
-            foreach (var t in targets)
+            // If there is an ability with the same name in any of the targets, we need to construct a list of different abilities to play
+            bool customAbilityExists = targets.Any(t => t.Abilities.Any(a => a.Name == this.Name));
+            if (customAbilityExists)
             {
-                addStateToTargetsIfPersistent(t);
+                List<AnimatedAbility> abilities = new List<AnimatedAbility>();
+                foreach(AnimatedCharacter target in targets)
+                {
+                    if(target.Abilities.Any(a => a.Name == this.Name && a != this))
+                    {
+                        AnimatedAbility ability = target.Abilities[this.Name];
+                        ability.Target = target;
+                        abilities.Add(ability);
+                    }
+                    else
+                    {
+                        AnimatedAbility cloneAbility = this.Clone(target);
+                        abilities.Add(cloneAbility);
+                    }   
+                }
+                Play(abilities);
+                foreach(var ability in abilities.Where(a => a.Persistent))
+                {
+                    addStateToTargetIfPersistent(ability, ability.Target);
+                }
+            }
+            else
+            {
+                Sequencer.Play(targets);
+                foreach (var t in targets)
+                {
+                    addStateToTargetIfPersistent(this, t);
+                }
             }
         }
+
+        
         public void Play(AnimatedCharacter target)
         {
-            Sequencer.Play(target);
-            addStateToTargetsIfPersistent(target);
-        }
-        private void addStateToTargetsIfPersistent(AnimatedCharacter target)
-        {
-            if (Persistent)
+            // If there is an ability with the same name in the target, we should play that ability instead
+            var abilityWithSameName = target.Abilities.FirstOrDefault(a => a.Name == this.Name && a != this);
+            if(abilityWithSameName != null)
             {
-                AnimatableCharacterState newstate = new AnimatableCharacterStateImpl(this, Target);
+                abilityWithSameName.Play(target);
+            }
+            else
+            {
+                Sequencer.Play(target);
+                addStateToTargetIfPersistent(this, target);
+            }
+        }
+        private void addStateToTargetIfPersistent(AnimatedAbility ability, AnimatedCharacter target)
+        {
+            if (ability.Persistent)
+            {
+                AnimatableCharacterState newstate = new AnimatableCharacterStateImpl(ability, target);
                 newstate.AbilityAlreadyPlayed = true;
                 target.AddState(newstate);
             }
@@ -203,6 +242,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             attack.Type = this.Type;
 
             return attack;
+        }
+
+        public void Play(List<AnimatedAbility> abilities)
+        {
+            Sequencer.Play(abilities);
         }
     }
 

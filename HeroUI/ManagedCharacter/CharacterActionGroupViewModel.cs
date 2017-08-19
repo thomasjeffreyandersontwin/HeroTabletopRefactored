@@ -23,7 +23,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void SetDefaultAction();
         void SaveActionGroup();
         void EditAction();
+        void PlayAction();
         void PlayAction(object action);
+        void StopAction();
         void StopAction(object action);
         void TogglePlayAction(object obj);
         void UnloadActionGroup();

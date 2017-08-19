@@ -130,6 +130,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
         public virtual void Target(bool completeEvent = true)
         {
+            Generator.GenerateDesktopCommandText(DesktopCommand.TargetName, DesktopLabel);
             if (MemoryInstance != null)
             {
                 MemoryInstance.Target();
@@ -137,7 +138,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             else
             {
-                Generator.GenerateDesktopCommandText(DesktopCommand.TargetName, DesktopLabel);
                 if (completeEvent)
                 {
                     Generator.CompleteEvent();

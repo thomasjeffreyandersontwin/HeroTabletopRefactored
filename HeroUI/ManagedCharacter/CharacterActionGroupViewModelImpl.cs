@@ -344,7 +344,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 if (selectedAction as AnimatedAbility.AnimatedAbility != value as AnimatedAbility.AnimatedAbility)
                 {
                     AnimatedAbility.AnimatedAbility ability = selectedAction as AnimatedAbility.AnimatedAbility;
-                    if (!ability.Persistent)
+                    if (!ability.Persistent && !(ability is AnimatedAttack))
                         ability.Stop();
                 }
             }
@@ -394,6 +394,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Play Action
 
+        public void PlayAction()
+        {
+            if (this.SelectedAction != null)
+                PlayAction(this.SelectedAction);
+        }
+
         public void PlayAction(object action)
         {
             if (action is AnimatedAbility.AnimatedAbility)
@@ -432,6 +438,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
         #endregion
 
         #region Stop Action
+
+        public void StopAction()
+        {
+            if (this.SelectedAction != null)
+                this.StopAction(this.SelectedAction);
+        }
 
         public void StopAction(object action)
         {

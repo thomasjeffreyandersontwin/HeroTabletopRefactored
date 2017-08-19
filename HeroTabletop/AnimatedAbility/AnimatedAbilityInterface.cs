@@ -19,14 +19,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
         Dictionary<string, AnimatedAbility> AbilitiesList { get; }
         AnimatedAbility DefaultAbility { get; }
 
-        List<AnimatableCharacterState> ActiveStates { get; }
+        ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
         void RemoveStateByName(string stateName);
         void AddAsAttackTarget(AttackInstructions instructions);
     }
 
     public class DefaultAbilities
     {
-        public const string UNDERATTACK = "UnderAttack";
+        public const string UNDERATTACK = "Under Attack";
         public const string STRIKE = "Strike";
         public const string DODGE = "Dodge";
         public const string STUNNED = "Stunned";
@@ -52,7 +52,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         List<FXElement> LoadedFXs { get; }
         CharacterActionList<AnimatedAbility> Abilities { get; }
         List<AnimatedAbility> ActivePersistentAbilities { get; }
-        List<AnimatableCharacterState> ActiveStates { get; }
+        //ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
 
         bool IsActive { get; set; }
         bool IsSelected { get; set; }
@@ -115,6 +115,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         void Stop(AnimatedCharacter target);
         void Play(AnimatedCharacter target);
         void Play(List<AnimatedCharacter> target);
+        void Play(List<AnimatedAbility> abilities);
     }
 
     public interface AnimatedAbility : AnimationSequencer, CharacterAction

@@ -9,6 +9,8 @@ using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Attack;
+using System.Collections.ObjectModel;
+
 namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AnimatedCharacterImpl : ManagedCharacterImpl, AnimatedCharacter, INotifyPropertyChanged
@@ -140,7 +142,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void RemoveActiveAttack()
         {
-            _activeAttack = null;
+            if (Abilities.Active == ActiveAttack)
+                Abilities.Active = null;
+            ActiveAttack = null;
         }
 
         public void AddAsAttackTarget(AttackInstructions instructions)
@@ -199,17 +203,19 @@ namespace HeroVirtualTabletop.AnimatedAbility
             IsActive = false;
         }
 
-        private List<AnimatableCharacterState> _activeStates;
+        private ObservableCollection<AnimatableCharacterState> _activeStates;
         public List<FXElement> LoadedFXs => _loadedFXs ?? (_loadedFXs = new List<FXElement>());
-        public List<AnimatableCharacterState> ActiveStates => _activeStates ?? (_activeStates = new List<AnimatableCharacterState>());
+        public ObservableCollection<AnimatableCharacterState> ActiveStates => _activeStates ?? (_activeStates = new ObservableCollection<AnimatableCharacterState>());
         public void AddState(AnimatableCharacterState state, bool playImmediately = true)
         {
-            ActiveStates.Add(state);
+            if(!ActiveStates.Any(s => s.StateName == state.StateName))
+                ActiveStates.Add(state);
             if (playImmediately && state.AbilityAlreadyPlayed == false)
             {
                 state.Ability.Play(this);
                 state.AbilityAlreadyPlayed = true;
             }
+            NotifyOfPropertyChange(() => ActiveStates.Count);
         }
         public void AddDefaultState(string defaultState, bool playImmediately = true)
         {
@@ -225,28 +231,31 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     AddState(state, playImmediately);
                 }
             }
-
+            NotifyOfPropertyChange(() => ActiveStates.Count);
         }
         public void RemoveState(AnimatableCharacterState state, bool playImmediately = true)
         {
             ActiveStates.Remove(state);
             state.Ability.Stop(this);
             state.AbilityAlreadyPlayed = false;
-            var remove = state.Ability.StopAbility;
-            if(playImmediately)
-                remove.Play(this);
+            bool canPlayStopAbility = checkIfStopAbilityShouldBePlayedForAttackImpacts(state);
+            var stopAbility = state.Ability.StopAbility;
+            if(canPlayStopAbility && playImmediately)
+                stopAbility?.Play(this);
+            NotifyOfPropertyChange(() => ActiveStates.Count);
         }
         public void ResetAllAbiltitiesAndState()
         {
             var states = ActiveStates.ToList();
             foreach (var state in states)
-                RemoveState(state);
+                RemoveStateByName(state.StateName);
         }
         public void RemoveStateByName(string name)
         {
             var state = (from s in ActiveStates where s.StateName == name select s).FirstOrDefault();
             if (state != null)
                 ActiveStates.Remove(state);
+            NotifyOfPropertyChange(() => ActiveStates.Count);
         }
 
         public Position Facing { get; set; }
@@ -259,6 +268,21 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void TurnTowards(Position position)
         {
             Position.TurnTowards(position);
+        }
+
+        private bool checkIfStopAbilityShouldBePlayedForAttackImpacts(AnimatableCharacterState state)
+        {
+            switch (state.StateName)
+            {
+                case DefaultAbilities.DYING:
+                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD);
+                case DefaultAbilities.UNCONSCIOUS:
+                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING);
+                case DefaultAbilities.STUNNED:
+                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING || s.StateName == DefaultAbilities.UNCONSCIOUS);
+                default:
+                    return true;
+            }
         }
     }
     public class AnimatableCharacterStateImpl : AnimatableCharacterState

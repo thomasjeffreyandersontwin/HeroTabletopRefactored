@@ -50,4 +50,9 @@ namespace HeroVirtualTabletop.Attack
             this.AttackInstructions = instructions;
         }
     }
+
+    public class CloseAttackConfigurationWidgetEvent
+    {
+
+    }
 }

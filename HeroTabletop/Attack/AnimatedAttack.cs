@@ -6,6 +6,9 @@ using HeroVirtualTabletop.Desktop;
 using Newtonsoft.Json;
 using System.Windows.Data;
 using System.Globalization;
+using System.Collections.ObjectModel;
+using Caliburn.Micro;
+using System.Windows;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -44,23 +47,23 @@ namespace HeroVirtualTabletop.Attack
         }
         public KnockbackCollisionInfo CompleteTheAttackCycle(AttackInstructions instructions)
         {
-            turnTowards(instructions.Defender.Position);
             if (instructions.AttackHit)
                 TargetDestination = instructions.Defender.Position;
             else
                 setDestinationPositionForDirectionalFxElementsInAttacks(
                     instructions.Defender.Position.JustMissedPosition);
+            turnTowards(instructions.Defender.Position);
             Play(Attacker);
             playDefenderAnimation(instructions);
-            playAttackeffectsOnDefender(instructions);
+            playAttackEffectsOnDefender(instructions);
+            Stop();
             instructions.Defender.RemoveStateByName(DefaultAbilities.UNDERATTACK);
             return null;
         }
         public KnockbackCollisionInfo PlayCompleteAttackCycle(AttackInstructions instructions)
         {
-            Play();
-            CompleteTheAttackCycle(instructions);
-            return null;
+            StartAttackCycle();
+            return CompleteTheAttackCycle(instructions);
         }
         private void setDestinationPositionForDirectionalFxElementsInAttacks(Position destinationPosition)
         {
@@ -90,16 +93,16 @@ namespace HeroVirtualTabletop.Attack
             if (Attacker.Position != null && defenderPosition != null)
                 Attacker.TurnTowards(defenderPosition);
         }
-        private static void playAttackeffectsOnDefender(AttackInstructions instructions)
+        private static void playAttackEffectsOnDefender(AttackInstructions instructions)
         {
             if (instructions.Impacts.Contains(AttackEffects.Dead))
-                instructions.Defender.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Dying))
-                instructions.Defender.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Unconsious))
-                instructions.Defender.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Stunned))
-                instructions.Defender.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
         }
         private void playDefenderAnimation(AttackInstructions instructions)
         {
@@ -118,9 +121,10 @@ namespace HeroVirtualTabletop.Attack
 
         public void Stop(bool completedEvent = true)
         {
-            Stop(Target);
+            IsActive = false;
+            foreach (var element in Attacker.ActiveAttack.AnimationElements.Where(e => !(e is FXElement)))
+                element.Stop();
             Attacker.RemoveActiveAttack();
-
         }
      
         public void FireAtDesktop(Position desktopPosition)
@@ -130,6 +134,15 @@ namespace HeroVirtualTabletop.Attack
             setDistanceForUnitPauseElementsInAttacks(desktopPosition);
             Play(Attacker);
         }
+
+        public void Cancel(AttackInstructions instructions)
+        {
+            instructions.Impacts.Clear();
+            instructions.Defender.ResetAllAbiltitiesAndState();
+            instructions.KnockbackDistance = 0;
+            this.Attacker.RemoveActiveAttack();
+        }
+
         public AreaEffectAttack TransformToAreaEffectAttack()
         {
             AreaEffectAttackImpl areaAttack = new AreaEffectAttackImpl();
@@ -176,11 +189,15 @@ namespace HeroVirtualTabletop.Attack
             TargetDestination = instructions.AttackCenter;
             Play(Attacker);
             playDefenderAnimationOnAllTargets(instructions);
+            playAttackEffectsOnDefenders(instructions);
+            Stop();
+            instructions.Defenders.ForEach(d => d.RemoveStateByName(DefaultAbilities.UNDERATTACK));
             return null;
         }
         public List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions)
         {
-            throw new NotImplementedException();
+            StartAttackCycle();
+            return CompleteTheAttackCycle(instructions);
         }
         public new AreaAttackInstructions StartAttackCycle()
         {
@@ -190,33 +207,58 @@ namespace HeroVirtualTabletop.Attack
         }
         private void playDefenderAnimationOnAllTargets(AreaAttackInstructions instructions)
         {
-            AnimatedCharacter firstOrDefault = instructions.Defenders.FirstOrDefault();
-            if (firstOrDefault != null)
-            {
-                var miss = firstOrDefault.Abilities[DefaultAbilities.MISS];
-                miss.Play(instructions.DefendersMissed);
-            }
+            var miss = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
+            miss.Play(instructions.DefendersMissed);
 
-            AnimatedCharacter animatedCharacter = instructions.Defenders.FirstOrDefault();
-            if (animatedCharacter != null)
+            var defaultHit = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.HIT];
+            if (OnHitAnimation == null || OnHitAnimation.AnimationElements == null || OnHitAnimation.AnimationElements.Count == 0)
+                defaultHit.Play(instructions.DefendersHit);
+            else
+                OnHitAnimation.Play(instructions.DefendersHit);
+        }
+
+        private void playAttackEffectsOnDefenders(AreaAttackInstructions instructions)
+        {
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DEAD));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DYING));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.UNCONSCIOUS));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.STUNNED));
+        }
+
+        public void Cancel(AreaAttackInstructions instructions)
+        {
+            foreach (var ins in instructions.IndividualTargetInstructions)
             {
-                var defaultHit = animatedCharacter.Abilities[DefaultAbilities.HIT];
-                if (OnHitAnimation == null)
-                    defaultHit.Play(instructions.DefendersHit);
-                else
-                    OnHitAnimation.Play(instructions.DefendersHit);
+                ins.Impacts.Clear();
+                ins.Defender.ResetAllAbiltitiesAndState();
+                ins.IsCenterOfAreaEffectAttack = false;
+                ins.KnockbackDistance = 0;
             }
+            this.Attacker.RemoveActiveAttack();
         }
     }
 
-    public class AttackInstructionsImpl : AttackInstructions
+    public class AttackInstructionsImpl : PropertyChangedBase, AttackInstructions
     {
         private AnimatedCharacter _defender;
         public AttackInstructionsImpl()
         {
-            Impacts = new List<string>();
+            Impacts = new ObservableCollection<string>();
         }
-        public bool AttackHit { get; set; }
+        private bool _attackHit;
+        public bool AttackHit
+        {
+            get
+            {
+                return _attackHit;
+            }
+            set
+            {
+                _attackHit = value;
+                NotifyOfPropertyChange(() => AttackHit);
+            }
+        }
+
         public AnimatedCharacter Defender
         {
             get { return _defender; }
@@ -224,26 +266,100 @@ namespace HeroVirtualTabletop.Attack
             set
             {
                 _defender = value;
-                Defender.AddDefaultState(DefaultAbilities.UNDERATTACK);
+                if(value != null)
+                    SetImpactToDefender(DefaultAbilities.UNDERATTACK);
+                NotifyOfPropertyChange(() => Defender);
             }
         }
-        public List<string> Impacts { get; }
-        public int KnockbackDistance { get; set; }
-        public bool IsCenterOfAreaEffectattack { get; set; }
+        public ObservableCollection<string> Impacts { get; }
+        private int knockbackDistance;
+        public int KnockbackDistance
+        {
+            get
+            {
+                return knockbackDistance;
+            }
+            set
+            {
+                knockbackDistance = value;
+                NotifyOfPropertyChange(() => KnockbackDistance);
+            }
+        }
+        private bool isCenterOfAreaEffectAttack;
+        public bool IsCenterOfAreaEffectAttack
+        {
+            get
+            {
+                return isCenterOfAreaEffectAttack;
+            }
+            set
+            {
+                isCenterOfAreaEffectAttack = value;
+                NotifyOfPropertyChange(() => IsCenterOfAreaEffectAttack);
+            }
+        }
+        public void AddImpact(string impactName)
+        {
+            if (!this.Impacts.Contains(impactName))
+                this.Impacts.Add(impactName);
+            SetImpactToDefender(impactName);
+        }
+        public void SetImpactToDefender(string impactName)
+        {
+            switch(impactName)
+            {
+                case DefaultAbilities.STUNNED:
+                    AnimatedAbility.AnimatedAbility stunAbility = this.Defender.Abilities[DefaultAbilities.STUNNED];
+                    AnimatableCharacterState stunState = new AnimatableCharacterStateImpl(stunAbility, this.Defender);
+                    this.Defender.AddState(stunState, false);
+                    break;
+                case DefaultAbilities.UNCONSCIOUS:
+                    AnimatedAbility.AnimatedAbility unconsciousAbility = this.Defender.Abilities[DefaultAbilities.UNCONSCIOUS];
+                    AnimatableCharacterState unconsciousState = new AnimatableCharacterStateImpl(unconsciousAbility, this.Defender);
+                    this.Defender.AddState(unconsciousState, false);
+                    break;
+                case DefaultAbilities.DYING:
+                    AnimatedAbility.AnimatedAbility dyingAbility = this.Defender.Abilities[DefaultAbilities.DYING];
+                    AnimatableCharacterState dyingState = new AnimatableCharacterStateImpl(dyingAbility, this.Defender);
+                    this.Defender.AddState(dyingState, false);
+                    break;
+                case DefaultAbilities.DEAD:
+                    AnimatedAbility.AnimatedAbility deadAbility = this.Defender.Abilities[DefaultAbilities.DEAD];
+                    AnimatableCharacterState deadState = new AnimatableCharacterStateImpl(deadAbility, this.Defender);
+                    this.Defender.AddState(deadState, false);
+                    break;
+                case DefaultAbilities.UNDERATTACK:
+                    AnimatedAbility.AnimatedAbility underAttackAbility = this.Defender.Abilities[DefaultAbilities.UNDERATTACK];
+                    AnimatableCharacterState underAttackState = new AnimatableCharacterStateImpl(underAttackAbility, this.Defender);
+                    this.Defender.AddState(underAttackState, true); // needs to play immediately
+                    break;
+            }
+        }
+        public void RemoveImpact(string impactName)
+        {
+            if (this.Impacts.Contains(impactName))
+                this.Impacts.Remove(impactName);
+            this.RemoveImpactFromDefender(impactName);
+        }
+        public void RemoveImpactFromDefender(string impactName)
+        {
+            this.Defender.RemoveStateByName(impactName);
+        }
+
     }
 
     public class AreaAttackInstructionsImpl : AttackInstructionsImpl, AreaAttackInstructions
     {
         public AreaAttackInstructionsImpl()
         {
-            IndividualTargetInstructions = new List<AttackInstructions>();
+            IndividualTargetInstructions = new ObservableCollection<AttackInstructions>();
         }
         public Position AttackCenter
         {
             get
             {
                 foreach (var instructions in IndividualTargetInstructions)
-                    if (instructions.IsCenterOfAreaEffectattack)
+                    if (instructions.IsCenterOfAreaEffectAttack)
                         if (instructions.AttackHit)
                             return instructions.Defender.Position;
                         else
@@ -269,7 +385,7 @@ namespace HeroVirtualTabletop.Attack
             where instruction.AttackHit == false
             select instruction.Defender).ToList();
 
-        public List<AttackInstructions> IndividualTargetInstructions { get; }
+        public ObservableCollection<AttackInstructions> IndividualTargetInstructions { get; }
 
         public AttackInstructions AddTarget(AnimatedCharacter defender)
         {
@@ -278,13 +394,93 @@ namespace HeroVirtualTabletop.Attack
             IndividualTargetInstructions.Add(instructions);
             return instructions;
         }
+
+        public List<AnimatedCharacter> GetDefendersByImpactBasedOnSeverity(string impactName)
+        {
+            List<AnimatedCharacter> defenders = null;
+            switch (impactName)
+            {
+                case DefaultAbilities.STUNNED:
+                    var stunned = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING 
+                                                                || s.StateName == DefaultAbilities.UNCONSCIOUS)
+                                                            && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.STUNNED));
+                    defenders = stunned.ToList();
+                    break;
+                case DefaultAbilities.UNCONSCIOUS:
+                    var unconscious = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING)
+                                                            && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.UNCONSCIOUS));
+                    defenders = unconscious.ToList();
+                    break;
+                case DefaultAbilities.DYING:
+                    var dying = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD) 
+                                                            && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DYING));
+                    defenders = dying.ToList();
+                    break;
+                case DefaultAbilities.DEAD:
+                    var dead = this.Defenders.Where(d => d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD));
+                    defenders = dead.ToList();
+                    break;
+            }
+            return defenders;
+        }
     }
 
     public class AttackInstructionsDefenderWithTargetCharacterComparer : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values.Length != 2)
+                return false;
+            bool bRet = false;
+            AttackInstructions instructions = values[0] as AttackInstructions;
+            AnimatedCharacter character = values[1] as AnimatedCharacter;
+            if(instructions != null && character != null)
+            {
+                if (instructions is AreaAttackInstructions)
+                {
+                    AreaAttackInstructions areaInstructions = instructions as AreaAttackInstructions;
+                    bRet = areaInstructions.IndividualTargetInstructions.Any(i => i.Defender == character);
+                }
+                else
+                    bRet = instructions.Defender == character;
+            }
+            return bRet;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
             throw new NotImplementedException();
+        }
+    }
+
+    public class UnderAttackAnimatableCharacterStateToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            ObservableCollection<AnimatableCharacterState> states = value as ObservableCollection<AnimatableCharacterState>;
+            string stateName = parameter.ToString();
+            if (states.Any(s => s.StateName == stateName))
+                return Visibility.Visible;
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ActiveStateToVisibilityConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length != 3)
+                return false;
+            string stateName = values[0] as string;
+            AnimatedCharacter character = values[1] as AnimatedCharacter;
+            int stateCount = (int)values[2];
+
+            return character.ActiveStates.Any(s => s.StateName == stateName);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

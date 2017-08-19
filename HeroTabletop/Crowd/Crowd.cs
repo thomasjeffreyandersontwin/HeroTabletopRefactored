@@ -82,6 +82,17 @@ namespace HeroVirtualTabletop.Crowd
                 return memDict;
             }
         }
+        
+        public override List<AnimatedCharacter> Characters
+        {
+            get
+            {
+                var charList = new List<AnimatedCharacter>();
+                foreach (var c in this.AllMembersCrowd?.Members?.Where(m => m is CharacterCrowdMember))
+                    charList.Add(c as AnimatedCharacter);
+                return charList;
+            }
+        }
 
         private ObservableCollection<Crowd> crowds;
         public ObservableCollection<Crowd> Crowds
@@ -221,8 +232,8 @@ namespace HeroVirtualTabletop.Crowd
                     this.AddCrowd(systemCrowd);
                     RefreshAllmembersCrowd();
                 }
-                DefaultAbilities.DefaultCharacter = systemCrowd?.Members?.FirstOrDefault(m => m.Name == DefaultAbilities.CHARACTERNAME) as AnimatedCharacter;
             }
+            DefaultAbilities.DefaultCharacter = systemCrowd?.Members?.FirstOrDefault(m => m.Name == DefaultAbilities.CHARACTERNAME) as AnimatedCharacter;
         }
 
         public async Task LoadCrowdsAsync()
@@ -767,6 +778,7 @@ namespace HeroVirtualTabletop.Crowd
                     identity.Generator = this.Generator;
                 }
             }
+            this.Repository = this.CrowdRepository;
         }
 
         public bool IsExpanded

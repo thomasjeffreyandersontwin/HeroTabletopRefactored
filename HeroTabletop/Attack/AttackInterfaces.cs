@@ -1,16 +1,23 @@
 ﻿using System.Collections.Generic;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Desktop;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace HeroVirtualTabletop.Attack
 {
-    public interface AttackInstructions
+    public interface AttackInstructions: INotifyPropertyChanged
     {
         AnimatedCharacter Defender { get; set; }
-        List<string> Impacts { get; }
+        ObservableCollection<string> Impacts { get; }
         int KnockbackDistance { get; set; }
         bool AttackHit { get; set; }
-        bool IsCenterOfAreaEffectattack { get; set; }
+        bool IsCenterOfAreaEffectAttack { get; set; }
+        void AddImpact(string impactName);
+        void SetImpactToDefender(string impactName);
+        void RemoveImpact(string impactName);
+        void RemoveImpactFromDefender(string impactName);
+
     }
     public class AttackEffects
     {
@@ -39,17 +46,19 @@ namespace HeroVirtualTabletop.Attack
         KnockbackCollisionInfo CompleteTheAttackCycle(AttackInstructions instructions);
         KnockbackCollisionInfo AnimateKnockBack();
         void FireAtDesktop(Position desktopPosition);
+        void Cancel(AttackInstructions instructions);
         AreaEffectAttack TransformToAreaEffectAttack();
         AnimatedAbility.AnimatedAbility TransformToAbility();
     }
     
     public interface AreaAttackInstructions : AttackInstructions
     {
-        List<AttackInstructions> IndividualTargetInstructions { get; }
+        ObservableCollection<AttackInstructions> IndividualTargetInstructions { get; }
         Position AttackCenter { get; }
         List<AnimatedCharacter> Defenders { get; }
         List<AnimatedCharacter> DefendersHit { get; }
         List<AnimatedCharacter> DefendersMissed { get; }
+        List<AnimatedCharacter> GetDefendersByImpactBasedOnSeverity(string impactName);
         AttackInstructions AddTarget(AnimatedCharacter defender);
 
     }
@@ -64,6 +73,7 @@ namespace HeroVirtualTabletop.Attack
         AreaAttackInstructions DetermineTargetsFromPositionOfAttack(int radius, Position attackCenter);
         List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions);
         List<KnockbackCollisionInfo> CompleteTheAttackCycle(AreaAttackInstructions instructions);
+        void Cancel(AreaAttackInstructions instructions);
     }
 
     public enum KnockbackCollisionType

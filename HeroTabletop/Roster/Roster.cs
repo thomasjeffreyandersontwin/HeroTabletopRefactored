@@ -88,6 +88,7 @@ namespace HeroVirtualTabletop.Roster
             set
             {
                 currentAttackInstructions = value;
+                NotifyOfPropertyChange(() => CurrentAttackInstructions);
             }
         }
 
@@ -95,11 +96,11 @@ namespace HeroVirtualTabletop.Roster
         public void SelectParticipant(CharacterCrowdMember participant)
         {
             if (!Selected.Participants.Contains(participant))
-                Selected.Participants.Add((CharacterCrowdMember)participant);
+                Selected.Participants.Add(participant);
         }
         public void UnSelectParticipant(CharacterCrowdMember participant)
         {
-            Selected.Participants.Remove((CharacterCrowdMember)participant);
+            Selected.Participants.Remove(participant);
         }
 
         public void SyncParticipantWithGame(CharacterCrowdMember participant)
@@ -434,6 +435,8 @@ namespace HeroVirtualTabletop.Roster
             set
             {
                 attackingCharacter = value;
+                if (attackingCharacter == null)
+                    CurrentAttackInstructions = null;
                 NotifyOfPropertyChange(() => AttackingCharacter);
             }
         }
@@ -498,7 +501,7 @@ namespace HeroVirtualTabletop.Roster
         public RosterGroup RosterGroup { get; set; }
     }
 
-    public class RosterSelectionImpl : RosterSelection
+    public class RosterSelectionImpl : PropertyChangedBase, RosterSelection
     {
         public RosterSelectionImpl(Roster roster)
         {
@@ -675,11 +678,11 @@ namespace HeroVirtualTabletop.Roster
                 return new RosterSelectionAbilityWrapper(null, iList);
             }
         }
-        public List<AnimatableCharacterState> ActiveStates
+        public ObservableCollection<AnimatableCharacterState> ActiveStates
         {
             get
             {
-                var commonStates = new List<AnimatableCharacterState>();
+                var commonStates = new ObservableCollection<AnimatableCharacterState>();
                 var firstMember = Participants.FirstOrDefault();
                 foreach (var state in firstMember.ActiveStates)
                 {
@@ -791,6 +794,8 @@ namespace HeroVirtualTabletop.Roster
             foreach(var p in this.Participants)
             {
                 p.AddAsAttackTarget(instructions);
+                Roster.CurrentAttackInstructions = instructions;
+                //NotifyOfPropertyChange(() => Roster.CurrentAttackInstructions);
             }
         }
 
@@ -1055,6 +1060,11 @@ namespace HeroVirtualTabletop.Roster
         {
             throw new NotImplementedException();
         }
+
+        public void Play(List<AnimatedAbility.AnimatedAbility> abilities)
+        {
+            this.Sequencer.Play(abilities);
+        }
     }
     class RosterSelectionIdentityWrapper : RosterSelectionCharacterActionsWrapper, Identity
     {
@@ -1149,6 +1159,11 @@ namespace HeroVirtualTabletop.Roster
         public AnimatedAbility.AnimatedAbility TransformToAbility()
         {
             throw new NotImplementedException();
+        }
+
+        public void Cancel(AttackInstructions instructions)
+        {
+            Attacker.ActiveAttack.Cancel(instructions);
         }
     }
     class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions

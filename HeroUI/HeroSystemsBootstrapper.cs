@@ -12,6 +12,7 @@ using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Movement;
+using HeroVirtualTabletop.Attack;
 
 namespace HeroUI
 {
@@ -70,6 +71,7 @@ namespace HeroUI
             container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
             container.Singleton<AbilityClipboard, AbilityClipboardImpl>();
             container.Singleton<ActiveCharacterWidgetViewModel, ActiveCharacterWidgetViewModelImpl>();
+            container.Singleton<AttackConfigurationWidgetViewModel, AttackConfigurationWidgetViewModelImpl>();
 
             container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();

@@ -13,14 +13,18 @@ namespace HeroVirtualTabletop.Desktop
         string Label { get; }
         string Name { get; }
         Vector3 PositionVector { get; }
+        Position Position { get; }
     }
 
     public class DesktopMouseHoverElementImpl : DesktopMouseHoverElement
     {
         private IconInteractionUtility iconInteractionUtility;
+        private DesktopMemoryCharacter desktopMemoryCharacter;
         public DesktopMouseHoverElementImpl(IconInteractionUtility iconInteractionUtility)
         {
             this.iconInteractionUtility = iconInteractionUtility;
+            MemoryManager memMan = new MemoryManagerImpl(false);
+            this.desktopMemoryCharacter = new DesktopMemoryCharacterImpl(memMan);
         }
 
         public string CurrentHoveredInfo
@@ -88,6 +92,16 @@ namespace HeroVirtualTabletop.Desktop
                 if (float.TryParse(zStr, out f))
                     vector3.Z = f;
                 return vector3;
+            }
+        }
+
+        public Position Position
+        {
+            get
+            {
+                Position position = this.desktopMemoryCharacter.Position;
+                position.Vector = this.PositionVector;
+                return position;
             }
         }
     }

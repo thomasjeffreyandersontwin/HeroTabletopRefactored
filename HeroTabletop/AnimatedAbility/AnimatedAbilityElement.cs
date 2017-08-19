@@ -529,7 +529,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             var generator = target.Generator;
             string[] para;
-            if (IsDirectional)
+            if (IsDirectional && Destination != null)
             {
                 para = new string[2];
                 para[0] = Path.GetFileNameWithoutExtension(ModifiedCostumeFilePath);
@@ -1098,6 +1098,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (otherSequence.Sequencer.Equals(Sequencer) == false) return false;
             return true;
         }
+
+        public void Play(List<AnimatedAbility> abilities)
+        {
+            _sequencer.Play(abilities);
+        }
     }
 
     public class AnimationSequencerImpl : AnimationElementImpl, AnimationSequencer
@@ -1231,11 +1236,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else
             {
-                var rnd = new Random();
-                var chosen = rnd.Next(0, AnimationElements.Count);
-                AnimationElements[chosen].Play(targets);
+                AnimationElement randomElement = getRandomElement(this);
+                randomElement.Play(targets);
             }
         }
+        
         public override void PlayResource(AnimatedCharacter target)
         {
             if (Type == SequenceType.And)
@@ -1245,9 +1250,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else
             {
-                var rnd = new Random();
-                var chosen = rnd.Next(0, AnimationElements.Count);
-                AnimationElements[chosen].Play(target);
+                AnimationElement randomElement = getRandomElement(this);
+                randomElement.Play(target);
             }
         }
         public override void StopResource(AnimatedCharacter target)
@@ -1255,6 +1259,58 @@ namespace HeroVirtualTabletop.AnimatedAbility
             // to do CHECK FOR PERSISTENT SHIT
             foreach (var e in from e in AnimationElements orderby e.Order select e)
                 e.Stop(target);
+        }
+
+        public void Play(List<AnimatedAbility> abilities)
+        {
+            List<AnimationElement> flattenedElements = new List<AnimationElement>();
+            foreach (AnimatedAbility ability in abilities)
+            {
+                var clonedAbility = ability.Clone(ability.Target);
+                List<AnimationElement> animationElements = getAnimationListFromAbility(ability);
+                flattenedElements.AddRange(animationElements);
+            }
+            var lastElement = flattenedElements.Last();
+            for(int i = 0; i < flattenedElements.Count; i++)
+            {
+                // Every mov or fx element is chained with next element unless it is the last or-
+                // The next element is not a mov or fx
+                AnimationElement currentElement = flattenedElements[i];
+                if (i == flattenedElements.Count - 1)
+                    currentElement.PlayWithNext = false;
+                else
+                {
+                    if(currentElement is MovElement || currentElement is FXElement)
+                    {
+                        AnimationElement nextElement = flattenedElements[i + 1];
+                        if (nextElement is MovElement || nextElement is FXElement)
+                            currentElement.PlayWithNext = true;
+                    }
+                }
+            }
+
+            foreach (AnimationElement element in flattenedElements)
+                element.Play();
+
+        }
+
+        private List<AnimationElement> getAnimationListFromAbility(AnimatedAbility ability)
+        {
+            if (ability.Type == SequenceType.And)
+                return GetFlattenedAnimationListEligibleForPlay(ability.AnimationElements);
+            else
+            {
+                AnimationElement randomElement = getRandomElement(ability);
+                List<AnimationElement> listToFlatten = new List<AnimationElement> { randomElement };
+                return GetFlattenedAnimationListEligibleForPlay(listToFlatten);
+            }
+        }
+
+        private static AnimationElement getRandomElement(AnimationSequencer sequencer)
+        {
+            var rnd = new Random();
+            var chosen = rnd.Next(0, sequencer.AnimationElements.Count);
+            return sequencer.AnimationElements[chosen];
         }
 
         public override bool Equals(object other)
@@ -1375,6 +1431,47 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     SequenceElement sequenceElement = (animationElement as SequenceElement);
                     if (sequenceElement.AnimationElements != null && sequenceElement.AnimationElements.Count > 0)
                         _list.AddRange(GetFlattenedAnimationList(sequenceElement.AnimationElements.ToList()));
+                }
+                else if (animationElement is ReferenceElement)
+                {
+                    ReferenceElement refElement = (animationElement as ReferenceElement);
+                    if (refElement.Reference?.Ability?.AnimationElements?.Count > 0)
+                    {
+                        _list.AddRange(GetFlattenedAnimationList(refElement.Reference.Ability.AnimationElements));
+                    }
+                }
+                _list.Add(animationElement);
+            }
+            return _list;
+        }
+
+        public static List<AnimationElement> GetFlattenedAnimationListEligibleForPlay(IEnumerable<AnimationElement> animationElementList)
+        {
+            List<AnimationElement> _list = new List<AnimationElement>();
+            foreach (AnimationElement animationElement in animationElementList)
+            {
+                if (animationElement is SequenceElement)
+                {
+                    SequenceElement sequenceElement = (animationElement as SequenceElement);
+                    if (sequenceElement.AnimationElements != null && sequenceElement.AnimationElements.Count > 0)
+                    {
+                        if(sequenceElement.Type == SequenceType.Or)
+                        {
+                            AnimationElement chosenElement = getRandomElement(sequenceElement);
+                            List<AnimationElement> listToFlatten = new List<AnimationElement> { chosenElement };
+                            _list.AddRange(GetFlattenedAnimationListEligibleForPlay(listToFlatten));
+                        }
+                        else
+                            _list.AddRange(GetFlattenedAnimationListEligibleForPlay(sequenceElement.AnimationElements.ToList()));
+                    }
+                }
+                else if (animationElement is ReferenceElement)
+                {
+                    ReferenceElement refElement = (animationElement as ReferenceElement);
+                    if (refElement.Reference?.Ability?.AnimationElements?.Count > 0)
+                    {
+                        _list.AddRange(GetFlattenedAnimationListEligibleForPlay(refElement.Reference.Ability.AnimationElements));
+                    }
                 }
                 _list.Add(animationElement);
             }
@@ -1548,6 +1645,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (baseAttributesEqual(r) != true) return false;
             if (Reference != null && r.Reference != null && r.Reference.Equals(Reference) == false) return false;
             return true;
+        }
+
+        public void Play(List<AnimatedAbility> abilities)
+        {
+            this.Reference?.Ability?.Play(abilities);
         }
     }
 

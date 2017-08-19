@@ -37,6 +37,8 @@ namespace HeroVirtualTabletop.Desktop
                 if (!string.IsNullOrEmpty(label))
                 {
                     int upto = label.IndexOf("[");
+                    if (upto == -1)
+                        return label;
                     return label.Substring(0, upto -1).Trim();
                 }
                 return null;
