@@ -57,7 +57,7 @@ namespace HeroVirtualTabletop.Attack
             playDefenderAnimation(instructions);
             playAttackEffectsOnDefender(instructions);
             Stop();
-            instructions.Defender.RemoveStateByName(DefaultAbilities.UNDERATTACK);
+            instructions.Defender.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK);
             return null;
         }
         public KnockbackCollisionInfo PlayCompleteAttackCycle(AttackInstructions instructions)
@@ -96,13 +96,13 @@ namespace HeroVirtualTabletop.Attack
         private static void playAttackEffectsOnDefender(AttackInstructions instructions)
         {
             if (instructions.Impacts.Contains(AttackEffects.Dead))
-                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Dying))
-                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Unconsious))
-                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Stunned))
-                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
+                instructions.Defender.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
         }
         private void playDefenderAnimation(AttackInstructions instructions)
         {
@@ -191,7 +191,7 @@ namespace HeroVirtualTabletop.Attack
             playDefenderAnimationOnAllTargets(instructions);
             playAttackEffectsOnDefenders(instructions);
             Stop();
-            instructions.Defenders.ForEach(d => d.RemoveStateByName(DefaultAbilities.UNDERATTACK));
+            instructions.Defenders.ForEach(d => d.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK));
             return null;
         }
         public List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions)
@@ -309,29 +309,44 @@ namespace HeroVirtualTabletop.Attack
             switch(impactName)
             {
                 case DefaultAbilities.STUNNED:
-                    AnimatedAbility.AnimatedAbility stunAbility = this.Defender.Abilities[DefaultAbilities.STUNNED];
-                    AnimatableCharacterState stunState = new AnimatableCharacterStateImpl(stunAbility, this.Defender);
-                    this.Defender.AddState(stunState, false);
+                    AnimatedAbility.AnimatedAbility stunAbility = this.Defender.Abilities?[DefaultAbilities.STUNNED];
+                    if (stunAbility != null)
+                    {
+                        AnimatableCharacterState stunState = new AnimatableCharacterStateImpl(stunAbility, this.Defender);
+                        this.Defender.AddState(stunState, false);
+                    }
                     break;
                 case DefaultAbilities.UNCONSCIOUS:
-                    AnimatedAbility.AnimatedAbility unconsciousAbility = this.Defender.Abilities[DefaultAbilities.UNCONSCIOUS];
-                    AnimatableCharacterState unconsciousState = new AnimatableCharacterStateImpl(unconsciousAbility, this.Defender);
-                    this.Defender.AddState(unconsciousState, false);
+                    AnimatedAbility.AnimatedAbility unconsciousAbility = this.Defender.Abilities?[DefaultAbilities.UNCONSCIOUS];
+                    if (unconsciousAbility != null)
+                    {
+                        AnimatableCharacterState unconsciousState = new AnimatableCharacterStateImpl(unconsciousAbility, this.Defender);
+                        this.Defender.AddState(unconsciousState, false);
+                    }
                     break;
                 case DefaultAbilities.DYING:
-                    AnimatedAbility.AnimatedAbility dyingAbility = this.Defender.Abilities[DefaultAbilities.DYING];
-                    AnimatableCharacterState dyingState = new AnimatableCharacterStateImpl(dyingAbility, this.Defender);
-                    this.Defender.AddState(dyingState, false);
+                    AnimatedAbility.AnimatedAbility dyingAbility = this.Defender.Abilities?[DefaultAbilities.DYING];
+                    if (dyingAbility != null)
+                    {
+                        AnimatableCharacterState dyingState = new AnimatableCharacterStateImpl(dyingAbility, this.Defender);
+                        this.Defender.AddState(dyingState, false);
+                    }
                     break;
                 case DefaultAbilities.DEAD:
-                    AnimatedAbility.AnimatedAbility deadAbility = this.Defender.Abilities[DefaultAbilities.DEAD];
-                    AnimatableCharacterState deadState = new AnimatableCharacterStateImpl(deadAbility, this.Defender);
-                    this.Defender.AddState(deadState, false);
+                    AnimatedAbility.AnimatedAbility deadAbility = this.Defender.Abilities?[DefaultAbilities.DEAD];
+                    if (deadAbility != null)
+                    {
+                        AnimatableCharacterState deadState = new AnimatableCharacterStateImpl(deadAbility, this.Defender);
+                        this.Defender.AddState(deadState, false);
+                    }
                     break;
                 case DefaultAbilities.UNDERATTACK:
-                    AnimatedAbility.AnimatedAbility underAttackAbility = this.Defender.Abilities[DefaultAbilities.UNDERATTACK];
-                    AnimatableCharacterState underAttackState = new AnimatableCharacterStateImpl(underAttackAbility, this.Defender);
-                    this.Defender.AddState(underAttackState, true); // needs to play immediately
+                    AnimatedAbility.AnimatedAbility underAttackAbility = this.Defender.Abilities?[DefaultAbilities.UNDERATTACK];
+                    if(underAttackAbility != null)
+                    {
+                        AnimatableCharacterState underAttackState = new AnimatableCharacterStateImpl(underAttackAbility, this.Defender);
+                        this.Defender.AddState(underAttackState, true); // needs to play immediately
+                    }
                     break;
             }
         }
@@ -343,7 +358,7 @@ namespace HeroVirtualTabletop.Attack
         }
         public void RemoveImpactFromDefender(string impactName)
         {
-            this.Defender.RemoveStateByName(impactName);
+            this.Defender.RemoveStateFromActiveStates(impactName);
         }
 
     }

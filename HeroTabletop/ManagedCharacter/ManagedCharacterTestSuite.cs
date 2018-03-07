@@ -498,6 +498,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 return managedChar;
             }
         }
+
+        
         public ManagedCharacter CharacterUnderTestWithIdentities
         {
             get

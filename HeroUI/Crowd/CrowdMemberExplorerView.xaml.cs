@@ -599,10 +599,5 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
         #endregion
-
-        private void AddCrowd_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

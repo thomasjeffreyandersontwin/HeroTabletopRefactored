@@ -12,6 +12,7 @@ using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.ManagedCharacter;
 using Moq;
+using Ploeh.AutoFixture.Kernel;
 
 namespace HeroVirtualTabletop.Roster
 {
@@ -474,11 +475,11 @@ namespace HeroVirtualTabletop.Roster
             string stateName = "any";
 
 
-            r.Selected.RemoveStateByName(stateName);
+            r.Selected.RemoveStateFromActiveStates(stateName);
 
             r.Selected.Participants.ForEach(
                 participant =>
-                    Mock.Get<CharacterCrowdMember> (participant).Verify(x => x.RemoveStateByName(stateName)));
+                    Mock.Get<CharacterCrowdMember> (participant).Verify(x => x.RemoveStateFromActiveStates(stateName)));
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
@@ -532,7 +533,21 @@ namespace HeroVirtualTabletop.Roster
 
     public class RosterTestObjectsFactory : CrowdTestObjectsFactory
     {
-
+        public RosterTestObjectsFactory()
+        {
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(RosterSelection),
+                    typeof(RosterSelectionImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(Roster),
+                    typeof(RosterImpl)));
+            StandardizedFixture.Customize<RosterSelectionImpl>(x => x
+            .Without(r => r.Roster));
+            StandardizedFixture.Customize<RosterImpl>(x => x
+            .Without(r => r.Selected));
+        }
         public Roster RosterUnderTest => StandardizedFixture.Build<RosterImpl>()
             .Without(x => x.ActiveCharacter)
             .Without(x => x.TargetedCharacter)
@@ -576,6 +591,7 @@ namespace HeroVirtualTabletop.Roster
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                
                 return rosterUnderTest;
 
             }
@@ -589,6 +605,10 @@ namespace HeroVirtualTabletop.Roster
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                foreach (var p in rosterUnderTest.Participants)
+                {
+                    p.CharacterActionGroups = GetStandardCharacterActionGroup(p);
+                }
                 return rosterUnderTest;
             }
         }

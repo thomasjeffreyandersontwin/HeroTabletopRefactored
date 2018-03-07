@@ -157,11 +157,11 @@
                 </Grid>
             </GroupBox>
         </Expander>
-        <!--<Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
+        <Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Movement Editor"
                   Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
-                  Visibility="{Binding ElementName=movementEditorPanel, Path=Children[0].DataContext.IsShowingMovementEditor, Converter={StaticResource BooleanToVisibilityConverter}}"
+                  Visibility="{Binding ElementName=movementEditorPanel, Path=Children[0].Content.DataContext.IsShowingMovementEditor, Converter={StaticResource BooleanToVisibilityConverter}}"
                   IsExpanded="{Binding IsMovementEditorExpanded}"
                   >
 
@@ -174,9 +174,11 @@
                     <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsMovementEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="MovementEditor">
                     </ToggleButton>
-                    <Grid x:Name="movementEditorPanel" Width="Auto" Grid.Row="1"/>
+                    <Grid x:Name="movementEditorPanel" Grid.Row="1">
+                        <ContentControl x:Name="MovementEditorViewModel" />
+                    </Grid>
                 </Grid>
             </GroupBox>
-        </Expander>-->
+        </Expander>
     </Grid>
 </UserControl> 

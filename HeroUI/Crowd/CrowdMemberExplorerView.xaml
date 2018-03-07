@@ -43,14 +43,17 @@
                 <Button x:Name="CloneCrowdMember" Content="&#xf0c5;" ToolTip="Clone (Ctrl+C)"/>
                 <Button x:Name="CutCrowdMember" Content="&#xf0c4;" ToolTip="Cut (Ctrl+X)" />
                 <Button x:Name="LinkCrowdMember" Content="&#xf0c1;" ToolTip="Link (Ctrl+L)"/>
+                <Button x:Name="FlattenCopyCrowd" Content="&#xf0ca;" ToolTip="Flatten and Copy (Ctrl + F)"/>
+                <Button x:Name="NumberedFlattenCopyCrowd" Content="&#xf0cb;" ToolTip="Numbered Flatten and Copy (Ctrl + N)"/>
                 <Button x:Name="PasteCrowdMember" Content="&#xf0ea;" ToolTip="Paste (Ctrl+V)"/>
-                <Button x:Name="AddCharacterCrowdMember" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
-                <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)" Click="AddCrowd_Click"/>
+                <Button x:Name="AddCrowd" Content="&#xf0c0;" ToolTip="Add Crowd (Ctrl+Shift+Plus)" />
+                <Button x:Name="AddCharacterCrowdMember" Content="&#xf234;" ToolTip="Add Character (Ctrl+Plus)"/>
                 <Button x:Name="DeleteCrowdMember" Content="&#xf235;" ToolTip="Remove (Ctrl+Minus/Del)"/>
                 <Button x:Name="EditCharacterCrowd" Content="&#xf044;" ToolTip="Edit (Ctrl+E)"/>
                 <Button x:Name="AddToRoster" Content="&#xf090;" ToolTip="Add to Roster (Ctrl+R)" />
+                <Button x:Name="Save" Content="&#xf0c7;" ToolTip="Save (Ctrl+S)" />
             </StackPanel>
         </Grid>
         <TreeView x:Name="treeViewCrowd" Grid.Row="1" ItemsSource="{Binding CrowdRepository.Crowds}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"

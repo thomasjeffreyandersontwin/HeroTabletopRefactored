@@ -20,7 +20,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         AnimatedAbility DefaultAbility { get; }
 
         ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
-        void RemoveStateByName(string stateName);
+        void RemoveStateFromActiveStates(string stateName);
         void AddAsAttackTarget(AttackInstructions instructions);
     }
 
@@ -65,7 +65,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         void AddDefaultState(string state, bool playImmediately = true);
         void RemoveState(AnimatableCharacterState state, bool playImmediately = true);
         void ResetAllAbiltitiesAndState();
-        void RemoveStateByName(string name);
+        void RemoveStateFromActiveStates(string name);
         void TurnTowards(Position position);
         void RemoveActiveAttack();
     }

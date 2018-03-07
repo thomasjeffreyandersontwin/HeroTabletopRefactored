@@ -248,9 +248,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             var states = ActiveStates.ToList();
             foreach (var state in states)
-                RemoveStateByName(state.StateName);
+                RemoveStateFromActiveStates(state.StateName);
         }
-        public void RemoveStateByName(string name)
+        public void RemoveStateFromActiveStates(string name)
         {
             var state = (from s in ActiveStates where s.StateName == name select s).FirstOrDefault();
             if (state != null)

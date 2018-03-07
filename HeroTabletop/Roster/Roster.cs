@@ -606,7 +606,7 @@ namespace HeroVirtualTabletop.Roster
                     actionPropertyName = "Identities";
                     break;
                 case CharacterActionType.Ability:
-                    actionPropertyName = "Powers";
+                    actionPropertyName = "Abilities";
                     break;
                 case CharacterActionType.Movement:
                     actionPropertyName = "Movements";
@@ -694,11 +694,11 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        public void RemoveStateByName(string stateName)
+        public void RemoveStateFromActiveStates(string stateName)
         {
             foreach (var CharacterCrowdMember in Participants)
             {
-                CharacterCrowdMember.RemoveStateByName(stateName);
+                CharacterCrowdMember.RemoveStateFromActiveStates(stateName);
             }
 
         }

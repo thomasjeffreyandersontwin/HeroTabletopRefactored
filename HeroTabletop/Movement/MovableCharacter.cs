@@ -8,6 +8,10 @@ using System.Windows.Input;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using System.Windows.Data;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+using Caliburn.Micro;
 
 namespace HeroVirtualTabletop.Movement
 {
@@ -72,14 +76,86 @@ namespace HeroVirtualTabletop.Movement
 
         public bool IsMoving { get; set; }
         public double Speed { get; set; }
-        public void AddMovement(Movement movement)
+        public Movement GetNewMovement()
         {
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            string validMovementName = GetNewValidMovementName(defaultCharacter);
+            Movement movement = new MovementImpl(validMovementName);
+            return movement;
+        }
+        public CharacterMovement AddMovement(Movement movement = null)
+        {
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            if (movement == null)
+            {
+                movement = GetNewMovement();
+            }
             CharacterMovement characterMovement = new CharacterMovementImpl(movement);
-            Movements.InsertAction(characterMovement);
+            defaultCharacter.Movements.InsertAction(characterMovement);
+            this.Movements.InsertAction(characterMovement);
+
+            return characterMovement;
         }
 
+        public CharacterMovement AddMovement(CharacterMovement characterMovement, Movement movement = null)
+        {
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            if (movement == null)
+            {
+                movement = GetNewMovement();
+            }
+            CharacterMovement charMovement = new CharacterMovementImpl(movement);
+           
+
+            if (this != defaultCharacter || (this == defaultCharacter && characterMovement.Movement != null))
+            {
+                defaultCharacter.Movements.InsertAction(charMovement);
+
+                if (this == defaultCharacter)
+                {
+                    characterMovement = charMovement;
+                }
+                else
+                {
+                    characterMovement.Movement = movement;
+                }
+            }
+            else
+            {
+                characterMovement.Movement = movement;
+            }
+
+            return characterMovement;
+        }
+
+        public void RemoveMovement(Movement movement)
+        {
+            string movementName = movement.Name;
+            if (!string.IsNullOrEmpty(movementName))
+            {
+                var characterList = this.Repository.Characters.Where(c => (c as MovableCharacter).Movements.Any(m => m.Name == movementName)).ToList();
+                foreach (MovableCharacter character in characterList)
+                {
+                    CharacterMovement cm = character.Movements.FirstOrDefault(m => m.Name == movementName);
+                    character.Movements.RemoveAction(cm);
+                    if (character.Movements.Default != null && character.Movements.Default.Name == movementName)
+                        character.Movements.Default = null;
+                }
+            }
+        }
         public CharacterMovement ActiveMovement { get; set; }
         public DesktopNavigator DesktopNavigator { get; set; }
+
+        private string GetNewValidMovementName(MovableCharacter defaultCharacter, string name = "Movement")
+        {
+            string suffix = string.Empty;
+            int i = 0;
+            while ((defaultCharacter.Movements.Any((CharacterMovement cm) => { return cm.Movement != null && cm.Movement.Name == name + suffix; })))
+            {
+                suffix = string.Format(" ({0})", ++i);
+            }
+            return string.Format("{0}{1}", name, suffix).Trim();
+        }
     }
 
     public class CharacterMovementImpl : CharacterActionImpl, CharacterMovement
@@ -87,7 +163,6 @@ namespace HeroVirtualTabletop.Movement
         public CharacterMovementImpl(Movement movement)
         {
             Movement = movement;
-           
         }
 
         public CharacterMovementImpl()
@@ -105,6 +180,10 @@ namespace HeroVirtualTabletop.Movement
         //        //Movement.Name = value; 
         //    }
         //}
+        public void Rename(string updatedName)
+        {
+            this.Name = updatedName;
+        }
         public override CharacterAction Clone()
         {
             throw new NotImplementedException();
@@ -148,11 +227,12 @@ namespace HeroVirtualTabletop.Movement
         public bool IsPaused { get; set; }
 
         private float _speed=0f;
+        [JsonProperty]
         public float Speed
         {
             get
             {
-                if (_speed == 0f)
+                if (_speed == 0f && Movement != null)
                 {
                     return Movement.Speed;
                 }
@@ -161,37 +241,118 @@ namespace HeroVirtualTabletop.Movement
                     return _speed;
                 }
             }
-            set { _speed = value; }
+            set {
+                _speed = value;
+                NotifyOfPropertyChange(() => Speed);
+            }
         }
-
-        public Movement Movement { get; set; }
+        private Movement movement;
+        [JsonProperty]
+        public Movement Movement {
+            get
+            {
+                return movement;
+            }
+            set
+            {
+                movement = value;
+                NotifyOfPropertyChange(() => Movement);
+            }
+        }
+        private bool isNonCombatMovement;
+        public bool IsNonCombatMovement
+        {
+            get
+            {
+                return isNonCombatMovement;
+            }
+            set
+            {
+                isNonCombatMovement = value;
+                NotifyOfPropertyChange(() => IsNonCombatMovement);
+            }
+        }
     }
 
-    class MovementImpl : Movement
+    class MovementImpl : PropertyChangedBase, Movement
     {
-        public bool HasGravity { get; set; }
-        private Dictionary<Direction, MovementMember> _members;
-        public Dictionary<Direction, MovementMember> MovementMembers => _members = _members ?? (new Dictionary<Direction,MovementMember>());
+        private bool hasGravity;
+        [JsonProperty]
+        public bool HasGravity {
+            get
+            {
+                return hasGravity;
+            }
+            set
+            {
+                hasGravity = value;
+                NotifyOfPropertyChange(() => HasGravity);
+            }
+        }
+        private ObservableCollection<MovementMember> _members;
+        [JsonProperty]
+        public ObservableCollection<MovementMember> MovementMembers => _members = _members ?? (new ObservableCollection<MovementMember>());
+        [JsonIgnore]
         public Dictionary<Key, MovementMember> MovementMembersByHotKey => 
-             _members.Values.ToDictionary(x => x.Key);      
-        public void AddMovementMember(Direction direction, AnimatedAbility.AnimatedAbility abilty)
+             _members.ToDictionary(x => x.Key);      
+        public MovementImpl()
         {
-            
-            MovementMember member = new MovementMemberImpl();
-            member.Direction = direction;
-            member.Ability = abilty;
-            MovementMembers.Add(direction, member);
+        }
+        public MovementImpl(string name)
+        {
+            this.Name = name;
+            AddDefaultMemberAbilities();
+        }
+        #region Add Default Member Abilities
+        private void AddDefaultMemberAbilities()
+        {
+            if (this.MovementMembers == null || this.MovementMembers.Count == 0)
+            {
+                this.AddMovementMember(Direction.Left, null);
+                this.AddMovementMember(Direction.Right, null);
+                this.AddMovementMember(Direction.Forward, null);
+                this.AddMovementMember(Direction.Backward, null);
+                this.AddMovementMember(Direction.Upward, null);
+                this.AddMovementMember(Direction.Downward, null);
+                this.AddMovementMember(Direction.Still, null);
+            }
         }
 
-        public string Name { get; set; }
-    
+        #endregion
+        public void AddMovementMember(Direction direction, AnimatedAbility.AnimatedAbility ability)
+        {
+            MovementMember member = new MovementMemberImpl();
+            member.Direction = direction;
+            member.Name = direction.ToString();
+            member.Ability = ability;
+            MovementMembers.Add(member);
+        }
+        private string name;
+
+        [JsonProperty]
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+                NotifyOfPropertyChange(() => Name);
+            }
+        }
+        public void Rename(string updatedName)
+        {
+            this.Name = updatedName;
+        }
         public void MoveByKeyPress(MovableCharacter character, Key key, float speed=0f)
         {
             Direction direction =
                 (from mov in MovementMembersByHotKey.Values where mov.Key == key select mov.Direction).FirstOrDefault();
             Move(character, direction,null,speed);
         }
-
+         
         public void Move(MovableCharacter character, Direction direction, Position destination=null, float speed=0f)
         {
             if (speed == 0f)
@@ -220,9 +381,9 @@ namespace HeroVirtualTabletop.Movement
             DesktopNavigator desktopNavigator = character.DesktopNavigator;
             if (desktopNavigator.Direction != direction)
             {
-                if (MovementMembers.ContainsKey(direction))
+                if (MovementMembers.Any(mm => mm.Direction == direction))
                 {
-                    AnimatedAbility.AnimatedAbility ability = MovementMembers[direction].Ability;
+                    AnimatedAbility.AnimatedAbility ability = MovementMembers.First(mm => mm.Direction == direction).Ability;
                     ability.Play(character);                
                 }
             }
@@ -261,8 +422,20 @@ namespace HeroVirtualTabletop.Movement
         {
             character.Position.TurnTowards(destination);
         }
-
-        public float Speed { get; set; }
+        private float speed;
+        [JsonProperty]
+        public float Speed
+        {
+            get
+            {
+                return speed;
+            }
+            set
+            {
+                speed = value;
+                NotifyOfPropertyChange(() => Speed);
+            }
+        }
 
         public void Pause(MovableCharacter character)
         {
@@ -289,10 +462,50 @@ namespace HeroVirtualTabletop.Movement
 
     }
 
-    public class MovementMemberImpl: MovementMember
+    public class MovementMemberImpl: PropertyChangedBase, MovementMember
     {
+        [JsonProperty]
         public AnimatedAbility.AnimatedAbility Ability { get; set; }
-        public Direction Direction { get; set; }
+        private ReferenceResource abilityReference;
+        [JsonProperty]
+        public ReferenceResource AbilityReference
+        {
+            get {
+                return abilityReference;
+            }
+            set
+            {
+                abilityReference = value;
+                if (value != null)
+                    Ability = value.Ability;
+                NotifyOfPropertyChange(() => AbilityReference);
+            }
+        }
+        private Direction direction;
+        [JsonProperty]
+        public Direction Direction
+        {
+            get
+            {
+                return direction;
+            }
+            set { direction = value;
+                NotifyOfPropertyChange(() => Direction);
+            }
+        }
+        private string name;
+        [JsonProperty]
+        public string Name {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+                NotifyOfPropertyChange(() => Name);
+            }
+        }
         public Key Key
         {
             get
@@ -319,5 +532,43 @@ namespace HeroVirtualTabletop.Movement
             }
         }
 
+    }
+    public class MovementDirectionToIconTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            string iconText = null;
+            Direction movementDirection = (Direction)value;
+            switch (movementDirection)
+            {
+                case Direction.Right:
+                    iconText = "\xf18e";
+                    break;
+                case Direction.Left:
+                    iconText = "\xf190";
+                    break;
+                case Direction.Forward:
+                    iconText = "\xf01b";
+                    break;
+                case Direction.Backward:
+                    iconText = "\xf01a";
+                    break;
+                case Direction.Upward:
+                    iconText = "\xf0ee";
+                    break;
+                case Direction.Downward:
+                    iconText = "\xf0ed";
+                    break;
+                case Direction.Still:
+                    iconText = "\xf28e";
+                    break;
+            }
+            return iconText;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

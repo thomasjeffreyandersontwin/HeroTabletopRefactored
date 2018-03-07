@@ -766,8 +766,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
             foreach (var st in states)
             {
-                Mock.Get(st.Ability.StopAbility).Verify(x => x.Play(character), Times.Once);
-                Mock.Get(st.Ability).Verify(x => x.Stop(character), Times.Once);
+                Assert.IsTrue(!character.ActiveStates.Any(s => s.StateName == st.StateName));
+                // Stop abilities not played for reset
+                Mock.Get(st.Ability.StopAbility).Verify(x => x.Play(character), Times.Never);
+                Mock.Get(st.Ability).Verify(x => x.Stop(character), Times.Never);
             }
         }
 
@@ -1089,6 +1091,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        public AnimatedCharacterRepository AnimatedCharacterRepositoryUnderTest
+        {
+            get
+            {
+                AnimatedCharacterRepository repo = StandardizedFixture.Create<AnimatedCharacterRepositoryImpl>();
+                return repo;
+            }
+        }
+
         private void setupStandardFixture()
         {
             //map all interfaces to classes
@@ -1129,11 +1140,41 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 new TypeRelay(
                     typeof(AnimatedCharacterRepository),
                     typeof(AnimatedCharacterRepositoryImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(MovResource),
+                    typeof(MovResourceImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(FXResource),
+                    typeof(FXResourceImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(SoundResource),
+                    typeof(SoundResourceImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(ReferenceResource),
+                    typeof(ReferenceResourceImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(AnimatedResourceManager),
+                    typeof(AnimatedResourceManagerImpl)));
+            
             StandardizedFixture.Customize<AnimatedCharacterImpl>(c => c
                 .Without(x => x.ActiveAttack)
             );
             StandardizedFixture.Customize<AnimatedAbilityImpl>(c => c
                 .Without(x => x.Sequencer)
+            );
+            StandardizedFixture.Customize<AnimatedResourceManagerImpl>(c => c
+                .Without(x => x.CurrentAbility)
+                .Without(x => x.CurrentAnimationElement)
+                .Without(x => x.Filter)
+                .Without(x => x.MOVResourcesCVS)
+                .Without(x => x.FXResourcesCVS)
+                .Without(x => x.SoundResourcesCVS)
+                .Without(x => x.ReferenceElementsCVS)
             );
         }
 

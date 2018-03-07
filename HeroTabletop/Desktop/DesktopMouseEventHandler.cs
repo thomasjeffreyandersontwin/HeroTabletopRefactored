@@ -38,12 +38,11 @@ namespace HeroVirtualTabletop.Desktop
         private List<MouseSubscriber> onMouseMove;
         public List<MouseSubscriber> OnMouseMove => onMouseMove ?? (onMouseMove = new List<MouseSubscriber>());
 
-        public IntPtr mouseHookID;
+        public IntPtr MouseHookID;
         public System.Windows.Input.Key _inputKey;
         private int maxClickTime = (int)(System.Windows.Forms.SystemInformation.DoubleClickTime * 2);
-        public System.Timers.Timer DoubleTripleQuadMouseClicksTracker = new System.Timers.Timer();
+        private System.Timers.Timer mouseClicksTracker = new System.Timers.Timer();
         public enum DesktopMouseState { LEFT_CLICK = 1, DOUBLE_CLICK = 2, RIGHT_CLICK = 3, MOUSE_MOVE = 4, RIGHT_CLICK_UP = 5, LEFT_CLICK_UP = 6, TRIPLE_CLICK = 7, QUAD_CLICK = 8 };
-        public void stuff() { }
 
         public bool IsDesktopActive
         {
@@ -55,15 +54,15 @@ namespace HeroVirtualTabletop.Desktop
         }
         public DesktopMouseEventHandlerImpl()
         {
-            DoubleTripleQuadMouseClicksTracker.AutoReset = false;
-            DoubleTripleQuadMouseClicksTracker.Interval = maxClickTime;
-            DoubleTripleQuadMouseClicksTracker.Elapsed += new ElapsedEventHandler(DoubleTripleQuadMouseClicksTrackerElapsed);
+            mouseClicksTracker.AutoReset = false;
+            mouseClicksTracker.Interval = maxClickTime;
+            mouseClicksTracker.Elapsed += new ElapsedEventHandler(DoubleTripleQuadMouseClicksTrackerElapsed);
             ActivateMouseHook();
         }
         public void ActivateMouseHook()
         {
 
-            mouseHookID = MouseHook.SetHook(this.HandleMouseEvent);
+            MouseHookID = MouseHook.SetHook(this.HandleMouseEvent);
         }
 
         public void FireMouseLeftClick()
@@ -125,7 +124,7 @@ namespace HeroVirtualTabletop.Desktop
                             MouseState = DesktopMouseState.LEFT_CLICK;
                             Action action = delegate ()
                             {
-                                DoubleTripleQuadMouseClicksTracker.Start();
+                                mouseClicksTracker.Start();
                             };
                             System.Windows.Application.Current.Dispatcher.BeginInvoke(action);
                             break;
@@ -171,11 +170,11 @@ namespace HeroVirtualTabletop.Desktop
                         FireMouseTripleCLick();
                 }
             }
-            return MouseHook.CallNextHookEx(mouseHookID, nCode, wParam, lParam);
+            return MouseHook.CallNextHookEx(MouseHookID, nCode, wParam, lParam);
         }
         void DoubleTripleQuadMouseClicksTrackerElapsed(object sender, ElapsedEventArgs e)
         {
-            DoubleTripleQuadMouseClicksTracker.Stop();
+            mouseClicksTracker.Stop();
             MouseClickCount = 0;
         }
 

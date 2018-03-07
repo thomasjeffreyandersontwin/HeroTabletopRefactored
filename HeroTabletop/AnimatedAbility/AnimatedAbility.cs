@@ -119,7 +119,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Play(AnimatedCharacter target)
         {
             // If there is an ability with the same name in the target, we should play that ability instead
-            var abilityWithSameName = target.Abilities.FirstOrDefault(a => a.Name == this.Name && a != this);
+            var abilityWithSameName = target.Abilities?.FirstOrDefault(a => a.Name == this.Name && a != this);
             if(abilityWithSameName != null)
             {
                 abilityWithSameName.Play(target);
@@ -153,7 +153,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Stop(AnimatedCharacter target)
         {
             Sequencer.Stop(target);
-            target.RemoveStateByName(Name);
+            target.RemoveStateFromActiveStates(Name);
         }
         public void Stop(List<AnimatedCharacter> targets)
         {

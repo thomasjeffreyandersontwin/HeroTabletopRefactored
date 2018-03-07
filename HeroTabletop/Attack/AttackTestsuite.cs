@@ -166,10 +166,10 @@ namespace HeroVirtualTabletop.Attack
 
             //assert
             foreach (var animationElement in from element in attack.AnimationElements
-                where element is PauseElement && (element as PauseElement).IsUnitPause
-                select element)
+                                             where element is PauseElement && (element as PauseElement).IsUnitPause
+                                             select element)
             {
-                var pause = (PauseElement) animationElement;
+                var pause = (PauseElement)animationElement;
                 var dist = attacker.Position.DistanceFrom(defender.Position);
                 Mock.Get(pause.DistanceDelayManager).Verify(
                     x => x.Duration);
@@ -219,10 +219,10 @@ namespace HeroVirtualTabletop.Attack
 
             //assert
             foreach (AnimationElement animationElement in from element in attack.AnimationElements
-                where element is FXElement && (element as FXElement).IsDirectional
-                select element)
+                                                          where element is FXElement && (element as FXElement).IsDirectional
+                                                          select element)
             {
-                var fx = (FXElement) animationElement;
+                var fx = (FXElement)animationElement;
                 string[] para =
                 {
                     Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
@@ -261,10 +261,10 @@ namespace HeroVirtualTabletop.Attack
 
             //assert
             foreach (var animationElement in from element in attack.AnimationElements
-                where element is FXElement && (element as FXElement).IsDirectional
-                select element)
+                                             where element is FXElement && (element as FXElement).IsDirectional
+                                             select element)
             {
-                var fx = (FXElement) animationElement;
+                var fx = (FXElement)animationElement;
                 string[] para =
                 {
                     Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
@@ -297,10 +297,10 @@ namespace HeroVirtualTabletop.Attack
 
             //assert
             foreach (var animationElement in from element in attack.AnimationElements
-                where element is FXElement && (element as FXElement).IsDirectional
-                select element)
+                                             where element is FXElement && (element as FXElement).IsDirectional
+                                             select element)
             {
-                var fx = (FXElement) animationElement;
+                var fx = (FXElement)animationElement;
                 string[] para =
                 {
                     Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
@@ -328,6 +328,7 @@ namespace HeroVirtualTabletop.Attack
             // arrange
             var attack = TestObjectsFactory.AreaEffectAttackUnderTestWithCharacterUnderTestAndMockElements;
             var defenders = TestObjectsFactory.DefendersListUnderTestWithMockDefaultAbilities;
+
 
             //act
             var instructions = attack.StartAttackCycle();
@@ -375,9 +376,9 @@ namespace HeroVirtualTabletop.Attack
             var firstOrDefault = defenders.FirstOrDefault();
             if (firstOrDefault == null) return;
             var missAbility =
-            firstOrDefault.Abilities[DefaultAbilities.MISS];
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
             Mock.Get(missAbility).Verify(x => x.Play(instructions.DefendersMissed), Times.Once);
-           
+
         }
 
         [TestMethod]
@@ -393,15 +394,15 @@ namespace HeroVirtualTabletop.Attack
 
             foreach (var defender in defenders)
             {
-                instructions.AddTarget(defender).AttackHit=true;       
+                instructions.AddTarget(defender).AttackHit = true;
             }
 
             //act
             foreach (var defender in defenders)
             {
                 var state = (from s in defender.ActiveStates
-                    where s.StateName == DefaultAbilities.UNDERATTACK
-                    select s).FirstOrDefault();
+                             where s.StateName == DefaultAbilities.UNDERATTACK
+                             select s).FirstOrDefault();
                 Assert.IsNotNull(state);
             }
         }
@@ -454,9 +455,16 @@ namespace HeroVirtualTabletop.Attack
                 new TypeRelay(
                     typeof(AnimatedAttack),
                     typeof(AnimatedAttackImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(AttackInstructions),
+                    typeof(AttackInstructionsImpl)));
+            StandardizedFixture.Customize<AttackInstructionsImpl>(ai => ai
+            .Without(x => x.Defender));
+            DefaultAbilities.DefaultCharacter = DefenderUnderTestWithMockDefaultAbilities;
         }
 
-        public AnimatedAttack MockAttack => CustomizedMockFixture.Create<AnimatedAttack>(); 
+        public AnimatedAttack MockAttack => CustomizedMockFixture.Create<AnimatedAttack>();
         public AnimatedAttack AttackUnderTestWithMockCharacter
         {
             get

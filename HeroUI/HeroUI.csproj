@@ -161,6 +161,13 @@
     <Compile Include="ManagedCharacter\IdentityEditorViewModelImpl.cs" />
     <Compile Include="ManagedCharacter\ManagedCharacterEvents.cs" />
     <Compile Include="ManagedCharacter\ManagedCharacterTestSuite.cs" />
+    <Compile Include="Movement\MovementEditorView.xaml.cs">
+      <DependentUpon>MovementEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Movement\MovementEditorViewModel.cs" />
+    <Compile Include="Movement\MovementEditorViewModelImpl.cs" />
+    <Compile Include="Movement\MovementEvents.cs" />
+    <Compile Include="Movement\MovementTestSuite.cs" />
     <Compile Include="Roster\RosterEvents.cs" />
     <Compile Include="Roster\RosterExplorerTestSuite.cs" />
     <Compile Include="Roster\RosterExplorerView.xaml.cs">
@@ -178,6 +185,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Attack\AttackConfigurationWidgetView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Movement\MovementEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -298,6 +309,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Attack\Bullseye.cur" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

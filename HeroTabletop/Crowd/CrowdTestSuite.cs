@@ -725,14 +725,6 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(RosterParent),
                     typeof(RosterParentImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(RosterSelection),
-                    typeof(RosterSelectionImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(Roster.Roster),
-                    typeof(RosterImpl)));
 
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(

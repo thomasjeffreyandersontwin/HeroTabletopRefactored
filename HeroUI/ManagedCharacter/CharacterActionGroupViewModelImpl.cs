@@ -384,10 +384,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 EventAggregator.Publish(new EditAnimatedAbilityEvent(SelectedAction as AnimatedAbility.AnimatedAbility), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             }
-            //else if (SelectedAction is CharacterMovement)
-            //{
-            //    EventAggregator.Publish(new EditIdentityEvent(SelectedAction as Identity), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
-            //}
+            else if (SelectedAction is CharacterMovement)
+            {
+                EventAggregator.Publish(new EditCharacterMovementEvent(SelectedAction as CharacterMovement), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
         }
 
         #endregion

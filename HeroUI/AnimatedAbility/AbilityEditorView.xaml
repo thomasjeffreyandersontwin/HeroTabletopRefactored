@@ -18,7 +18,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
              mc:Ignorable="d" Loaded="AbilityEditorView_Loaded">
-    <UserControl.Resources>
+    <UserControl.Resources>    
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/HeroResourceDictionary.xaml" />

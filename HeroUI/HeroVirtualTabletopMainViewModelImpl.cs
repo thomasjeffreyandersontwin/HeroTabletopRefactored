@@ -4,6 +4,7 @@ using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Movement;
 using HeroVirtualTabletop.Roster;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ using System.Windows.Media;
 namespace HeroUI
 {
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
-        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>,
+        IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>, IHandle<EditCharacterMovementEvent>,
         IHandle<ActivateCharacterEvent>, IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>
     {
         #region Private Members
@@ -229,6 +230,20 @@ namespace HeroUI
             }
         }
 
+        private MovementEditorViewModel movementEditorViewModel;
+        public MovementEditorViewModel MovementEditorViewModel
+        {
+            get
+            {
+                return movementEditorViewModel;
+            }
+            set
+            {
+                movementEditorViewModel = value;
+                NotifyOfPropertyChange(() => MovementEditorViewModel);
+            }
+        }
+
         private ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel;
         public ActiveCharacterWidgetViewModel ActiveCharacterWidgetViewModel
         {
@@ -262,7 +277,7 @@ namespace HeroUI
         #region Constructor
         public HeroVirtualTabletopMainViewModelImpl(IEventAggregator eventAggregator, CrowdMemberExplorerViewModel crowdMemberExplorerViewModel, 
             RosterExplorerViewModel rosterExplorerViewModel, CharacterEditorViewModel characterEditorViewModel, IdentityEditorViewModel identityEditorViewModel,
-            AbilityEditorViewModel abilityEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, 
+            AbilityEditorViewModel abilityEditorViewModel, MovementEditorViewModel movementEditorViewModel, ActiveCharacterWidgetViewModel activeCharacterWidgetViewModel, 
             AttackConfigurationWidgetViewModel attackConfigurationWidgetViewModel, PopupService popupService,
             IconInteractionUtility iconInteractionUtility, DesktopContextMenu desktopContextMenu, Camera camera)
         {
@@ -272,6 +287,7 @@ namespace HeroUI
             this.CharacterEditorViewModel = characterEditorViewModel;
             this.IdentityEditorViewModel = identityEditorViewModel;
             this.AbilityEditorViewModel = abilityEditorViewModel;
+            this.MovementEditorViewModel = movementEditorViewModel;
             this.ActiveCharacterWidgetViewModel = activeCharacterWidgetViewModel;
             this.AttackConfigurationWidgetViewModel = attackConfigurationWidgetViewModel;
             this.iconInteractionUtility = iconInteractionUtility;
@@ -603,7 +619,10 @@ namespace HeroUI
         {
             this.IsAbilityEditorExpanded = true;
         }
-
+        public void Handle(EditCharacterMovementEvent message)
+        {
+            this.IsMovementEditorExpanded = true;
+        }
         #endregion
 
         #region Open/Close Popups

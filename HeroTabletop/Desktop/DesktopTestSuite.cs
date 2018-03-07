@@ -528,8 +528,46 @@ namespace HeroVirtualTabletop.Desktop
             CustomizedMockFixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
             SetupMockFixtureToReturnSinlgetonDesktopCharacterTargeterWithBlankLabel();
+            setupFixtures();
         }
 
+        private void setupFixtures()
+        {
+            //DesktopTargetObserver desktopTargetObserver, DesktopMouseEventHandler desktopMouseEventHandler, 
+            //DesktopMouseHoverElement desktopMouseHoverElement, DesktopContextMenu desktopContextMenu
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopTargetObserver),
+                    typeof(DesktopTargetObserverImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopMouseEventHandler),
+                    typeof(DesktopMouseEventHandlerImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopMouseHoverElement),
+                    typeof(DesktopMouseHoverElementImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopContextMenu),
+                    typeof(DesktopContextMenuImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopCharacterTargeter),
+                    typeof(DesktopCharacterTargeterImpl)));
+            StandardizedFixture.Customizations.Add(
+               new TypeRelay(
+                   typeof(IconInteractionUtility),
+                   typeof(IconInteractionUtilityImpl)));
+            StandardizedFixture.Customize<DesktopCharacterTargeterImpl>(x => x
+            .Without(r => r.TargetedInstance));
+            StandardizedFixture.Customize<DesktopMouseEventHandlerImpl>(x => x
+           .Without(r => r.MouseHookID));
+            StandardizedFixture.Customize<IconInteractionUtilityImpl>(x => x
+           .Without(r => r.Collision)
+           .Without(r => r.Destination)
+           .Without(r => r.Start));
+        }
         public DesktopCharacterTargeter MockDesktopCharacterTargeter => CustomizedMockFixture.Create<DesktopCharacterTargeter>();
 
         public DesktopMemoryCharacter MockMemoryInstance

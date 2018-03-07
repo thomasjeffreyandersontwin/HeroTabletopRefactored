@@ -1,0 +1,199 @@
+﻿<UserControl x:Class="HeroVirtualTabletop.Movement.MovementEditorView"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:behaviors="clr-namespace:Framework.WPF.Behaviors;assembly=Framework.WPF"
+             xmlns:movementUI="clr-namespace:HeroVirtualTabletop.Movement"
+             xmlns:abilities="clr-namespace:HeroVirtualTabletop.AnimatedAbility;assembly=HeroVirtualTabletop"     
+             xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter"
+             xmlns:crowd="clr-namespace:HeroVirtualTabletop.Crowd"
+             xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:characters="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
+             xmlns:movements="clr-namespace:HeroVirtualTabletop.Movement;assembly=HeroVirtualTabletop"
+             xmlns:extensions="clr-namespace:Framework.WPF.Extensions;assembly=Framework.WPF"
+             xmlns:local="clr-namespace:HeroUI"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             mc:Ignorable="d" Loaded="MovementEditorView_Loaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <abilities:AnimationTypeToAnimationIconTextConverter x:Key="AnimationTypeToAnimationIconTextConverter"/>
+            <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+            <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <local:BooleanToVisibilityInvertConverter x:Key="BooleanToVisibilityInvertConverter"/>
+            <local:StringComparerToVisibilityConverter x:Key="resourcesTypeConverter"/>
+            <movements:MovementDirectionToIconTextConverter x:Key="MovementDirectionToIconTextConverter"/>
+            <ObjectDataProvider x:Key="Keys" MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="forms:Keys"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+            <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=movementUI:MovementEditorView}, Path=DataContext}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="CloseEditor" Grid.Row="0" Grid.Column="2"  HorizontalAlignment="Right" Content="&#xf00d;" ToolTip="Close" Margin="0,0,2,0" Style="{StaticResource CloseButtonStyle}"/>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="172"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Grid.ColumnSpan="2">
+                <TextBlock Margin="5 0 0 0" Text="Movement Speed" Style="{StaticResource TextBlockDefaultStyle}" VerticalAlignment="Center"/>
+                <GridSplitter></GridSplitter>
+                <TextBlock Margin="5 0 0 0" Text="0.5x" Style="{StaticResource TextBlockDefaultStyle}" FontSize="{StaticResource FontSize_Small}" VerticalAlignment="Center"/>
+                <Slider  Grid.Row="1"  Minimum="0.5" Maximum="4" TickFrequency="0.25" Value="{Binding CurrentCharacterMovement.Speed}"/>
+                <TextBlock Text="4x" Style="{StaticResource TextBlockDefaultStyle}" FontSize="{StaticResource FontSize_Small}" VerticalAlignment="Center"/>
+                <CheckBox Grid.Row="0" Grid.Column="0" x:Name="SetDefaultMovement" cal:Message.Attach="ToggleSetDefaultMovement()" 
+                          IsChecked="{Binding IsDefaultMovementLoaded}" Content="Default Movement" Margin="7,1, 0, 0"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ComboBox Grid.Row="1" Grid.Column="0" Width="{Binding ElementName=lbMovementMembers, Path=ActualWidth}" MinWidth="120" IsEnabled="{Binding CanEditMovementOptions}" Margin="3, 1, 0, 0" HorizontalAlignment="Left"
+                          Name="comboBoxMovements" ItemsSource="{Binding AvailableMovements}" DisplayMemberPath="Name" SelectedValue="{Binding SelectedMovement}">
+                <i:Interaction.Triggers>
+                    <local:InputBindingTrigger>
+                        <local:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Space"/>
+                        </local:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="EnterMovementEditMode">
+                            <cal:Parameter Value="{Binding ElementName=comboBoxMovements}" />
+                        </cal:ActionMessage>
+                    </local:InputBindingTrigger>
+                </i:Interaction.Triggers>
+            </ComboBox>
+            <TextBox Name="textBoxName" Grid.Row="1" Grid.Column="0" Visibility="Hidden" Text="{Binding Path=SelectedMovement.Name, UpdateSourceTrigger=Explicit}" 
+                     cal:Message.Attach="[Event LostFocus] = [Action SubmitMovementRename($source)]" Margin="3,1, 0, 0">
+                <i:Interaction.Triggers>
+                    <local:InputBindingTrigger>
+                        <local:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Return"/>
+                        </local:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="SubmitMovementRename">
+                            <cal:Parameter Value="{Binding ElementName=textBoxName}" />
+                        </cal:ActionMessage>
+                    </local:InputBindingTrigger>
+                    <local:InputBindingTrigger>
+                        <local:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Esc"/>
+                        </local:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="CancelMovementEditMode">
+                            <cal:Parameter Value="{Binding ElementName=textBoxName}" />
+                        </cal:ActionMessage>
+                    </local:InputBindingTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Orientation="Horizontal">
+                <CheckBox x:Name="SetCombatMovement"
+                          IsChecked="{Binding CurrentCharacterMovement.IsNonCombatMovement, Converter={StaticResource InvertBooleanConverter}}" 
+                          Content="Combat Movement" Margin="5, 0, 5, 0"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <CheckBox x:Name="ToggleGravityForMovement" IsChecked="{Binding SelectedMovement.HasGravity}" Content="Has Gravity" Margin="5, 0, 5, 0"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Left">
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
+                </StackPanel.Resources>
+                <Button x:Name="PlayMovement" Content="&#xf04b;" ToolTip="Demo Movement (Ctrl+Enter)" />
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Right" Margin="0, 0, 5, 0">
+                <Button x:Name="AddMovement" Style="{StaticResource AddButtonStyle}" ToolTip="Add Movement (Ctrl+Plus)" />
+                <Button x:Name="RemoveMovement" Style="{StaticResource RemoveButtonStyle}" ToolTip="Remove Movement (Ctrl+Minus/Del)" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Margin="3, 1, 0, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <ListBox Name="lbMovementMembers" ItemsSource="{Binding SelectedMovement.MovementMembers}"
+                    Background="Transparent" TextElement.Foreground="White" BorderBrush="{StaticResource MainBlueThemeColorBrush}"
+                         cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                     SelectedItem="{Binding SelectedMovementMember}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Style="{StaticResource ResourceKey=IconButtonSmall}" 
+                                        Content="{Binding Direction, Converter={StaticResource MovementDirectionToIconTextConverter}}" 
+                                        cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                        cal:Message.Attach="LoadAbilityEditor($dataContext)"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Open Ability (Alt+Shift+A)"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Style="{StaticResource TextBlockDefaultStyle}" ToolTip="{Binding Ability.Name}"/>
+                                <Button Grid.Column="2" Style="{StaticResource ResourceKey=IconButtonSmall}" Content="&#xf04b;" ToolTip="Play Ability (Alt+Shift+D)" 
+                                        cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                        cal:Message.Attach="DemoDirectionalMovement($dataContext)"
+                                        HorizontalAlignment="Right" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200*"/>
+                    <ColumnDefinition Width="129*"/>
+                    <ColumnDefinition Width="71*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" Height="Auto" Name="txtBoxAnimationResourceFilter" HorizontalAlignment="Stretch" Margin="3,1,0,3"
+                     Text="{Binding AnimatedResourceMananger.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="3"></TextBox>
+                <DataGrid Grid.Row="1" x:Name="dataGridAbilityReferences"
+                          MaxWidth="400" HorizontalAlignment="Stretch"
+                          Background="Transparent" RowBackground="Transparent"  BorderBrush="#FF1144FF"
+                          ItemsSource="{Binding AnimatedResourceMananger.ReferenceElementsCVS.View}"
+                         SelectionUnit="FullRow" AutoGenerateColumns="False" IsEnabled="{Binding CanEditMovementOptions}"
+                          SelectionMode="Single" CanUserResizeRows="False" 
+                          SelectedValue="{Binding SelectedMovementMember.AbilityReference}" 
+                          IsSynchronizedWithCurrentItem="True" Grid.ColumnSpan="3" Margin="0,0,0,-0.2" 
+                      >
+                    <i:Interaction.Behaviors>
+                        <behaviors:ScrollIntoViewForDataGrid />
+                    </i:Interaction.Behaviors>
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Foreground" Value="White"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#FF1144FF" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Character" Binding="{Binding Character.Name}" Width="auto"></DataGridTextColumn>
+                        <DataGridTextColumn Header="Ability" Binding="{Binding Ability.Name}" Width="*"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</UserControl>

@@ -57,6 +57,7 @@ namespace HeroUI
             container.Singleton<CharacterEditorViewModel, CharacterEditorViewModelImpl>();
             container.Singleton<IdentityEditorViewModel, IdentityEditorViewModelImpl>();
             container.Singleton<AbilityEditorViewModel, AbilityEditorViewModelImpl>();
+            container.Singleton<MovementEditorViewModel, MovementEditorViewModelImpl>();
             container.Singleton<BusyService, BusyServiceImpl>();
             container.Singleton<PopupService, PopupServiceImpl>();
             container.Singleton<IconInteractionUtility, IconInteractionUtilityImpl>();

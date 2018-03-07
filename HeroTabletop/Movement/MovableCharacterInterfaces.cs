@@ -9,6 +9,7 @@ using HeroVirtualTabletop.Desktop;
 using Microsoft.Xna.Framework;
 using HeroVirtualTabletop.ManagedCharacter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.Movement
 {
@@ -57,7 +58,10 @@ namespace HeroVirtualTabletop.Movement
         CharacterActionList<CharacterMovement> Movements { get; }
         bool IsMoving { get; set; }
         CharacterMovement ActiveMovement { get; set; }
-        void AddMovement(Movement movement);
+        CharacterMovement AddMovement(Movement movement = null);
+        CharacterMovement AddMovement(CharacterMovement characterMovement, Movement movement = null);
+        void RemoveMovement(Movement movement);
+        Movement GetNewMovement();
 
     }
     public interface CharacterMovement :  MovementCommands, CharacterAction
@@ -67,15 +71,16 @@ namespace HeroVirtualTabletop.Movement
         float Speed { get; set; }
 
         Movement Movement { get; set; }
+        void Rename(string newName);
     }
     public interface Movement 
     {
         string Name { get; set; }
         bool HasGravity { get; set; }
-     
-        Dictionary<Direction, MovementMember> MovementMembers { get;}
-        Dictionary<Key, MovementMember> MovementMembersByHotKey { get; }
 
+        ObservableCollection<MovementMember> MovementMembers { get;}
+        Dictionary<Key, MovementMember> MovementMembersByHotKey { get; }
+        void Rename(string name);
         void MoveByKeyPress(MovableCharacter character, Key key, float speed=0f);
         void Move(MovableCharacter character, Direction direction, Position destination = null, float speed = 0f);
         void MoveForwardTo(MovableCharacter character, Desktop.Position destination, float speed = 0f);
@@ -98,10 +103,10 @@ namespace HeroVirtualTabletop.Movement
     public interface MovementMember
     {
         AnimatedAbility.AnimatedAbility Ability { get; set; }
+        ReferenceResource AbilityReference { get; set; }
         Direction Direction { get; set; }
         Key Key { get; }
-
-
+        string Name { get; set; }
     }
    
 
