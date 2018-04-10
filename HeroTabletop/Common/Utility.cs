@@ -118,6 +118,25 @@ namespace HeroVirtualTabletop.Common
         {
             return (Math.PI / 180) * angle;
         }
+        public static bool IsNan(Vector3 vector)
+        {
+            return float.IsNaN(vector.X) || float.IsNaN(vector.Y) || float.IsNaN(vector.Z);
+        }
+        public static bool IsNanAny(params Vector3[] vectors)
+        {
+            return vectors.Any(v => IsNan(v));
+        }
+        public static bool ObjectsAreFacingEachOther(Vector3 sourceObjectPositionVector, Vector3 sourceObjectFacingVector, Vector3 targetObjectPositionVector)
+        {
+            bool inFront = true;
+            Vector3 directionVectorFromSourceToTarget = targetObjectPositionVector - sourceObjectPositionVector;
+            directionVectorFromSourceToTarget.Normalize();
+            sourceObjectFacingVector.Normalize();
+            float dotProduct = Vector3.Dot(directionVectorFromSourceToTarget, sourceObjectFacingVector);
+            if (dotProduct < 0)
+                inFront = false;
+            return inFront;
+        }
 
         #endregion
 
@@ -148,7 +167,7 @@ namespace HeroVirtualTabletop.Common
             else
                 return s1.CompareTo(s2);
         }
-
+        
         #endregion
     }
     public class StringValueComparer : IComparer<string>

@@ -423,6 +423,7 @@ namespace HeroVirtualTabletop.Crowd
         {
             await this.LoadCrowdCollectionAsync();
             this.CrowdRepository.AddDefaultCharacter();
+            this.CrowdRepository.AddDefaultMovementsToCharacters();
             this.SyncCrowdMembersWithRoster();
             this.EventAggregator.PublishOnUIThread(new ListenForDesktopTargetChangeEvent());
         }

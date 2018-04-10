@@ -330,6 +330,7 @@ namespace HeroVirtualTabletop.Crowd
         public void CloneNestedCrowd_CopiesCrowdAndChildrenAndNestedChildrenAndCreatesUniqueNamesForAllClonedChildren()
         {
             var nested = TestObjectsFactory.RepositoryUnderTestWithNestedgraphOfCharactersAndCrowds.Crowds;
+            DefaultAbilities.DefaultCharacter = TestObjectsFactory.MockAnimatedCharacter;
             var original = nested[0];
             var clone = (Crowd)original.Clone();
 
@@ -471,7 +472,6 @@ namespace HeroVirtualTabletop.Crowd
             //assert
           //  Mock.Get<CharacterCrowdMember>(child0_0).Verify(c => c.Clone());
             Assert.AreEqual(parent0Count + 1, parent0.Members.Count);// a new member added
-            var newMem = parent0.MemberShips.FirstOrDefault(m => m.Child.Name == "child0_0 (1)");
         }
 
         [TestMethod]
@@ -725,7 +725,6 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(RosterParent),
                     typeof(RosterParentImpl)));
-
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
                     typeof(IList),
@@ -756,7 +755,6 @@ namespace HeroVirtualTabletop.Crowd
 
             StandardizedFixture.Customize<CharacterCrowdMemberImpl>(c => c
                 .Without(x => x.AllCrowdMembershipParents)
-                .Without(x => x.ActiveMovement)
                 .Without(x => x.DesktopNavigator)
                 .Without(x => x.CharacterActionGroups)
                 );

@@ -13,8 +13,6 @@ using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.Movement
 {
-    
-
     public enum MovementDirectionKeys
     {
         A = 1,
@@ -40,64 +38,68 @@ namespace HeroVirtualTabletop.Movement
         Swim = 3
     }
 
-    public interface MovementCommands
+    public interface MovableCharacterCommands
     {
         void MoveByKeyPress(Key key);
-        void Move( Direction direction, Position destination = null);
+        void Move(Direction direction, Position destination = null);
         void MoveForwardTo(Desktop.Position destination);
-
         void TurnByKeyPress(Key key);
-        void Turn(TurnDirection direction, float angle = 5);
-
+        void Turn(TurnDirection direction, double angle = 5);
         void TurnTowardDestination(Desktop.Position destination);
     }
+    public interface MovementCommands
+    {
+        Task MoveByKeyPress(MovableCharacter characterToMove, Key key, double speed = 0f);
+        Task Move(MovableCharacter characterToMove, Direction direction, Position destination = null, double speed = 0f);
+        Task MoveForwardTo(MovableCharacter characterToMove, Desktop.Position destination, double speed = 0f);
+        Task MoveByKeyPress(List<MovableCharacter> charactersToMove, Key key, double speed = 0f);
+        Task Move(List<MovableCharacter> charactersToMove, Direction direction, Position destination = null, double speed = 0f);
+        Task MoveForwardTo(List<MovableCharacter> charactersToMove, Desktop.Position destination, double speed = 0f);
+        Task TurnByKeyPress(MovableCharacter characterToTurn, Key key);
+        Task Turn(MovableCharacter characterToTurn, TurnDirection direction, double angle = 5);
+        Task TurnTowardDestination(MovableCharacter characterToTurn, Desktop.Position destination);
+        Task TurnByKeyPress(List<MovableCharacter> charactersToTurn, Key key);
+        Task Turn(List<MovableCharacter> charactersToTurn, TurnDirection direction, double angle = 5);
+        Task TurnTowardDestination(List<MovableCharacter> charactersToTurn, Position destination);
+        void Pause(MovableCharacter character);
+        void Resume(MovableCharacter character);
+        void Stop(MovableCharacter character);
+        Task Start(MovableCharacter characterToMove, Position destination = null, double speed = 0f);
+        Task Start(List<MovableCharacter> charactersToMove, Position destination = null, double speed = 0f);
+    }
 
-    public interface MovableCharacter : MovementCommands, AnimatedCharacter
+    public interface MovableCharacter : MovableCharacterCommands, AnimatedCharacter
     {
         DesktopNavigator DesktopNavigator { get; set; }
         CharacterActionList<CharacterMovement> Movements { get; }
         bool IsMoving { get; set; }
-        CharacterMovement ActiveMovement { get; set; }
+        CharacterMovement ActiveMovement { get; }
+        CharacterMovement DefaultMovement { get; }
         CharacterMovement AddMovement(Movement movement = null);
         CharacterMovement AddMovement(CharacterMovement characterMovement, Movement movement = null);
         void RemoveMovement(Movement movement);
         Movement GetNewMovement();
-
+        void AddDefaultMovements();
     }
-    public interface CharacterMovement :  MovementCommands, CharacterAction
+    public interface CharacterMovement :  MovableCharacterCommands, CharacterAction
     {
+        Movement Movement { get; set; }
         bool IsActive { get; set; }
         bool IsPaused { get; set; }
-        float Speed { get; set; }
-
-        Movement Movement { get; set; }
+        double Speed { get; set; }
+        bool IsCharacterMovingToDestination { get; set; }
+        bool IsCharacterTurning { get; set; }
         void Rename(string newName);
     }
-    public interface Movement 
+    public interface Movement: MovementCommands
     {
         string Name { get; set; }
         bool HasGravity { get; set; }
-
         ObservableCollection<MovementMember> MovementMembers { get;}
         Dictionary<Key, MovementMember> MovementMembersByHotKey { get; }
         void Rename(string name);
-        void MoveByKeyPress(MovableCharacter character, Key key, float speed=0f);
-        void Move(MovableCharacter character, Direction direction, Position destination = null, float speed = 0f);
-        void MoveForwardTo(MovableCharacter character, Desktop.Position destination, float speed = 0f);
-
-        void TurnByKeyPress(MovableCharacter character, Key key);
-        void Turn(MovableCharacter character, TurnDirection direction, float angle=5);
-        void TurnTowardDestination(MovableCharacter character,Desktop.Position destination);
-
-        float Speed { get; set; }
-
-        void Pause(MovableCharacter character);
-        void Resume(MovableCharacter character);
-        void Stop(MovableCharacter character);
-        void Start(MovableCharacter character);
-
+        double Speed { get; set; }
         void UpdateSoundBasedOnPosition(MovableCharacter character);
-
         void AddMovementMember(Direction direction, AnimatedAbility.AnimatedAbility ability);
     }
     public interface MovementMember
@@ -109,7 +111,6 @@ namespace HeroVirtualTabletop.Movement
         string Name { get; set; }
     }
    
-
     public interface MovementRepository
     {
         Dictionary<string, Movement> Movements { get; set; }

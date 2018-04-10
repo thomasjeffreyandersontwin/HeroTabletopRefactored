@@ -349,8 +349,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 }
             }
             selectedAction = value;
-            if(!(value is AnimatedAbility.AnimatedAbility))
-                this.CharacterActionList.Active = value;
+            //if(!(value is AnimatedAbility.AnimatedAbility))
+            //    this.CharacterActionList.Active = value;
             this.SpawnAndTargetOwnerCharacter();
             if(value is Identity)
             {
@@ -409,7 +409,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     this.CharacterActionList.Active = (T)ability;
                     this.SpawnAndTargetOwnerCharacter();
-                    this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(ability), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                    this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(ability), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
                     if (!ability.Persistent && !(ability is AnimatedAttack))
                         TurnOffActiveStateForAbilityAfterPredefinedTime();
                 }
@@ -421,6 +421,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     //owner.ActiveMovement = characterMovement;
                     //characterMovement.ActivateMovement();
+                    this.CharacterActionList.Active = (T)characterMovement;
+                    this.EventAggregator.Publish(new ActivateMovementEvent(characterMovement), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
                 }
             }
         }
@@ -466,6 +468,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     //characterMovement.DeactivateMovement();
                     //owner.ActiveMovement = null;
+                    this.CharacterActionList.Active = default(T);
+                    this.EventAggregator.Publish(new DeactivateMovementEvent(characterMovement), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
                 }
             }
         }
@@ -501,11 +505,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 CharacterMovement characterMovement = obj as CharacterMovement;
                 if (!characterMovement.IsActive)
                 {
-                    //PlayAction(obj);
+                    PlayAction(obj);
                 }
                 else
                 {
-                    //StopAction(obj);
+                    StopAction(obj);
                 }
             }
         }

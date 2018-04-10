@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using System.Windows.Data;
 using System;
 using System.Collections.ObjectModel;
+using Microsoft.Xna.Framework;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -87,6 +89,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 name = value;
                 NotifyOfPropertyChange(() => Name);
+            }
+        }
+        private bool isGangLeader;
+        public bool IsGangLeader
+        {
+            get
+            {
+                return isGangLeader;
+            }
+            set
+            {
+                isGangLeader = value;
+                NotifyOfPropertyChange(() => IsGangLeader);
             }
         }
         public virtual string DesktopLabel
@@ -235,6 +250,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        public void AlignGhost()
+        {
+
+        }
         
         public CharacterActionList<Identity> Identities
         {
@@ -333,8 +352,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void MoveCharacterToCamera(bool completeEvent = true)
         {
             Target();
-            Generator.GenerateDesktopCommandText(DesktopCommand.MoveNPC);
-            Generator.CompleteEvent();
+            (this as MovableCharacter).MoveForwardTo(this.Camera.Position);
         }
 
         public void SyncWithGame()
@@ -349,7 +367,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             catch { }
         }
-
+        public void AlignFacingWith(ManagedCharacter character)
+        {
+            Vector3 leaderFacingVector = character.Position.FacingVector;
+            Vector3 distantPointInSameDirection = character.Position.Vector + leaderFacingVector * 500;
+            (this.Position as Position).Face(distantPointInSameDirection);
+        }
         public void RemoveActionGroup(CharacterActionGroup actionGroup)
         {
             this.CharacterActionGroups.Remove(actionGroup);

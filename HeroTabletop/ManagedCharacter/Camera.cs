@@ -7,6 +7,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class CameraImpl : Camera
     {
+        private const string GAME_ENABLE_CAMERA_FILENAME = "enable_camera.txt";
+        private const string GAME_DISABLE_CAMERA_FILENAME = "disable_camera.txt";
+
         private ManagedCharacter _manueveringCharacter;
 
         public CameraImpl(KeyBindCommandGenerator generator)
@@ -144,6 +147,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void DisableMovement()
         {
+            string cameraFileName = GAME_DISABLE_CAMERA_FILENAME;
+            Generator.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, cameraFileName);
+            Generator.CompleteEvent();
+        }
+        public void EnableMovement()
+        {
+            string cameraFileName = GAME_ENABLE_CAMERA_FILENAME;
+            Generator.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, cameraFileName);
+            Generator.CompleteEvent();
         }
     }
 }

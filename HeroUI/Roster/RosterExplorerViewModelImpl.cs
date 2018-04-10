@@ -6,6 +6,7 @@ using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Movement;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
@@ -22,7 +23,7 @@ namespace HeroVirtualTabletop.Roster
     public class RosterExplorerViewModelImpl : PropertyChangedBase, RosterExplorerViewModel, IShell
         , IHandle<AddToRosterEvent>, IHandle<SyncWithRosterEvent>, IHandle<DeleteCrowdMemberEvent>, IHandle<RenameCrowdMemberEvent>
         , IHandle<ListenForDesktopTargetChangeEvent>, IHandle<StopListeningForDesktopTargetChangeEvent>
-        , IHandle<AttackStartedEvent>
+        , IHandle<AttackStartedEvent>, IHandle<ActivateMovementEvent>, IHandle<DeactivateMovementEvent>
     {
         #region Private Fields
 
@@ -231,6 +232,32 @@ namespace HeroVirtualTabletop.Roster
         public void Handle(AttackStartedEvent message)
         {
             this.Roster.CurrentAttackInstructions = message.AttackInstructions;
+        }
+
+        #endregion
+
+        #region Activate/Deactivate Movements
+
+        public void Handle(ActivateMovementEvent message)
+        {
+            CharacterMovement characterMovement = message.CharacterMovementToActivate;
+            List<MovableCharacter> charactersToMove = this.Roster?.Selected?.Participants?.Cast<MovableCharacter>().ToList();
+            if (charactersToMove == null || charactersToMove.Count == 0)
+            {
+                charactersToMove = new List<MovableCharacter> { characterMovement.Owner as MovableCharacter };
+            }
+            this.EventAggregator.Publish(new StartMovementEvent(characterMovement, charactersToMove), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        }
+
+        public void Handle(DeactivateMovementEvent message)
+        {
+            CharacterMovement characterMovement = message.CharacterMovementToDeactivate;
+            List<MovableCharacter> charactersToStop = this.Roster?.Selected?.Participants?.Cast<MovableCharacter>().ToList();
+            if(charactersToStop == null || charactersToStop.Count == 0)
+            {
+                charactersToStop = new List<MovableCharacter> { characterMovement.Owner as MovableCharacter};
+            }
+            this.EventAggregator.Publish(new StopMovementEvent(characterMovement, charactersToStop), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
         #endregion
@@ -613,7 +640,7 @@ namespace HeroVirtualTabletop.Roster
             if(abilityPlayingCharacter != null)
             {
                 var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
-                this.EventAggregator.Publish(new ExecuteAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
+                this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
             }
         }
 
@@ -783,5 +810,7 @@ namespace HeroVirtualTabletop.Roster
         }
 
         #endregion
+
+
     }
 }

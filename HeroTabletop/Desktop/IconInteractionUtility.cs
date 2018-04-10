@@ -24,33 +24,38 @@ namespace HeroVirtualTabletop.Desktop
         {
             get
             {
-                string collisionInfo = Marshal.PtrToStringAnsi(detectCollision(Start.X, Start.Y, Start.Z, Destination.X, Destination.Y, Destination.Z));
-
-                float X = 0f, Y = 0f, Z = 0f;
-                try
-                {
-                    int indexXStart = collisionInfo.IndexOf("[");
-                    int indexXEnd = collisionInfo.IndexOf("]");
-                    string xStr = collisionInfo.Substring(indexXStart + 1, indexXEnd - indexXStart - 1);
-                    X = float.Parse(xStr);
-
-                    int indexYStart = collisionInfo.IndexOf("[", indexXEnd);
-                    int indexYEnd = collisionInfo.IndexOf("]", indexYStart);
-                    string yStr = collisionInfo.Substring(indexYStart + 1, indexYEnd - indexYStart - 1);
-                    Y = float.Parse(yStr);
-
-                    int indexZStart = collisionInfo.IndexOf("[", indexYEnd);
-                    int indexZEnd = collisionInfo.IndexOf("]", indexZStart);
-                    string zStr = collisionInfo.Substring(indexZStart + 1, indexZEnd - indexZStart - 1);
-                    Z = float.Parse(zStr);
-                }
-                catch (Exception ex)
-                {
-                }
-
-                return new Vector3(X, Y, Z);
+                return GetCollision(this.Start, this.Destination);
             }
             set { throw new NotImplementedException(); }
+        }
+
+        public virtual Vector3 GetCollision(Vector3 start, Vector3 destination)
+        {
+            string collisionInfo = Marshal.PtrToStringAnsi(detectCollision(start.X, start.Y, start.Z, destination.X, destination.Y, destination.Z));
+
+            float X = 0f, Y = 0f, Z = 0f;
+            try
+            {
+                int indexXStart = collisionInfo.IndexOf("[");
+                int indexXEnd = collisionInfo.IndexOf("]");
+                string xStr = collisionInfo.Substring(indexXStart + 1, indexXEnd - indexXStart - 1);
+                X = float.Parse(xStr);
+
+                int indexYStart = collisionInfo.IndexOf("[", indexXEnd);
+                int indexYEnd = collisionInfo.IndexOf("]", indexYStart);
+                string yStr = collisionInfo.Substring(indexYStart + 1, indexYEnd - indexYStart - 1);
+                Y = float.Parse(yStr);
+
+                int indexZStart = collisionInfo.IndexOf("[", indexYEnd);
+                int indexZEnd = collisionInfo.IndexOf("]", indexZStart);
+                string zStr = collisionInfo.Substring(indexZStart + 1, indexZEnd - indexZStart - 1);
+                Z = float.Parse(zStr);
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return new Vector3(X, Y, Z);
         }
 
         public void InitializeDlll(string path)

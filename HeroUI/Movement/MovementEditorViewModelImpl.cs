@@ -8,10 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HeroUI;
+using HeroVirtualTabletop.Desktop;
+using System.Windows.Input;
+using HeroVirtualTabletop.ManagedCharacter;
+using System.Threading;
 
 namespace HeroVirtualTabletop.Movement
 {
-    public class MovementEditorViewModelImpl: PropertyChangedBase, MovementEditorViewModel, IHandle<EditCharacterMovementEvent>
+    public class MovementEditorViewModelImpl: PropertyChangedBase, MovementEditorViewModel, 
+        IHandle<EditCharacterMovementEvent>, IHandle<StartMovementEvent>, IHandle<StopMovementEvent>
     {
         private MovableCharacter defaultCharacter;
 
@@ -179,20 +184,21 @@ namespace HeroVirtualTabletop.Movement
         public string OriginalName { get; set; }
         public AnimatedResourceManager AnimatedResourceMananger { get; set; }
         public CrowdRepository CrowdRepository { get; set; }
-
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
         public IEventAggregator EventAggregator { get; set; }
-        public MovementEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, IEventAggregator eventAggregator)
+        public MovementEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, DesktopKeyEventHandler desktopKeyEventHandler, IEventAggregator eventAggregator)
         {
             this.AnimatedResourceMananger = animatedResourceRepository;
             this.AnimatedResourceMananger.CrowdRepository = crowdRepository;
             this.AnimatedResourceMananger.GameDirectory = HeroUI.Properties.Settings.Default.GameDirectory;
+            this.DesktopKeyEventHandler = desktopKeyEventHandler;
             this.EventAggregator = eventAggregator;
             this.EventAggregator.Subscribe(this);
 
             this.CurrentCharacterMovement = null;
         }
 
-
+        #region Event Handlers
         public void Handle(EditCharacterMovementEvent message)
         {
             this.CurrentCharacterMovement = null;
@@ -205,6 +211,19 @@ namespace HeroVirtualTabletop.Movement
             this.AnimatedResourceMananger.LoadReferenceResource();
         }
 
+        public void Handle(StartMovementEvent message)
+        {
+            this.ActivateMovement(message.CharactersToMove, message.ActiveCharacterMovement);
+        }
+
+        public void Handle(StopMovementEvent message)
+        {
+            this.DeactivateMovement(message.CharactersToStop, message.ActiveCharacterMovement);
+        }
+
+        #endregion
+
+        #region Load Available Movements
         private void LoadAvailableMovements()
         {
             this.defaultCharacter = DefaultAbilities.DefaultCharacter as MovableCharacter;
@@ -213,6 +232,8 @@ namespace HeroVirtualTabletop.Movement
             var editingCharacterMovements = (this.CurrentCharacterMovement.Owner as MovableCharacter).Movements.Select((cm) => { return cm.Movement; }).Where(m => m != null && m.Name != currentMovementName).Distinct();
             this.AvailableMovements = new ObservableCollection<Movement>(allMovements.Except(editingCharacterMovements));
         }
+
+        #endregion
 
         #region Open/Close Editor
         public void OpenEditor()
@@ -334,6 +355,7 @@ namespace HeroVirtualTabletop.Movement
 
         #endregion
 
+        #region Toggle Set Default Movement
         public void ToggleSetDefaultMovement()
         {
             if (this.IsDefaultMovementLoaded)
@@ -346,21 +368,155 @@ namespace HeroVirtualTabletop.Movement
             }
             this.SaveMovement();
         }
+        #endregion
 
+        #region Demo Directional Movement
         public void DemoDirectionalMovement(object state)
         {
             MovementMember member = state as MovementMember;
             member.Ability.Play(this.CurrentCharacterMovement.Owner as AnimatedCharacter);
         }
+        #endregion
 
+        #region Load Ability Editor
         public void LoadAbilityEditor(object state)
         {
             MovementMember member = state as MovementMember;
             EventAggregator.Publish(new EditAnimatedAbilityEvent(member.Ability), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
+        #endregion
+
+        #region Save Movement
         private void SaveMovement()
         {
 
         }
+        #endregion
+
+        #region Play Movement
+
+        public List<MovableCharacter> CharactersToMove { get; set; }
+        public CharacterMovement CharacterMovementInAction { get; set; }
+        public Camera Camera { get; set; }
+        public bool CameraMode { get; set; }
+        public Key CurrentInputKey { get; set; }
+        private Timer movementTimer;
+        List<Key> movementKeys = new List<Key> { Key.W, Key.A, Key.S, Key.D, Key.Z, Key.X, Key.Space, Key.Up, Key.Down, Key.Right, Key.Left };
+
+        public void ActivateMovement(List<MovableCharacter> targets, CharacterMovement characterMovement)
+        {
+            this.CharactersToMove = targets;
+            this.CharacterMovementInAction = characterMovement;
+            this.Camera = (characterMovement.Owner as MovableCharacter).Camera;
+            this.CameraMode = false;
+            if(movementTimer == null)
+                movementTimer = new Timer(MovementTimer_Callback);
+            // Deactivate Current Movement
+            DeactivateMovement(targets, characterMovement);
+            // Set Active
+            characterMovement.Play();
+            // Disable Camera Control
+            Camera.DisableMovement();
+
+            this.DesktopKeyEventHandler.AddKeyEventHandler(HandleDesktopKeyEvent);
+            StartMovementTimer();
+        }
+        public void DeactivateMovement(List<MovableCharacter> targets, CharacterMovement characterMovement)
+        {
+            // Reset Active
+            if (targets.Any(t => t.Movements.Any(m => m.IsActive)))
+            {
+                foreach (CharacterMovement cm in targets.Where(t => t.Movements.Any(m => m.IsActive)).SelectMany(t => t.Movements.Where(m => m.IsActive)))
+                {
+                    cm.Stop();
+                }
+            }
+            this.CurrentInputKey = Key.None;
+            // Enable Camera
+            Camera.EnableMovement();
+            // Unload Keyboard Hook
+            this.DesktopKeyEventHandler.RemoveKeyEventHandler(HandleDesktopKeyEvent);
+            //this.Movement.StopMovement(this.Character);
+            StopMovementTimer();
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (inputKey == Key.CapsLock)
+            {
+                method = ToggleCameraMode;
+            }
+            else 
+            {
+                CurrentInputKey = inputKey;
+            }
+
+            return method;
+        }
+
+        public void ToggleCameraMode()
+        {
+            CameraMode = !CameraMode;
+            foreach (CharacterMovement cm in this.CharactersToMove.Where(t => t.Movements.Any(m => m.IsActive)).SelectMany(t => t.Movements.Where(m => m.IsActive)))
+            {
+                cm.IsPaused = this.CameraMode;
+            }
+            if (CameraMode)
+            {
+                Camera.EnableMovement();
+            }
+            else
+            {
+                Camera.DisableMovement();
+            }
+            IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
+            WindowsUtilities.SetForegroundWindow(winHandle);
+        }
+
+        public async Task MoveByKey()
+        {
+            this.CharacterMovementInAction.IsCharacterTurning = false;
+            await this.CharacterMovementInAction.Movement.MoveByKeyPress(this.CharactersToMove, this.CurrentInputKey, this.CharacterMovementInAction.Speed);
+        }
+
+        public async Task TurnByKey()
+        {
+            this.CharacterMovementInAction.IsCharacterTurning = true;
+            await this.CharacterMovementInAction.Movement.TurnByKeyPress(this.CharactersToMove, this.CurrentInputKey);
+        }
+
+        private void StartMovementTimer()
+        {
+            movementTimer?.Change(1, 25);
+        }
+        private void StopMovementTimer()
+        {
+            movementTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+        private async void MovementTimer_Callback(object state)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() => 
+            {
+                if (CurrentInputKey != Key.None && movementKeys.Any(k => Keyboard.IsKeyDown(k)))
+                {
+                    if (!Keyboard.IsKeyDown(CurrentInputKey))
+                    {
+                        var old = CurrentInputKey;
+                        CurrentInputKey = movementKeys.First(k => Keyboard.IsKeyDown(k));
+                    }
+                    if (CurrentInputKey == Key.Left || CurrentInputKey == Key.Right || CurrentInputKey == Key.Up || CurrentInputKey == Key.Down)
+                    {
+                        TurnByKey();
+                    }
+                    else
+                    {
+                        MoveByKey();
+                    }
+                }
+            });
+        }
+        
+        #endregion
     }
 }

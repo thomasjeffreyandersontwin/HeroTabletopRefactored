@@ -341,11 +341,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     .Without(vm => vm.Filter)
                     .Without(vm => vm.IsDefault)
                     .Without(vm => vm.EditedIdentity)
-                    .Create();
+                    .Create(); 
                 identityEdtiorVM.EventAggregator = TestObjectsFactory.MockEventAggregator;
                 var mockIdentity = TestObjectsFactory.MockIdentityImpl;
-                mockIdentity.Owner = TestObjectsFactory.MockCharacterCrowdMemberWithMockIdentities;
-                identityEdtiorVM.EditedIdentity = mockIdentity;
+                identityEdtiorVM.EditedIdentity = TestObjectsFactory.CostumedIdentityUnderTest;
+                identityEdtiorVM.EditedIdentity.Owner = TestObjectsFactory.MockCharacterCrowdMemberWithMockIdentities;
                 (identityEdtiorVM.EditedIdentity.Owner as ManagedCharacter).IsSpawned = true;
                 (identityEdtiorVM.EditedIdentity.Owner as ManagedCharacter).Identities.Active = identityEdtiorVM.EditedIdentity;
                 return identityEdtiorVM;

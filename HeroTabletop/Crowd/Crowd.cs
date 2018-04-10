@@ -138,15 +138,20 @@ namespace HeroVirtualTabletop.Crowd
 
             try
             {
-                newCharacter = new CharacterCrowdMemberImpl(parent, IoC.Get<DesktopCharacterTargeter>(), IoC.Get<KeyBindCommandGenerator>(), IoC.Get<Camera>(), null, IoC.Get<CrowdRepository>());
+                newCharacter = new CharacterCrowdMemberImpl(parent, IoC.Get<DesktopCharacterTargeter>(), IoC.Get<DesktopNavigator>(), IoC.Get<KeyBindCommandGenerator>(), IoC.Get<Camera>(), null, this);
             }
             catch
             {
-                newCharacter = new CharacterCrowdMemberImpl(parent, null, null, null, null, this);
+                newCharacter = new CharacterCrowdMemberImpl(parent, null, null, null, null, null, this);
+                newCharacter.Targeter = new DesktopCharacterTargeterImpl();
+                newCharacter.DesktopNavigator = new DesktopNavigatorImpl(new IconInteractionUtilityImpl());
+                newCharacter.Generator = new KeyBindCommandGeneratorImpl(new IconInteractionUtilityImpl());
+                newCharacter.Camera = new CameraImpl(newCharacter.Generator);
             }
 
             newCharacter.Name = CreateUniqueName(name, AllMembersCrowd.Members);
             newCharacter.InitializeActionGroups();
+            newCharacter.AddDefaultMovements();
             AllMembersCrowd.AddCrowdMember(newCharacter);
             parent?.AddCrowdMember(newCharacter);
             return newCharacter;
@@ -235,7 +240,13 @@ namespace HeroVirtualTabletop.Crowd
             }
             DefaultAbilities.DefaultCharacter = systemCrowd?.Members?.FirstOrDefault(m => m.Name == DefaultAbilities.CHARACTERNAME) as AnimatedCharacter;
         }
-
+        public void AddDefaultMovementsToCharacters()
+        {
+            foreach (var c in this.AllMembersCrowd.Members.Where(ac => ac is ManagedCharacter.ManagedCharacter))
+            {
+                (c as MovableCharacter).AddDefaultMovements();
+            }
+        }
         public async Task LoadCrowdsAsync()
         {
             await Task.Run(() =>
@@ -739,9 +750,9 @@ namespace HeroVirtualTabletop.Crowd
 
         private bool isExpanded;
 
-        public CharacterCrowdMemberImpl(Crowd parent, DesktopCharacterTargeter targeter,
+        public CharacterCrowdMemberImpl(Crowd parent, DesktopCharacterTargeter targeter, DesktopNavigator desktopNavigator,
             KeyBindCommandGenerator generator, Camera camera, CharacterActionList<Identity> identities,
-            CrowdRepository repo) : base(targeter, generator, camera, identities, repo)
+            CrowdRepository repo) : base(targeter, desktopNavigator, generator, camera, identities, repo)
         {
             AllCrowdMembershipParents = new List<CrowdMemberShip>();
             Parent = parent;
@@ -750,17 +761,29 @@ namespace HeroVirtualTabletop.Crowd
         }
 
         [JsonConstructor]
-        private CharacterCrowdMemberImpl() : this(null, null, null, null, null, null)
+        private CharacterCrowdMemberImpl() : this(null, null, null, null, null, null, null)
         {
             InitializeCharacterCrowdMember();
         }
-
         private void InitializeCharacterCrowdMember()
         {
-            this.Targeter = IoC.Get<DesktopCharacterTargeter>();
-            this.Generator = IoC.Get<KeyBindCommandGenerator>();
-            this.Camera = IoC.Get<Camera>();
-            this.CrowdRepository = IoC.Get<CrowdRepository>();
+            try
+            {
+                this.Targeter = IoC.Get<DesktopCharacterTargeter>();
+                this.DesktopNavigator = IoC.Get<DesktopNavigator>();
+                this.Generator = IoC.Get<KeyBindCommandGenerator>();
+                this.Camera = IoC.Get<Camera>();
+                this.CrowdRepository = IoC.Get<CrowdRepository>();
+            }
+            catch
+            {
+                this.Targeter = new DesktopCharacterTargeterImpl();
+                this.DesktopNavigator = new DesktopNavigatorImpl(new IconInteractionUtilityImpl());
+                this.Generator = new KeyBindCommandGeneratorImpl(new IconInteractionUtilityImpl());
+                this.Camera = new CameraImpl(this.Generator);
+                this.CrowdRepository = new CrowdRepositoryImpl();
+            }
+            
             this.MatchesFilter = true;
         }
 
@@ -779,6 +802,8 @@ namespace HeroVirtualTabletop.Crowd
                 }
             }
             this.Repository = this.CrowdRepository;
+            this.Abilities.Active = null;
+            this.Movements.Active = null;
         }
 
         public bool IsExpanded

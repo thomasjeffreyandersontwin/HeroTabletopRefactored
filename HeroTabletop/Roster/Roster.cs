@@ -633,6 +633,16 @@ namespace HeroVirtualTabletop.Roster
 
 
         }
+
+        public void AlignGhost()
+        {
+
+        }
+
+        public void AlignFacingWith(ManagedCharacter.ManagedCharacter leader)
+        {
+
+        }
         public Identity DefaultIdentity
         {
             get

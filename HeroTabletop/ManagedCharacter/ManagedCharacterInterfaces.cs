@@ -18,7 +18,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         Identity DefaultIdentity { get; }
         Identity ActiveIdentity { get; }
         void ToggleTargeted();
-
+        void AlignFacingWith(ManagedCharacter character);
         void UnTarget(bool completeEvent = true);
         void Target(bool completeEvent = true);
         void TargetAndMoveCameraToCharacter(bool completeEvent = true);
@@ -32,6 +32,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveActionGroup(CharacterActionGroup actionGroup);
         void RemoveActionGroupAt(int index);
         string GetnewValidActionGroupName();
+        void AlignGhost();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
@@ -46,7 +47,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         bool IsManueveringWithCamera { get; set; }
         CharacterActionList<Identity> Identities { get; }
         bool IsSpawned { get; set; }
-       
+        bool IsGangLeader { get; set; }
         DesktopMemoryCharacter MemoryInstance { get; set; }
         KeyBindCommandGenerator Generator { get; set; }
         CharacterProgressBarStats ProgressBar { get; set; }
@@ -126,6 +127,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void ActivateManueveringCharacterIdentity();
         void RefreshPosition();
         void DisableMovement();
+        void EnableMovement();
     }
 
     public enum SurfaceType

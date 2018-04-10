@@ -520,32 +520,32 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             var actionGroup = new ObservableCollection<CharacterActionGroup>();
 
-                var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, character.Generator, character);
-        identitiesGroup.Name = "Identities";
+            var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, character.Generator, character);
+            identitiesGroup.Name = "Identities";
 
-                //Identity newId = identitiesGroup.AddNew(new IdentityImpl()) as Identity;
-                IdentityImpl newId = new IdentityImpl();
-        newId.Owner = null;
-                newId.Name = "Identity";
-                newId.Type = SurfaceType.Costume;
-                newId.Surface = "Identity";
-                newId.Generator = character.Generator;
-                identitiesGroup.AddNew(newId);
-                identitiesGroup.Active = newId;
+            //Identity newId = identitiesGroup.AddNew(new IdentityImpl()) as Identity;
+            IdentityImpl newId = new IdentityImpl();
+            newId.Owner = null;
+            newId.Name = "Identity";
+            newId.Type = SurfaceType.Costume;
+            newId.Surface = "Identity";
+            newId.Generator = character.Generator;
+            identitiesGroup.AddNew(newId);
+            identitiesGroup.Active = newId;
 
-                actionGroup.Add(identitiesGroup);
+            actionGroup.Add(identitiesGroup);
 
-                var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility.AnimatedAbility>(CharacterActionType.Ability, character.Generator, character);
-        abilitiesGroup.Name = "Powers";
+            var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility.AnimatedAbility>(CharacterActionType.Ability, character.Generator, character);
+            abilitiesGroup.Name = "Powers";
 
-                actionGroup.Add(abilitiesGroup);
+            actionGroup.Add(abilitiesGroup);
 
-                var movementsGroup = new CharacterActionListImpl<CharacterMovement>(CharacterActionType.Movement, character.Generator, character);
-        movementsGroup.Name = "Movements";
+            var movementsGroup = new CharacterActionListImpl<CharacterMovement>(CharacterActionType.Movement, character.Generator, character);
+            movementsGroup.Name = "Movements";
 
-                actionGroup.Add(movementsGroup);
+            actionGroup.Add(movementsGroup);
 
-                return actionGroup;
+            return actionGroup;
         }
 
         public ManagedCharacter MockCharacter
@@ -646,6 +646,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 Identity id = new IdentityImpl(MockCharacter, "aName", "aCostume", SurfaceType.Costume,
                     MockKeybindGenerator, null);
+                
                 return id;
             }
         }

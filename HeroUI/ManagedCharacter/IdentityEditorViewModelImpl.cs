@@ -60,13 +60,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 if (editedIdentity != null)
                 {
                     editedIdentity.PropertyChanged -= EditedIdentity_PropertyChanged;
-                    (editedIdentity.Owner as ManagedCharacter).Identities.PropertyChanged -= OwnerIdentities_PropertyChanged;
+                    if((editedIdentity.Owner as ManagedCharacter).Identities != null)
+                        (editedIdentity.Owner as ManagedCharacter).Identities.PropertyChanged -= OwnerIdentities_PropertyChanged;
                 }
                 editedIdentity = value;
                 if (editedIdentity != null)
                 {
                     editedIdentity.PropertyChanged += EditedIdentity_PropertyChanged;
-                    (editedIdentity.Owner as ManagedCharacter).Identities.PropertyChanged += OwnerIdentities_PropertyChanged; 
+                    if ((editedIdentity.Owner as ManagedCharacter).Identities != null)
+                        (editedIdentity.Owner as ManagedCharacter).Identities.PropertyChanged += OwnerIdentities_PropertyChanged; 
                 }
                 NotifyOfPropertyChange(() => EditedIdentity);
             }

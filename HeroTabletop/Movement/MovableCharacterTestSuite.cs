@@ -12,6 +12,8 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using HeroVirtualTabletop.Crowd;
+using System.Threading;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.Movement
 {
@@ -21,30 +23,70 @@ namespace HeroVirtualTabletop.Movement
         MovableCharacterTestObjectFactory TestObjectFactory = new MovableCharacterTestObjectFactory();
 
         [TestMethod]
-        [TestCategory("Movement")]
-        public void AddMovement_CreatesACharacterMovementForDefaultCharacter()
+        [TestCategory("MovableCharacter")]
+        public void AddMovement_CreatesCharacterMovementForDefaultCharacter()
         {
             //arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTest;
-            MovableCharacter defaultCharacter = TestObjectFactory.MovableCharacterUnderTest;
-            defaultCharacter.Name = DefaultAbilities.CHARACTERNAME;
-            DefaultAbilities.DefaultCharacter = defaultCharacter;
-            Movement mov = TestObjectFactory.MovementUnderTest;
-            AnimatedCharacterRepository repo = TestObjectFactory.AnimatedCharacterRepositoryUnderTest;
+            MovableCharacter defaultCharacter = TestObjectFactory.DefaultCharacterUnderTest;
+            AnimatedCharacterRepository repo = defaultCharacter.Repository;
             repo.Characters.Add(character);
-            repo.Characters.Add(defaultCharacter);
             character.Repository = repo;
+            Movement mov = TestObjectFactory.MovementUnderTest;
             //act
             character.AddMovement(mov);
             //assert
-            Assert.AreEqual(defaultCharacter.Movements.FirstOrDefault().Movement, mov);
+            Assert.IsTrue((defaultCharacter.Movements.Any(m => m.Movement == mov)));
         }
         [TestMethod]
-        [TestCategory("Movement")]
-        public void MovementCommands_DelegateToActiveMovement()
+        [TestCategory("MovableCharacter")]
+        public void RemoveMovement_RemovesMovementFromDefaultCharacterAsWell()
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestwithCharacterMovement;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTest;
+            MovableCharacter defaultCharacter = TestObjectFactory.DefaultCharacterUnderTest;
+            Movement mov = TestObjectFactory.MovementUnderTest;
+            AnimatedCharacterRepository repo = defaultCharacter.Repository;
+            repo.Characters.Add(character);
+            character.Repository = repo;
+            Movement mov1 = TestObjectFactory.MovementUnderTest;
+            Movement mov2 = TestObjectFactory.MovementUnderTest;
+            character.AddMovement(mov1);
+            character.AddMovement(mov2);
+            // first check if default character has both these movemements
+            Assert.IsTrue(defaultCharacter.Movements.Any(m => m.Movement == mov1));
+            Assert.IsTrue(defaultCharacter.Movements.Any(m => m.Movement == mov2));
+            //act
+            character.RemoveMovement(mov1);
+            character.RemoveMovement(mov2);
+            //assert
+            Assert.IsFalse(defaultCharacter.Movements.Any(m => m.Movement == mov1));
+            Assert.IsFalse(defaultCharacter.Movements.Any(m => m.Movement == mov2));
+        }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void AddDefaultMovements_AddsWalkRunSwimForCharacter()
+        {
+            //arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTest;
+            MovableCharacter defaultCharacter = TestObjectFactory.DefaultCharacterUnderTest;
+            Movement mov = TestObjectFactory.MovementUnderTest;
+            AnimatedCharacterRepository repo = defaultCharacter.Repository;
+            repo.Characters.Add(character);
+            character.Repository = repo;
+            //act
+            character.AddDefaultMovements();
+            //assert
+            Assert.IsTrue(defaultCharacter.Movements.Any(m => m.Movement.Name == "Walk"));
+            Assert.IsTrue(defaultCharacter.Movements.Any(m => m.Movement.Name == "Run"));
+            Assert.IsTrue(defaultCharacter.Movements.Any(m => m.Movement.Name == "Swim"));
+        }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void MovementCommands_DelegatesToActiveMovement()
+        {
+            //arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
             //act
             character.Movements.FirstOrDefault().Play();
             character.Move(Direction.Right);
@@ -52,21 +94,48 @@ namespace HeroVirtualTabletop.Movement
             //assert
             var mocker = Mock.Get<Movement>(character.Movements.FirstOrDefault().Movement);
             mocker.Verify(x => x.Move(character, Direction.Forward, null, character.Movements.FirstOrDefault().Speed));
-            mocker.Verify(x => x.Move(character, Direction.Right, null, character.Movements.FirstOrDefault().Speed));
         }
         [TestMethod]
-        [TestCategory("Movement")]
+        [TestCategory("MovableCharacter")]
         public void CharacterMovementSpeedIsNotSet_IsTakenFromMovement()
         {
             //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestwithCharacterMovement;
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
             CharacterMovement movement = character.Movements.FirstOrDefault();
+            //act
             movement.Speed = 0f;
 
-            //act
+            //assert
             Assert.AreEqual(movement.Speed, movement.Movement.Speed);
         }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void PlayCharacterMovement_SetsAndStartsActiveMovement()
+        {
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
+            var characterMovement = character.Movements.First();
+            characterMovement.Play();
 
+            Assert.AreEqual(character.ActiveMovement, characterMovement);
+            var mockMovement = Mock.Get<Movement>(characterMovement.Movement);
+            mockMovement.Verify(m => m.Start(character, null, 0));
+        }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void StopCharacterMovement_StopsAndResetsActiveMovement()
+        {
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
+            var characterMovement = character.Movements.First();
+            characterMovement.Play();
+
+            Assert.AreEqual(character.ActiveMovement, characterMovement);
+            var mockMovement = Mock.Get<Movement>(characterMovement.Movement);
+            mockMovement.Verify(m => m.Start(character, null, 0));
+
+            characterMovement.Stop();
+            Assert.AreEqual(character.ActiveMovement, null);
+            mockMovement.Verify(m => m.Stop(character));
+        }
     }
 
     [TestClass]
@@ -76,144 +145,316 @@ namespace HeroVirtualTabletop.Movement
 
         [TestMethod]
         [TestCategory("Movement")]
-        public void MoveCharacterForwardToDestination_TurnsDesktopCharacterToDestinationAndstartsMovingToDestination()
+        public async Task MoveCharacterForwardToDestination_TurnsDesktopCharacterToDestinationAndStartsMovingToDestination()
         {
-            //assert
+            // arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
 
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
-            //act
-            movement.MoveForwardTo(character, destination);
-            //assert
+
+            // act
+            await movement.MoveForwardTo(new List<MovableCharacter> { character }, destination);
+            // assert
             DesktopNavigator desktopNavigator = character.DesktopNavigator;
             var mocker2 = Mock.Get<Position>(character.Position);
             mocker2.Verify(x => x.TurnTowards(destination));
 
             var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
-            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, destination, movement.Speed, movement.HasGravity));
-
+            mocker.Verify(x => x.NavigateToDestination(character.Position, destination, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()));
         }
         [TestMethod]
         [TestCategory("Movement")]
-        public void MoveCharacteDirection_ActivatesCorrectMovementAbilityOnce()
+        public async Task MoveCharacterInDirection_ActivatesCorrectMovementAbilityOnce()
         {
-            //arrange
+            // arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             Movement movement = TestObjectFactory.MovementUnderTest;
-            Position destination = TestObjectFactory.MockPosition;
-            //act
-            movement.Move(character, Direction.Left, destination, 0f);
-            movement.Move(character, Direction.Left, destination, 0f);
-            //assert
+            character.DesktopNavigator.Destination = null;
+            // act
+            await movement.Move(character, Direction.Left);
+            await movement.Move(character, Direction.Left);
+            // assert
             var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Left).Ability);
-            mocker.Verify(x => x.Play(character), Times.Once);
-            Assert.AreEqual(character.DesktopNavigator.Direction, Direction.Left);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(character))), Times.Once);
         }
         [TestMethod]
         [TestCategory("Movement")]
-        public void MoveCharacterDifferentDirection_ActivatesBothMovementAbilitiesForEachDirection()
+        public async Task MoveCharacterDifferentDirections_ActivatesBothMovementAbilitiesForEachDirection()
         {
-            //arrange
+            // arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             Movement movement = TestObjectFactory.MovementUnderTest;
-            Position destination = TestObjectFactory.MockPosition;
-            //act
-            movement.Move(character, Direction.Left, destination, 0f);
+            character.DesktopNavigator.Destination = null;
+            
+            // act
+            await movement.Move(character, Direction.Left);
+            await movement.Move(character, Direction.Right);
+            // assert
             var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Left).Ability);
-            mocker.Verify(x => x.Play(character), Times.Once);
-            //assert
-            movement.Move(character, Direction.Right, destination, 0f);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(character))), Times.Once);
             mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Right).Ability);
-            mocker.Verify(x => x.Play(character), Times.Once);
-            Assert.AreEqual(character.DesktopNavigator.Direction, Direction.Right);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(character))), Times.Once);
         }
         [TestMethod]
         [TestCategory("Movement")]
-        public void IncrementCharacteForward_IncrementsPosition()
+        public async Task MoveCharacter_NavigatesAhead()
         {
-            //arrange
+            // arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            character.DesktopNavigator.Destination = null;
             character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
             Movement movement = TestObjectFactory.MovementUnderTest;
-            //act
-            movement.Move(character, Direction.Forward);
-            //assert
+            // act
+            await movement.Move(character, Direction.Forward);
+            // assert
             DesktopNavigator desktopNavigator = character.DesktopNavigator;
             var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
-            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Forward, It.Is<PositionImpl>(p => p.Vector == character.Position.FacingVector), movement.Speed, movement.HasGravity));
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()));
         }
         [TestMethod]
         [TestCategory("Movement")]
-        public void TurnCharacter_IncrementsTurn()
+        public async Task TurnCharacter_IncrementsTurn()
         {
-            //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithkDesktopCharacter;
+            // arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithDesktopNavigator;
+            character.MemoryInstance.Position = TestObjectFactory.MockPosition;
             Movement movement = TestObjectFactory.MovementUnderTest;
-            //act
-            movement.Turn(character, TurnDirection.Right, 20);
-            //assert
+            // act
+            await movement.Turn(character, TurnDirection.Right, 20);
+            // assert
             var mocker = Mock.Get<Position>(character.Position);
             mocker.Verify(
                 x => x.Turn(TurnDirection.Right, 20));
 
-
-            //act
-            movement.Turn(character, TurnDirection.Right);
-            //assert
+            // act
+            await movement.Turn(character, TurnDirection.Right);
+            // assert
             mocker.Verify(
                 x => x.Turn(TurnDirection.Right, 5));
         }
+        
         [TestMethod]
         [TestCategory("Movement")]
-        public void MoveCharacteToDestination_IncrementsPositionUntilDestinationReached()
+        public async Task SettingGravityOnMove_ThenNavigatesWithgravity()
         {
-            //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithkDesktopCharacter;
-            character.MemoryInstance.Position = TestObjectFactory.PositionUnderTest;
-            Movement movement = TestObjectFactory.MovementUnderTest;
-
-            Position destination = TestObjectFactory.PositionUnderTest;
-            character.Position.X = character.Position.X + 20;
-            character.Position.Y = character.Position.Y + 20;
-            character.Position.Z = character.Position.Z + 20;
-            //act
-            movement.Move(character, Direction.Left, destination, 0f);
-            //assert
-            float calc;
-            Assert.IsTrue(character.Position.IsWithin(5, destination, out calc));
-        }
-        [TestMethod]
-        [TestCategory("Movement")]
-        public void SettingGravityOnMove_ThenNavigatesWithgravity()
-        {
-            //arrange
+            // arrange
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
-            //act
+            // act
             movement.HasGravity = true;
-            movement.Move(character, Direction.Left, destination, 0f);
-            //assert
+            await movement.Move(character, Direction.Left, destination, 0f);
+            // assert
             DesktopNavigator desktopNavigator = character.DesktopNavigator;
             var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
-            mocker.Verify(x => x.NavigateCollisionsToDestination(character.Position, Direction.Left, destination, movement.Speed, true));
+            mocker.Verify(x => x.NavigateToDestination(character.Position, destination, Direction.Left, movement.Speed, true, It.IsAny<List<Position>>()));
         }
         [TestMethod]
         [TestCategory("Movement")]
-        public void TurnTowardsDestination_TurnsPositionOfCharacter()
+        public async Task TurnTowardsDestination_TurnsPositionOfCharacter()
         {
-            //arrange
-            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithkDesktopCharacter;
+            // arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithDesktopNavigator;
+            character.MemoryInstance.Position = TestObjectFactory.MockPosition;
             Movement movement = TestObjectFactory.MovementUnderTest;
             Position destination = TestObjectFactory.MockPosition;
-            //act
-            movement.TurnTowardDestination(character, destination);
-            //assert
+            // act
+            await movement.TurnTowardDestination(character, destination);
+            // assert
             var mocker = Mock.Get<Position>(character.Position);
             mocker.Verify(
                 x => x.TurnTowards(destination));
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveBackAfterCollision_CanMoveAwayFromCollision()
+        {
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
+            character.DesktopNavigator.Destination = null;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+
+            DesktopNavigator desktopNavigator = character.DesktopNavigator;
+            var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
+            // first move the character forward normally
+            character.DesktopNavigator.IsInCollision = false;
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
+            // now set collision and see if character navigates
+            mocker.ResetCalls();
+            character.DesktopNavigator.IsInCollision = true;
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Never);
+            // now try to move back and test again
+            mocker.ResetCalls();
+            await movement.Move(character, Direction.Backward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Backward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
+            Assert.IsFalse(character.DesktopNavigator.IsInCollision);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task TurnAfterCollision_CanTurnAwayfromCollions()
+        {
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            character.Position.FacingVector = TestObjectFactory.MockPosition.Vector;
+            character.DesktopNavigator.Destination = null;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+
+            DesktopNavigator desktopNavigator = character.DesktopNavigator;
+            var mocker = Mock.Get<DesktopNavigator>(desktopNavigator);
+            // first move the character forward normally
+            character.DesktopNavigator.IsInCollision = false;
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
+            // now set collision and see if character navigates
+            mocker.ResetCalls();
+            character.DesktopNavigator.IsInCollision = true;
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, true, It.IsAny<List<Position>>()), Times.Never);
+            // now try to turn around and test again
+            mocker.ResetCalls();
+            await movement.Turn(character, TurnDirection.Right);
+            Assert.IsFalse(character.DesktopNavigator.IsInCollision);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveCharacterForward_AlignsGhostInNewPosition()
+        {
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            
+            MovableCharacter character = TestObjectFactory.MockMovableCharacterWithActionGroupsAndActiveMovement;
+
+            character.DesktopNavigator = TestObjectFactory.MockDesktopNavigator;
+            await movement.Move(character, Direction.Forward);
+            Mock.Get<MovableCharacter>(character).Verify(mc => mc.AlignGhost());
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveCharacter_PlaysStillWhenReadyToMove()
+        {
+            // arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            character.DesktopNavigator.Destination = null;
+            // act
+            await movement.Move(character, Direction.Left);
+            await movement.Move(character, Direction.Right);
+            // assert
+            var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Still).Ability);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(character))), Times.Once);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveToDestination_PlaysStillAfterReachingDestination()
+        {
+            // arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            // act
+            await movement.MoveForwardTo(character, character.DesktopNavigator.Destination);
+            // assert
+            var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Still).Ability);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(character))), Times.Once);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveMultipleCharacters_OnlyNavigatesTheLeader()
+        {
+            // arrange
+            MovableCharacter characterLeader = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter characterFollower = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            characterLeader.IsGangLeader = true;
+            characterFollower.IsGangLeader = false;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            // act
+            await movement.Move(new List<MovableCharacter> { characterLeader, characterFollower}, Direction.Forward);
+            // assert
+            var navLeader = characterLeader.DesktopNavigator;
+            var navFollower = characterFollower.DesktopNavigator;
+            var mocker = Mock.Get<DesktopNavigator>(navLeader);
+            mocker.Verify(x => x.Navigate(characterLeader.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
+            mocker = Mock.Get<DesktopNavigator>(navFollower);
+            mocker.Verify(x => x.Navigate(characterFollower.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Never);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveMultipleCharacters_PlaysAppropriateMovementAbilityForAllTheCharacters()
+        {
+            // arrange
+            MovableCharacter characterLeader = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter characterFollower = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            characterLeader.IsGangLeader = true;
+            characterFollower.IsGangLeader = false;
+            List<MovableCharacter> charactersToMove = new List<MovableCharacter> { characterLeader, characterFollower };
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            // act
+            await movement.Move(charactersToMove, Direction.Forward);
+            // assert
+            var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Forward).Ability);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(y => y.Contains(characterLeader) && y.Contains(characterFollower))), Times.Once);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task MoveMultipleCharacters_SynchronizesAdvancementWithLeader()
+        {
+            // arrange
+            MovableCharacter characterLeader = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter characterFollower = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            characterLeader.IsGangLeader = true;
+            characterFollower.IsGangLeader = false;
+            List<MovableCharacter> charactersToMove = new List<MovableCharacter> { characterLeader, characterFollower };
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            //act
+            await movement.Move(charactersToMove, Direction.Forward);
+            //assert
+            var mocker = Mock.Get<DesktopNavigator>(characterLeader.DesktopNavigator);
+            mocker.Verify(x => x.Navigate(characterLeader.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.Is<List<Position>>(t => t.Contains(characterFollower.Position))), Times.Once);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task TurnMultipleCharacters_TurnsAllOfThem()
+        {
+            // arrange
+            MovableCharacter characterLeader = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            characterLeader.MemoryInstance.Position = TestObjectFactory.MockPosition;
+            MovableCharacter characterFollower = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            characterLeader.IsGangLeader = true;
+            characterFollower.IsGangLeader = false;
+            List<MovableCharacter> charactersToMove = new List<MovableCharacter> { characterLeader, characterFollower };
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            //act
+            await movement.Turn(charactersToMove, TurnDirection.Right, 10);
+            //assert
+            var mocker = Mock.Get<Position>(characterLeader.Position);
+            mocker.Verify(x => x.Turn(TurnDirection.Right, 10));
+            mocker = Mock.Get<Position>(characterFollower.Position);
+            mocker.Verify(x => x.Turn(TurnDirection.Right, 10));
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task Pause_PreventsNavigationUntilResumed()
+        {
+            // arrange
+            MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            character.DesktopNavigator.Destination = null;
+
+            var mocker = Mock.Get<DesktopNavigator>(character.DesktopNavigator);
+            // see if it moves without pausing
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
+            // now pause and test
+            mocker.ResetCalls();
+            movement.Pause(character);
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Never);
+            // now resume and test
+            mocker.ResetCalls();
+            movement.Resume(character);
+            await movement.Move(character, Direction.Forward);
+            mocker.Verify(x => x.Navigate(character.Position, Direction.Forward, movement.Speed, movement.HasGravity, It.IsAny<List<Position>>()), Times.Once);
         }
     }
 
@@ -233,6 +474,12 @@ namespace HeroVirtualTabletop.Movement
             new TypeRelay(
                 typeof(CharacterMovement),
                 typeof(CharacterMovementImpl)));
+
+            StandardizedFixture.Customize<MovementImpl>(t => t
+            .With(x => x.HasGravity, true)
+            .With(x => x.IsPaused, false)
+            .With(x => x.Speed, 2)
+            );
         }
 
         public MovableCharacter MovableCharacterUnderTest
@@ -240,7 +487,6 @@ namespace HeroVirtualTabletop.Movement
             get
             {
                 var movableCharacter = StandardizedFixture.Build<MovableCharacterImpl>()
-                .Without(x => x.ActiveMovement)
                 .Without(x => x.DesktopNavigator)
                 .Create();
 
@@ -250,22 +496,83 @@ namespace HeroVirtualTabletop.Movement
             }
         }
 
+        public MovableCharacter DefaultCharacterUnderTest
+        {
+            get
+            {
+                var movableCharacter = StandardizedFixture.Build<MovableCharacterImpl>()
+                .Without(x => x.DesktopNavigator)
+                .Create();
+
+                movableCharacter.CharacterActionGroups = GetStandardCharacterActionGroup(movableCharacter);
+                movableCharacter.Name = DefaultAbilities.CHARACTERNAME;
+                DefaultAbilities.DefaultCharacter = movableCharacter;
+
+                AnimatedCharacterRepository repo = AnimatedCharacterRepositoryUnderTest;
+                repo.Characters.Add(movableCharacter);
+                movableCharacter.Repository = repo;
+
+                Movement movement1 = MovementUnderTest;
+                movement1.Name = "Walk";
+                movableCharacter.AddMovement(movement1);
+                Movement movement2 = MovementUnderTest;
+                movement2.Name = "Run";
+                movableCharacter.AddMovement(movement2);
+                Movement movement3 = MovementUnderTest;
+                movement3.Name = "Swim";
+                movableCharacter.AddMovement(movement3);
+                return movableCharacter;
+            }
+        }
+
         public MovableCharacter MovableCharacterUnderTestWithMockDesktopNavigator
         {
             get
             {
                 MovableCharacter character = MovableCharacterUnderTest;
-                character.DesktopNavigator = MockDesktopNavigator;
-                character.DesktopNavigator.Direction = Direction.None;
+                var mockNavigator = MockDesktopNavigator;
+                mockNavigator.Direction = Direction.None;
+                mockNavigator.IsInCollision = false;
+                character.DesktopNavigator = mockNavigator;
+                character.Movements.Active = MockCharacterMovement;
+                character.ActiveMovement.IsPaused = false;
+                character.ActiveMovement.IsCharacterTurning = false;
+                character.ActiveMovement.IsCharacterMovingToDestination = false;
+
+                Mock.Get<DesktopNavigator>(mockNavigator).Setup(t => t.ChangeDirection(It.IsAny<Direction>())).Callback((Direction d) => 
+                {
+                    mockNavigator.PreviousDirection = mockNavigator.Direction;
+                    if (d != Direction.None)
+                        mockNavigator.Direction = d;
+                });
+                Mock.Get<DesktopNavigator>(mockNavigator).Setup(t => t.ResetNavigation()).Callback(() =>
+                {
+                    mockNavigator.IsInCollision = false;
+                    mockNavigator.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+                    mockNavigator.PreviousDirection = Direction.None;
+                    mockNavigator.Destination = null;
+                });
                 return character;
             }
         }
-
         public MovableCharacter MockMovableCharacter
         {
             get
             {
-                return CustomizedMockFixture.Create<MovableCharacter>();
+                var movableCharacter = CustomizedMockFixture.Create<MovableCharacter>();
+                return movableCharacter;
+            }
+        }
+        public MovableCharacter MockMovableCharacterWithActionGroupsAndActiveMovement
+        {
+            get
+            {
+                var movableCharacter = CustomizedMockFixture.Create<MovableCharacter>();
+                var actionGroups = GetStandardCharacterActionGroup(movableCharacter);
+                Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.Movements).Returns(() => actionGroups[2] as CharacterActionList<CharacterMovement>);
+                Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.ActiveMovement).Returns(() => MockCharacterMovement);
+
+                return movableCharacter;
             }
         }
 
@@ -278,6 +585,11 @@ namespace HeroVirtualTabletop.Movement
                 Movement m = StandardizedFixture.Build<MovementImpl>().Create();
                 m.AddMovementMember(Direction.Left, MockAnimatedAbility);
                 m.AddMovementMember(Direction.Right, MockAnimatedAbility);
+                m.AddMovementMember(Direction.Forward, MockAnimatedAbility);
+                m.AddMovementMember(Direction.Backward, MockAnimatedAbility);
+                m.AddMovementMember(Direction.Upward, MockAnimatedAbility);
+                m.AddMovementMember(Direction.Downward, MockAnimatedAbility);
+                m.AddMovementMember(Direction.Still, MockAnimatedAbility);
                 return m;
 
             }
@@ -285,7 +597,7 @@ namespace HeroVirtualTabletop.Movement
 
         public Movement MockMovement => CustomizedMockFixture.Create<Movement>();
 
-        public MovableCharacter MovableCharacterUnderTestwithCharacterMovement
+        public MovableCharacter MovableCharacterUnderTestWithCharacterMovement
         {
             get
             {
@@ -304,21 +616,69 @@ namespace HeroVirtualTabletop.Movement
             }
         }
 
-        public MovableCharacter MovableCharacterUnderTestWithkDesktopCharacter
+        public MovableCharacter MovableCharacterUnderTestwithMockCharacterMovement
         {
             get
             {
                 MovableCharacter character = MovableCharacterUnderTest;
-                character.Position.Vector = new Vector3(character.Position.X, character.Position.Y, character.Position.Z);
+                MovableCharacter defaultCharacter = MovableCharacterUnderTest;
+                defaultCharacter.Name = DefaultAbilities.CHARACTERNAME;
+                DefaultAbilities.DefaultCharacter = defaultCharacter;
+                AnimatedCharacterRepository repo = AnimatedCharacterRepositoryUnderTest;
+                repo.Characters.Add(character);
+                repo.Characters.Add(defaultCharacter);
+                character.Repository = repo;
+                CharacterMovement mockCharacerMovement = MockCharacterMovement;
+                character.Movements.InsertAction(MockCharacterMovement);
+                return character;
+
+            }
+        }
+
+        public MovableCharacter MovableCharacterUnderTestWithDesktopNavigator
+        {
+            get
+            {
+                MovableCharacter character = MovableCharacterUnderTest;
+                character.MemoryInstance.Position = PositionUnderTest;
+                character.MemoryInstance.Position.Vector = new Vector3(100, 10, 200);
                 character.DesktopNavigator = DesktopNavigatorUnderTest;
+                character.DesktopNavigator.PositionBeingNavigated = character.Position;
                 IconInteractionUtility utility = MockInteractionUtility;
                 character.DesktopNavigator.CityOfHeroesInteractionUtility = utility;
-                character.DesktopNavigator.PositionBeingNavigated = PositionUnderTest;
-                character.DesktopNavigator.PositionBeingNavigated.Size = 0;
                 character.DesktopNavigator.Destination = PositionUnderTest;
-                character.DesktopNavigator.Destination.X = character.DesktopNavigator.PositionBeingNavigated.X * 4;
-                character.DesktopNavigator.Destination.Y = character.DesktopNavigator.PositionBeingNavigated.Y * 4;
-                character.DesktopNavigator.Destination.Z = character.DesktopNavigator.PositionBeingNavigated.Z * 4;
+                character.DesktopNavigator.Destination.Vector = new Vector3(200, 20, 400);
+                Mock.Get<IconInteractionUtility>(utility).Setup(t => t.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>())).Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        return Vector3.Zero;
+                    }
+                    );
+                character.Movements.Active = MockCharacterMovement;
+                return character;
+            }
+        }
+        public MovableCharacter MovableCharacterUnderTestWithDesktopNavigatorWithCollision
+        {
+            get
+            {
+                MovableCharacter character = MovableCharacterUnderTest;
+                character.MemoryInstance.Position = PositionUnderTest;
+                character.MemoryInstance.Position.Vector = new Vector3(100, 0, 200);
+                character.DesktopNavigator = DesktopNavigatorUnderTest;
+                character.DesktopNavigator.PositionBeingNavigated = character.Position;
+                IconInteractionUtility utility = MockInteractionUtility;
+                character.DesktopNavigator.CityOfHeroesInteractionUtility = utility;
+                character.DesktopNavigator.Destination = PositionUnderTest;
+                character.DesktopNavigator.Destination.Vector = new Vector3(200, 0, 200);
+                Mock.Get<IconInteractionUtility>(utility).Setup(t => t.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>())).Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        return new Vector3(150, 4, 200);
+                    }
+                    );
+                utility.Collision = new Vector3(150, 4, 200);
+                character.Movements.Active = MockCharacterMovement;
                 return character;
             }
         }

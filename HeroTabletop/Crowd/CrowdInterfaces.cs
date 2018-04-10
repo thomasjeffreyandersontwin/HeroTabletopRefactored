@@ -29,6 +29,7 @@ namespace HeroVirtualTabletop.Crowd
         CharacterCrowdMember NewCharacterCrowdMember(Crowd parent = null, string name = "Character");
         string CreateUniqueName(string name, IEnumerable<CrowdMember> context);
         void AddDefaultCharacter();
+        void AddDefaultMovementsToCharacters();
         Task LoadCrowdsAsync();
         Task SaveCrowdsAsync();
         void AddCrowd(Crowd crowd);
@@ -42,6 +43,7 @@ namespace HeroVirtualTabletop.Crowd
         ObservableCollection<CrowdMember> Members { get; }
         Dictionary<string, CrowdMember> MembersByName { get; }
         bool IsExpanded { get; set; }
+        //bool IsGangMode { get; set; }
         bool ContainsMember(CrowdMember member);
         void MoveCrowdMemberAfter(CrowdMember destination, CrowdMember crowdToMove);
         void AddManyCrowdMembers(List<CrowdMember> member);

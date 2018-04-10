@@ -20,6 +20,11 @@ namespace HeroVirtualTabletop.Movement
         {
             get
             {
+                TestObjectsFactory.StandardizedFixture.Customize<MovementEditorViewModelImpl>(x => x
+                .Without(y => y.CameraMode)
+                .Without(y => y.CharacterMovementInAction)
+                .Without(y => y.CharactersToMove)
+                .Without(y => y.CurrentInputKey));
                 var movementEditorVM = TestObjectsFactory.StandardizedFixture.Create<MovementEditorViewModelImpl>();
                 movementEditorVM.EventAggregator = TestObjectsFactory.MockEventAggregator;
                 movementEditorVM.CurrentCharacterMovement = TestObjectsFactory.CharacterMovementUnderTestWithMockOwner;

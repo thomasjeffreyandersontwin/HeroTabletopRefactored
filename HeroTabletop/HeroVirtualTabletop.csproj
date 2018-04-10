@@ -56,6 +56,10 @@
     <Reference Include="irrKlang.NET4">
       <HintPath>lib\irrKlang.NET4.dll</HintPath>
     </Reference>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MemorySharp, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\MemorySharp.1.2.0\lib\MemorySharp.dll</HintPath>
       <Private>True</Private>
@@ -142,10 +146,13 @@
     <Compile Include="Attack\AttackTestsuite.cs" />
     <Compile Include="Common\AsyncDelegateExecuter.cs" />
     <Compile Include="Desktop\DesktopContextMenu.cs" />
+    <Compile Include="Desktop\DesktopKeyEventHandler.cs" />
     <Compile Include="Desktop\DesktopMouseEventHandler.cs" />
     <Compile Include="Desktop\DesktopMouseHoverElement.cs" />
     <Compile Include="Desktop\DesktopTargetObserver.cs" />
     <Compile Include="Desktop\MemoryManager.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="Logging\LogManagerImpl.cs" />
     <Compile Include="ManagedCharacter\Camera.cs" />
     <Compile Include="ManagedCharacter\CharacterActionList.cs" />
     <Compile Include="Common\OrderedCollection.cs" />
@@ -182,6 +189,9 @@
     <EmbeddedResource Include="Desktop\areaattack.mnu" />
     <EmbeddedResource Include="Desktop\character.mnu" />
     <EmbeddedResource Include="ManagedCharacter\costumes.zip" />
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

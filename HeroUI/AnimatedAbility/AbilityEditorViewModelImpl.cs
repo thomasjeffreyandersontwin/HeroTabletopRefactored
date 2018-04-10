@@ -18,7 +18,7 @@ using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
-    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<ExecuteAnimatedAbilityEvent>,
+    public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<PlayAnimatedAbilityEvent>,
         IHandle<LaunchAttackEvent>
     {
         #region Fields
@@ -936,9 +936,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.ExecuteAnimatedAbility(this.CurrentAbility);
         }
 
-        public void Handle(ExecuteAnimatedAbilityEvent message)
+        public void Handle(PlayAnimatedAbilityEvent message)
         {
-            this.ExecuteAnimatedAbility(message.AbilityToExecute);
+            this.ExecuteAnimatedAbility(message.AbilityToPlay);
         }
 
         public void ExecuteAnimatedAbility(AnimatedAbility ability)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HeroVirtualTabletop.Movement;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,12 +52,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
     }
 
-    public class ExecuteAnimatedAbilityEvent
+    public class PlayAnimatedAbilityEvent
     {
-        public AnimatedAbility AbilityToExecute { get; set; }
-        public ExecuteAnimatedAbilityEvent(AnimatedAbility ability)
+        public AnimatedAbility AbilityToPlay { get; set; }
+        public PlayAnimatedAbilityEvent(AnimatedAbility ability)
         {
-            this.AbilityToExecute = ability;
+            this.AbilityToPlay = ability;
         }
     }
 }

@@ -196,7 +196,27 @@ namespace HeroVirtualTabletop.Desktop
         [JsonIgnore]
         public Vector3 Vector
         {
-            get { return new Vector3(X, Y, Z); }
+            get
+            {
+                var x = X;
+                var y = Y;
+                var z = Z;
+                while (true)
+                {
+                    if ((x != 0f && Math.Abs(x) < 0.01f) || (y != 0f && Math.Abs(y) < 0.01f) || (z != 0f && Math.Abs(z) < 0.01f))
+                    {
+                        Thread.Sleep(5);
+                        x = X;
+                        y = Y;
+                        z = Z;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return new Vector3(x, y, z);
+            }
             set
             {
                 X = value.X;
@@ -328,7 +348,7 @@ namespace HeroVirtualTabletop.Desktop
                 Thread.Sleep(5);
             }
         }
-        public void Turn(TurnDirection turnDirection, float rotationAngle = 5)
+        public void Turn(TurnDirection turnDirection, double rotationAngle = 5)
         {
             Direction rotationAxis = GetRotationAxis(turnDirection);
             Vector3 currentPositionVector = RotationMatrix.Translation;
@@ -374,8 +394,6 @@ namespace HeroVirtualTabletop.Desktop
 
             RotationMatrix *= rotatedMatrix; // Apply rotation
             Vector = currentPositionVector; // Keep position intact;
-
-
         }
         public void Face(Position target)
         {
@@ -449,7 +467,7 @@ namespace HeroVirtualTabletop.Desktop
             var a1 = tr * rotationAxisX * rotationAxisX + Math.Cos(rotationAngleRadian);
             //a2 = (t(r) * X * Y) - (sin(r) * Z)
             var a2 = tr * rotationAxisX * rotationAxisY - Math.Sin(rotationAngleRadian) * rotationAxisZ;
-            //a3 = (t(r) * X * Z) + (sin(r) * Y)
+            //a3 = (t(r) * X * Z) + (sin(r) * Y)---+
             var a3 = tr * rotationAxisX * rotationAxisZ + Math.Sin(rotationAngleRadian) * rotationAxisY;
             //b1 = (t(r) * X * Y) + (sin(r) * Z)
             var b1 = tr * rotationAxisX * rotationAxisY + Math.Sin(rotationAngleRadian) * rotationAxisZ;
@@ -632,8 +650,8 @@ namespace HeroVirtualTabletop.Desktop
     {
         public PositionLocationPartImpl(PositionBodyLocation part, Position position)
         {
-           ParentPosition = position;
             Part = part;
+            ParentPosition = position;
         }
 
         private Position _parentPosition;
@@ -682,7 +700,7 @@ namespace HeroVirtualTabletop.Desktop
         public Vector3 GetDestinationVector(Vector3 destination)
         {
             return 
-                new Vector3(destination.X + OffsetVector.X, destination.Y + OffsetVector.Y, destination.Z + OffsetVector.Z);
+                new Vector3(destination.X + Vector.X, destination.Y + Vector.Y, destination.Z + Vector.Z);
 
         }
 

@@ -66,9 +66,11 @@ namespace HeroUI
             container.Singleton<KeyBindCommandGenerator, KeyBindCommandGeneratorImpl>();
             container.Singleton<DesktopCharacterTargeter, DesktopCharacterTargeterImpl>();
             container.Singleton<DesktopMouseEventHandler, DesktopMouseEventHandlerImpl>();
+            container.Singleton<DesktopKeyEventHandler, DesktopKeyEventHandlerImpl>();
             container.Singleton<DesktopMouseHoverElement, DesktopMouseHoverElementImpl>();
             container.Singleton<DesktopContextMenu, DesktopContextMenuImpl>();
             container.Singleton<DesktopTargetObserver, DesktopTargetObserverImpl>();
+            container.Singleton<DesktopNavigator, DesktopNavigatorImpl>();
             container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
             container.Singleton<AbilityClipboard, AbilityClipboardImpl>();
             container.Singleton<ActiveCharacterWidgetViewModel, ActiveCharacterWidgetViewModelImpl>();

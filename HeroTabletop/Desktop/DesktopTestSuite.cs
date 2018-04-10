@@ -9,6 +9,8 @@ using Ploeh.AutoFixture.AutoMoq;
 using Ploeh.AutoFixture.Kernel;
 using Xceed.Wpf.Toolkit;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace HeroVirtualTabletop.Desktop
 {
@@ -394,97 +396,501 @@ namespace HeroVirtualTabletop.Desktop
 
         [TestMethod]
         [TestCategory("DesktopCharacterNavigator")]
-        public void NavigateToDestinationWithCollision_StopAtCollision()
-        {           
-            //arrange
-            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithCollision;
-            Position moving = navigator.PositionBeingNavigated;
-            moving.Yaw = 0;
-            moving.Pitch = 0;
-            Position destination = navigator.Destination;
-            navigator.Direction = Direction.Forward;
-            navigator.Speed = 100f;
-            navigator.UsingGravity = false;
-            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
-
-            navigator.Navigate();
-
-            Assert.AreEqual(collision.X, moving.X);
-            Assert.AreEqual(collision.Y, moving.Y);
-            Assert.AreEqual(collision.Z, moving.Z);
-
-        }
-        [TestMethod]
-        [TestCategory("DesktopCharacterNavigator")]
-        public void NavigateToDestinationWithNoCollision_StopAtDestination()
+        public async Task NavigateToDestinationWithNoCollision_StopsAfterReachingDestination()
         {
             //arrange
-            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithCollision;
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
             navigator.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;
             Position moving = navigator.PositionBeingNavigated;
-            moving.Yaw = 0;
-            moving.Pitch = 0;
             Position destination = navigator.Destination;
 
             //act
-            navigator.Direction = Direction.Forward;
-            navigator.Speed = 100f;
-            navigator.UsingGravity = false;   
-            navigator.Navigate();
-
-            Assert.AreEqual( destination.X, moving.X);
-            Assert.AreEqual(destination.Y, moving.Y);
-            Assert.AreEqual(destination.Z, moving.Z);
+            await navigator.NavigateToDestination(moving, destination, Direction.Forward, 10f, false);
+            var distance = Vector3.Distance(moving.Vector, destination.Vector);
+            Assert.IsTrue(distance < 5);
         }
 
         [TestMethod]
         [TestCategory("DesktopCharacterNavigator")]
-        public void NavigatePositionWithBodyToDestinationWithACollision_StopsAheadOfCollisionBasedOnPositionSize()
+        public async Task NavigateToDestinationWithCollision_StopsAtCollision()
         {
             //arrange
-            DesktopNavigator navigator = TestObjectsFactory
-                .DesktopNavigatorUnderTestWithMovingPositionBelowDestinationPositionsAndMockUtilityWithCollisionAboveMovingPosition;
-
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMidwayCollision;
+            navigator.CityOfHeroesInteractionUtility.Collision = new Vector3(150, 0, 100);
             Position moving = navigator.PositionBeingNavigated;
-            moving.Yaw = 0;
-            moving.Pitch = 0;
-            Vector3 movingStart = moving.Vector;
-            Vector3 movingTopBodyLocation = moving.BodyLocations[PositionBodyLocation.Top].Vector;
-
             Position destination = navigator.Destination;
 
-            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
-            Vector3 collisionOffSet = navigator.OffsetOfPositionBodyLocationClosestToCollision;
-
             //act
+            await navigator.NavigateToDestination(moving, destination, Direction.Forward, 10f, false);
+            //assert
+            var distance = Vector3.Distance(moving.Vector, destination.Vector);
+            Assert.IsTrue(distance > 5);
+            distance = Vector3.Distance(moving.Vector, navigator.CityOfHeroesInteractionUtility.Collision);
+            Assert.IsTrue(distance < 5);
+        }
+
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithNoCollision_MovesOneStepInMovingDirection()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            navigator.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;
+            Position moving = navigator.PositionBeingNavigated;
+
+            ////act
             navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = false;
             navigator.Speed = 10f;
-            navigator.UsingGravity = false;       
-            navigator.Navigate();
-            
-            //assert - distance should be from the top vector
-            float expectedDistance = Vector3.Distance(movingTopBodyLocation, collision);
-            float actualDistance = Vector3.Distance(movingStart, moving.Vector);
+            navigator.UsingGravity = false;
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
 
-            Assert.AreEqual(expectedDistance, actualDistance);
-            //assert sumthin with bodypart offsets and direction trvelled
-            Assert.AreEqual(moving.X, collision.X - collisionOffSet.X);
-            Assert.AreEqual(moving.Y, collision.Y - collisionOffSet.Y);
-            Assert.AreEqual(moving.Z, collision.Z- collisionOffSet.Z);
-        }
-
-        public void NavigatePositionWithBodyToDestinationWithACollisionInFrontOfOneBodyPart_StopsAtCollisionBlockingSpecific()
-        {
-        }
-        public void NavigateWithGravityAlongIncliningFloor_SuccesfullyMovesCharacterAlongFloor()
-        {
+            await navigator.Navigate();
             
+            //assert
+            Assert.AreEqual(nextTravelPoint.X, moving.X);
+            Assert.AreEqual(nextTravelPoint.Y, moving.Y);
+            Assert.AreEqual(nextTravelPoint.Z, moving.Z);
         }
-        void NavigateWithGravityAlongDecliningFloor_CharacterContinuesTravellingfloor() { }      
-        void CharacterInCollisionWhoBacksOutOfCollion_CanBackOutSucessfully() { }      
-        void CharacterInCollisionWhoTurnsAway_CanMoveAwayfromCollions() { }
-        void NavigateCharacterWithGravityintoFloorThatIsTooSteepTWalk_CharacterStopsAtCollision() { }
-        void NavigateCharacterIntoAvoidableCollision_CharacterMovesAroundCollionToDestination() { }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task Navigate_SynchronizesSecondaryPositions()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorWithSecondaryPosisionsToSynchronize;
+            navigator.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;
+            Position moving = navigator.PositionBeingNavigated;
+
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = false;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+
+            await navigator.Navigate();
+
+            //assert
+            Position position = navigator.PositionsToSynchronize.First();
+            Mock.Get<Position>(position).Verify(x => x.MoveTo(It.IsAny<Vector3>()));
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithUpperBodyCollision_DoesNotMoveWhenCollisionIsImminent()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentCollision;
+            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
+            Position moving = navigator.PositionBeingNavigated;
+            Vector3 initialPositionVector = moving.Vector;
+            // Check that collision is very near
+            Assert.AreEqual(collision.X - 0.5, moving.X);
+            Assert.AreEqual(collision.Z - 0.5, moving.Z);
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+            await navigator.Navigate();
+
+            // Make sure character has not advanced to next position
+            Assert.AreNotEqual(nextTravelPoint.X, moving.X);
+            Assert.AreNotEqual(nextTravelPoint.Z, moving.Z);
+            // Now see if character stayed at same point as the beginning of the test
+            Assert.AreEqual(initialPositionVector, moving.Vector);
+
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithLowerBodyCollision_AdjustsTravelPointToAvoidCollision()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentLowerBodyCollision;
+            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
+            Position moving = navigator.PositionBeingNavigated;
+            // Make sure initially there are no adjustments
+            Assert.IsTrue(navigator.AdjustedDestination == Vector3.Zero);
+            Assert.IsTrue(navigator.AdjustmentVector == Vector3.Zero);
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+            await navigator.Navigate();
+            Assert.IsTrue(navigator.AdjustedDestination != Vector3.Zero);
+            Assert.IsTrue(navigator.AdjustmentVector != Vector3.Zero);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithGravityAlongIncliningFloor_SuccesfullyMovesAlongFloor()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithInclinedDestination;
+            Position moving = navigator.PositionBeingNavigated;
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.UsingGravity = true;
+            var dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            Assert.IsTrue(dest > 5);
+            int numSteps = 0;
+            while(dest > 5 && ++numSteps < 100)
+            {
+                await navigator.Navigate();
+                dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            }
+            Assert.IsTrue(dest < 5); // Successfully moved to dest
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithGravityAlongDecliningFloor_CharacterContinuesTravellingfloor()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithDeclinedDestination;
+            Position moving = navigator.PositionBeingNavigated;
+            // Make sure initially there are no adjustments
+            Assert.IsTrue(navigator.AdjustmentVector == Vector3.Zero);
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.UsingGravity = true;
+            var dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            Assert.IsTrue(dest > 5);
+            int numSteps = 0;
+            while (dest > 5 && ++numSteps < 100)
+            {
+                await navigator.Navigate();
+                dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            }
+            Assert.IsTrue(dest < 5); // Successfully moved to dest
+        }
+        
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithGravityintoFloorThatIsTooSteepToWalk_CharacterStopsAtCollision()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithSteepDestination;
+            Position moving = navigator.PositionBeingNavigated;
+            // Make sure initially there are no adjustments
+            Assert.IsTrue(navigator.AdjustmentVector == Vector3.Zero);
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.UsingGravity = true;
+            var dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            Assert.IsTrue(dest > 5);
+            int numSteps = 0;
+            while (dest > 5 && ++numSteps < 100)
+            {
+                await navigator.Navigate();
+                dest = Vector3.Distance(navigator.Destination.Vector, navigator.PositionBeingNavigated.Vector);
+            }
+            Assert.IsTrue(dest > 5); // Coudn't move to dest
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateWithGravity_KeepsCharacterOnGroundLevel()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithGroundCollisionConfigured;
+            Position moving = navigator.PositionBeingNavigated;
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.SetNavigationDirectionVector();
+            int numOfSteps = 10; // navigate 10 steps
+            while (--numOfSteps >= 0)
+            {
+                Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+                Assert.IsTrue(nextTravelPoint.Y > 0.5f); // calculated position is high
+                await navigator.Navigate();
+                Assert.AreNotEqual(moving.Y, nextTravelPoint.Y);
+                Assert.AreEqual(moving.Y, 0.5f); // Down to ground
+                navigator.PositionBeingNavigated.Y += 1; // Keep it higher to check next time
+            }
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateUpOrDownWithGravity_DoesNotApplyForUpwardOrDownwardMoves()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithGroundCollisionConfigured;
+            Position moving = navigator.PositionBeingNavigated;
+            // Setup mock to return ground collision lower than current Y
+
+            ////act
+            navigator.Direction = Direction.Upward;
+
+            navigator.SetNavigationDirectionVector();
+            int numOfSteps = 10; // navigate 10 steps
+            while (--numOfSteps >= 0)
+            {
+                Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+                Assert.IsTrue(nextTravelPoint.Y > 0.5f); // calculated position is high
+                await navigator.Navigate();
+                Assert.AreEqual(moving.Y, nextTravelPoint.Y);
+                Assert.AreNotEqual(moving.Y, 0.5f); // Gravity was not applied
+            }
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void CompensateAdjustedDestination_DestinationIsAdjustedBackAfterAvoidingCollision()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorWithAdjustedDestination;
+            Position moving = navigator.PositionBeingNavigated;
+            Assert.AreNotEqual(navigator.Destination.Vector, navigator.AdjustedDestination);
+            Assert.AreNotEqual(navigator.AdjustmentVector, Vector3.Zero);
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+            navigator.CompensateAdjustedDestination();
+
+            Assert.AreEqual(navigator.Destination.Vector, navigator.AdjustedDestination);
+            Assert.AreEqual(navigator.AdjustmentVector, Vector3.Zero);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void SetNavigationSpeed_SetsSpeedAsPerDestination()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            navigator.Destination = null;
+            navigator.IsNavigatingToDestination = false;
+            navigator.SetNavigationSpeed(0.5);
+            Assert.AreEqual(navigator.Speed, 0.5f); // Speed is as specified, since destination is not set
+            navigator.IsNavigatingToDestination = true;
+            navigator.Destination = TestObjectsFactory.PositionUnderTest;
+            navigator.Destination.Vector = new Vector3(300, 0, 100);
+            navigator.SetNavigationSpeed(0.5);
+            var speed = navigator.Speed;
+            Assert.AreNotEqual(speed, 0.5f); // Speed has been adjusted based on destination
+            navigator.Destination.Vector = new Vector3(600, 0, 100);
+            navigator.SetNavigationSpeed(0.5);
+            Assert.IsTrue(navigator.Speed > speed); // Speed has increased with destination
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void SetNavigationDirectionVector_SetsNavigationDirectionToMovingDirection()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            navigator.IsNavigatingToDestination = true;
+            navigator.SetNavigationDirectionVector();
+            var navDirectionVector = navigator.NavigationDirectionVector;
+            float distance = Vector3.Distance(navigator.PositionBeingNavigated.Vector, navigator.Destination.Vector);
+            var finalPosVectorAlongThisDirection = navigator.PositionBeingNavigated.Vector + distance * navDirectionVector;
+            Assert.AreEqual(navigator.Destination.Vector, finalPosVectorAlongThisDirection);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void ChangeDirection_UpdatesCurrentAndPreviousDirection()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            navigator.Direction = Direction.Left;
+            Assert.IsTrue(navigator.PreviousDirection == Direction.None);
+            navigator.ChangeDirection(Direction.Right);
+            Assert.IsTrue(navigator.PreviousDirection == Direction.Left);
+            Assert.IsTrue(navigator.Direction == Direction.Right);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task ResetNavigation_ClearsNavigationParameters()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithSteepDestination;
+            Position moving = navigator.PositionBeingNavigated;
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.UsingGravity = true;
+
+            int numOfSteps = 10; // navigate 10 steps
+            
+            while (--numOfSteps >= 0)
+            {
+                if (numOfSteps == 5)
+                    navigator.ChangeDirection(Direction.Right);
+                await navigator.Navigate();
+            }
+            Assert.IsTrue(navigator.IsInCollision);
+            Assert.IsTrue(navigator.LastCollisionFreePointInCurrentDirection != new Vector3(float.MinValue));
+            Assert.IsTrue(navigator.PreviousDirection == Direction.Forward);
+            Assert.IsTrue(navigator.Destination != null);
+            Assert.IsTrue(navigator.AdjustedDestination != Vector3.Zero);
+
+            navigator.ResetNavigation();
+
+            Assert.IsFalse(navigator.IsInCollision);
+            Assert.IsTrue(navigator.LastCollisionFreePointInCurrentDirection == new Vector3(float.MinValue));
+            Assert.IsTrue(navigator.PreviousDirection == Direction.None);
+            Assert.IsTrue(navigator.Destination == null);
+            Assert.IsTrue(navigator.AdjustedDestination == Vector3.Zero);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetNearestAvailableIncrementalVectorTowardsDestination_ReturnsNextIncrementalTravelPointWhenThereIsNoCollision()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            Position moving = navigator.PositionBeingNavigated;
+
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 2f;
+            navigator.UsingGravity = false;
+
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+            Vector3 nearestIncrementalTravelPoint = navigator.GetNearestAvailableIncrementalVectorTowardsDestination();
+
+            //assert
+            Assert.AreEqual(nextTravelPoint, nearestIncrementalTravelPoint);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetNearestAvailableIncrementalVectorTowardsDestination_ReturnsAdjustedTravelPointWhenThereIsAvoidableCollision()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentLowerBodyCollision;
+            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
+            Position moving = navigator.PositionBeingNavigated;
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+            Vector3 nearestIncrementalTravelPoint = navigator.GetNearestAvailableIncrementalVectorTowardsDestination();
+            Assert.AreNotEqual(nextTravelPoint, nearestIncrementalTravelPoint);
+            Assert.IsTrue(navigator.AdjustedDestination != Vector3.Zero);
+            Assert.IsTrue(navigator.AdjustmentVector != Vector3.Zero);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetNearestAvailableIncrementalVectorTowardsDestination_ReturnsCurrentLocationWhenThereIsUnavoidableCollision()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentCollision;
+            Position moving = navigator.PositionBeingNavigated;
+            Vector3 oldPositionVector = moving.Vector;
+            // Make sure initially there are no adjustments
+            Assert.IsTrue(navigator.AdjustmentVector == Vector3.Zero);
+            ////act
+            navigator.Speed = 5f;
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.UsingGravity = true;
+
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+            Vector3 nearestIncrementalTravelPoint = navigator.GetNearestAvailableIncrementalVectorTowardsDestination();
+            Assert.AreNotEqual(nextTravelPoint, nearestIncrementalTravelPoint);
+            Assert.AreEqual(oldPositionVector, nearestIncrementalTravelPoint);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetCollision_ReturnsCollisionInNavigationDirection()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithSurroundingCollision;
+            navigator.Speed = 3f;
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = false;
+            navigator.SetNavigationDirectionVector();
+            Vector3 forwardCollision = navigator.GetCollision();
+            Assert.IsTrue(forwardCollision.Z > navigator.PositionBeingNavigated.Z);
+
+            navigator.ChangeDirection(Direction.Backward);
+            navigator.SetNavigationDirectionVector();
+            Vector3 backwardCollision = navigator.GetCollision();
+            Assert.IsTrue(backwardCollision.Z < navigator.PositionBeingNavigated.Z);
+
+            navigator.ChangeDirection(Direction.Right);
+            navigator.SetNavigationDirectionVector();
+            Vector3 rightCollision = navigator.GetCollision();
+            Assert.IsTrue(rightCollision.X > navigator.PositionBeingNavigated.X);
+
+            navigator.ChangeDirection(Direction.Left);
+            navigator.SetNavigationDirectionVector();
+            Vector3 LeftCollision = navigator.GetCollision();
+            Assert.IsTrue(LeftCollision.X < navigator.PositionBeingNavigated.X);
+
+            navigator.ChangeDirection(Direction.Upward);
+            navigator.SetNavigationDirectionVector();
+            Vector3 upCollision = navigator.GetCollision();
+            Assert.IsTrue(upCollision.Y > navigator.PositionBeingNavigated.Y);
+
+            navigator.ChangeDirection(Direction.Downward);
+            navigator.SetNavigationDirectionVector();
+            Vector3 downCollision = navigator.GetCollision();
+            Assert.IsTrue(downCollision.Y <= navigator.PositionBeingNavigated.Y);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetCollision_SetsCollidingBodyPart()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithSurroundingCollision;
+            navigator.Speed = 3f;
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = false;
+            navigator.SetNavigationDirectionVector();
+            Vector3 forwardCollision = navigator.GetCollision();
+            Assert.IsTrue(navigator.CollidingBodyPart == PositionBodyLocation.Bottom);
+
+            navigator.ChangeDirection(Direction.Upward);
+            navigator.SetNavigationDirectionVector();
+            Vector3 upCollision = navigator.GetCollision();
+            Assert.IsTrue(navigator.CollidingBodyPart == PositionBodyLocation.Top);
+
+            navigator.ChangeDirection(Direction.Downward);
+            navigator.SetNavigationDirectionVector();
+            Vector3 downCollision = navigator.GetCollision();
+            Assert.IsTrue(navigator.CollidingBodyPart == PositionBodyLocation.Bottom);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetCollisionMapForEachPositionBodyLocation_GetsBodyPartCollisionMapWithinSpecifiedRange()
+        {
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithCollisionInDifferentHeights;
+            navigator.Speed = 3f;
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = false;
+            navigator.SetNavigationDirectionVector();
+
+            var collisionMap = navigator.GetCollisionMapForEachPositionBodyLocation(20);
+            Assert.AreEqual(collisionMap.Count, navigator.PositionBeingNavigated.BodyLocations.Count);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.Top].Item1.Y, 6);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.TopMiddle].Item1.Y, 4.5f);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.Middle].Item1.Y, 3f);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.BottomMiddle].Item1.Y, 1.5f);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.BottomSemiMiddle].Item1.Y, 1f);
+            Assert.AreEqual(collisionMap[PositionBodyLocation.Bottom].Item1.Y, 1f);
+        }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public void GetClosestVectorPointBesideCollision_ReturnsCollisionAvoidingTravelPointIfAvoidable()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentLowerBodyCollision;
+            Vector3 collision = navigator.CityOfHeroesInteractionUtility.Collision;
+            Position moving = navigator.PositionBeingNavigated;
+            ////act
+            navigator.Direction = Direction.Forward;
+            navigator.IsNavigatingToDestination = true;
+            navigator.Speed = 10f;
+            navigator.UsingGravity = false;
+
+            navigator.SetNavigationDirectionVector();
+            Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
+
+            Vector3 closestPointBesideCollision = navigator.GetClosestVectorPointBesideCollision();
+
+            Assert.AreNotEqual(nextTravelPoint, closestPointBesideCollision);
+            Assert.IsTrue(closestPointBesideCollision.Y > nextTravelPoint.Y);
+        }
     }
     public class GreedyEngineParts : DefaultEngineParts
     {
@@ -559,6 +965,14 @@ namespace HeroVirtualTabletop.Desktop
                new TypeRelay(
                    typeof(IconInteractionUtility),
                    typeof(IconInteractionUtilityImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopNavigator),
+                    typeof(DesktopNavigatorImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(DesktopKeyEventHandler),
+                    typeof(DesktopKeyEventHandlerImpl)));
             StandardizedFixture.Customize<DesktopCharacterTargeterImpl>(x => x
             .Without(r => r.TargetedInstance));
             StandardizedFixture.Customize<DesktopMouseEventHandlerImpl>(x => x
@@ -625,33 +1039,523 @@ namespace HeroVirtualTabletop.Desktop
         {
             get
             {
-                return new DesktopNavigatorImpl();
+                return new DesktopNavigatorImpl(MockInteractionUtility);
             }
 
         }
-        public DesktopNavigator DesktopNavigatorUnderTestWithMovingAnddestinationPositionsAndMockUtilityWithCollision {
+
+        public DesktopNavigator DesktopNavigatorWithAdjustedDestination
+        {
+            get
+            {
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(110, 2, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 2, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, MockInteractionUtility)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.CityOfHeroesInteractionUtility.Collision = new Vector3(98, 1, 100);
+                nav.PositionBeingNavigated.Vector = new Vector3(101, 2, 100);
+                nav.Destination.Vector = new Vector3(110, 0, 100);
+                nav.PositionBeingNavigated.Size = 6;
+
+                return nav;
+            }
+
+        }
+
+        public DesktopNavigator DesktopNavigatorWithSecondaryPosisionsToSynchronize
+        {
+            get
+            {
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, Vector3.Zero)
+                .With(y => y.AdjustmentVector, Vector3.Zero)
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, null)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, MockInteractionUtility)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, new List<Position> { MockPosition})
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 0f;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.IsNavigatingToDestination = false;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+
+        }
+
+        public DesktopNavigator DesktopNavigatorUnderTestWithMidwayCollision {
             get
             {
                 DesktopNavigator nav = DesktopNavigatorUnderTest;
                 IconInteractionUtility utility = MockInteractionUtility;
                 nav.CityOfHeroesInteractionUtility = utility;
                 nav.PositionBeingNavigated = PositionUnderTest;
+                nav.PositionBeingNavigated.Vector = new Vector3(100, 0, 100);
                 nav.PositionBeingNavigated.Size = 0;
                 nav.Destination = PositionUnderTest;
-                nav.Destination.X = nav.PositionBeingNavigated.X * 4;
-                nav.Destination.Y = nav.PositionBeingNavigated.Y * 4;
-                nav.Destination.Z = nav.PositionBeingNavigated.Z * 4;
+                nav.Destination.Vector = new Vector3(200, 0, 100);
 
-                Vector3 collision = PositionUnderTest.Vector;
-                collision.X = nav.PositionBeingNavigated.X * 2;
-                collision.Y = nav.PositionBeingNavigated.Y * 2;
-                collision.Z = nav.PositionBeingNavigated.Z * 2;
-               
+                Vector3 collision = new Vector3(150, 0, 100);
+                Mock.Get<IconInteractionUtility>(utility).Setup(t => t.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>())).Returns(collision);
                 nav.CityOfHeroesInteractionUtility.Collision = collision;
                 return nav;
             }
         }
 
+        public DesktopNavigator DesktopNavigatorUnderTestWithNoCollision
+        {
+            get
+            {
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+               .With(y => y.AdjustedDestination, new Vector3(120, 0, 100))
+               .With(y => y.AdjustmentVector, Vector3.Zero)
+               .With(y => y.PositionBeingNavigated, PositionUnderTest)
+               .With(y => y.Destination, PositionUnderTest)
+               .With(y => y.Direction, Direction.Forward)
+               .With(y => y.CityOfHeroesInteractionUtility, MockInteractionUtility)
+               .With(y => y.Speed, 2f)
+               .With(y => y.PositionsToSynchronize, null)
+               );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.Vector = new Vector3(100, 0, 100);
+                nav.Destination.Vector = new Vector3(120, 0, 100);
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithGroundCollisionConfigured
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        if (start.X == dest.X) // Configure for ground collision
+                        {
+                            return new Vector3(start.X, 0.5f, start.Z); // assuming ground level 0.5
+                        }
+                        else
+                        {
+                            return Vector3.Zero; // no collision going forward
+                        }
+                    }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, Vector3.Zero)
+                .With(y => y.AdjustmentVector, Vector3.Zero)
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, null)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 2f;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.IsNavigatingToDestination = false;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithImminentCollision
+        {
+            get
+            {
+                DesktopNavigator nav = DesktopNavigatorUnderTest;
+                IconInteractionUtility utility = MockInteractionUtility;
+                nav.CityOfHeroesInteractionUtility = utility;
+                Vector3 collision = PositionUnderTest.Vector;
+                collision.Y = 6f;
+                nav.CityOfHeroesInteractionUtility.Collision = collision;
+                nav.PositionBeingNavigated = PositionUnderTest;
+                nav.PositionBeingNavigated.Size = 0;
+                nav.PositionBeingNavigated.X = collision.X - 0.5f;
+                nav.PositionBeingNavigated.Y = 0f;
+                nav.PositionBeingNavigated.Z = collision.Z - 0.5f;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = collision.X * 2;
+                nav.Destination.Y = 0f;
+                nav.Destination.Z = collision.Z * 2;
+                nav.LastCollisionFreePointInCurrentDirection = collision;
+                nav.CollidingBodyPart = PositionBodyLocation.Top;
+                nav.WillCollide = true;
+                
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithImminentLowerBodyCollision
+        {
+            get
+            {
+                DesktopNavigator nav = DesktopNavigatorUnderTest;
+                IconInteractionUtility utility = MockInteractionUtility;
+                nav.CityOfHeroesInteractionUtility = utility;
+                Vector3 collision = PositionUnderTest.Vector;
+                collision.Y = 0.5f;
+                nav.CityOfHeroesInteractionUtility.Collision = collision;
+                nav.PositionBeingNavigated = PositionUnderTest;
+                nav.PositionBeingNavigated.Size = 0;
+                nav.PositionBeingNavigated.X = collision.X - 0.5f;
+                nav.PositionBeingNavigated.Y = collision.Y - 0.5f;
+                nav.PositionBeingNavigated.Z = collision.Z - 0.5f;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = collision.X * 2;
+                nav.Destination.Y = 0f;
+                nav.Destination.Z = collision.Z * 2;
+                nav.LastCollisionFreePointInCurrentDirection = collision;
+                nav.CollidingBodyPart = PositionBodyLocation.Bottom;
+                nav.WillCollide = true;
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithSurroundingCollision
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        if (start.X == dest.X && start.Z == dest.Z) // Configure for ground collision
+                        {
+                            if(start.Y < dest.Y) // Upward
+                                return new Vector3(start.X, 10, start.Z);
+                            else // Downward
+                                return new Vector3(start.X, 0, start.Z);
+                        }
+                        else
+                        {
+                            if (start.X > dest.X) //Left
+                                return new Vector3(90, 0, start.Z);
+                            else if (start.X < dest.X) // Right
+                                return new Vector3(110, 0, start.Z);
+                            else if (start.Z < dest.Z) // Forward
+                                return new Vector3(start.X, 0, 110);
+                            else// Backward
+                                return new Vector3(start.X, 0, 90);
+                        }
+                    }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(120, 0, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 0, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 0;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = 120;
+                nav.Destination.Y = 0f;
+                nav.Destination.Z = 100;
+                nav.AdjustedDestination = nav.Destination.Vector;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithCollisionInDifferentHeights
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        if (start.Y > 5)
+                            return new Vector3(110, 6, start.Z);
+                        else if (start.Y > 4)
+                            return new Vector3(110, 4.5f, start.Z);
+                        else if (start.Y > 2)
+                            return new Vector3(start.X, 3f, start.Z);
+                        else if (start.Y > 1)
+                            return new Vector3(start.X, 1.5f, start.Z);
+                        else
+                            return new Vector3(start.X, 1, start.Z);
+                    }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(120, 0, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 0, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 0;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = 120;
+                nav.Destination.Y = 0f;
+                nav.Destination.Z = 100;
+                nav.AdjustedDestination = nav.Destination.Vector;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithInclinedDestination
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        if (start.X == dest.X) // Configure for ground collision
+                        {
+                            if (start.Y > 10)
+                                return new Vector3(start.X, 10, start.Z);
+                            else if (start.Y > 9)
+                                return new Vector3(start.X, 9, start.Z);
+                            else if (start.Y > 8)
+                                return new Vector3(start.X, 8, start.Z);
+                            else if (start.Y > 7)
+                                return new Vector3(start.X, 7, start.Z);
+                            else if (start.Y > 6)
+                                return new Vector3(start.X, 6, start.Z);
+                            else if (start.Y > 5)
+                                return new Vector3(start.X, 5, start.Z);
+                            else if (start.Y > 4)
+                                return new Vector3(start.X, 4, start.Z);
+                            else if (start.Y > 3)
+                                return new Vector3(start.X, 3, start.Z);
+                            else if (start.Y > 2)
+                                return new Vector3(start.X, 2, start.Z);
+                            else if (start.Y > 1)
+                                return new Vector3(start.X, 1, start.Z);
+                            else
+                                return new Vector3(start.X, 0, start.Z);
+                        }
+                        else
+                        {
+                            if (start.X < 98)
+                                return new Vector3(start.X + 1, 1, start.Z);
+                            else if (start.X < 101)
+                                return new Vector3(start.X + 1, 2, start.Z);
+                            else if (start.X < 104)
+                                return new Vector3(start.X + 1, 3, start.Z);
+                            else if (start.X < 107)
+                                return new Vector3(start.X + 1, 4, start.Z);
+                            else if (start.X < 110)
+                                return new Vector3(start.X + 1, 5, start.Z);
+                            else if (start.X < 113)
+                                return new Vector3(start.X + 1, 6, start.Z);
+                            else if (start.X < 116)
+                                return new Vector3(start.X + 1, 7, start.Z);
+                            else if (start.X < 118)
+                                return new Vector3(start.X + 1, 8, start.Z);
+                            else
+                                return new Vector3(start.X + 1, 9, start.Z);
+                        }
+                    }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(120, 10, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 0, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 0;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = 120;
+                nav.Destination.Y = 10f;
+                nav.Destination.Z = 100;
+                nav.AdjustedDestination = nav.Destination.Vector;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithDeclinedDestination
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                    {
+                        if (start.X == dest.X)
+                        {
+                            if (start.Y > 3)
+                                return new Vector3(start.X, 3, start.Z);
+                            else if (start.Y > 2)
+                                return new Vector3(start.X, 2, start.Z);
+                            else if (start.Y > 1)
+                                return new Vector3(start.X, 1, start.Z);
+                            else if (start.Y > 0)
+                                return new Vector3(start.X, 0, start.Z);
+                            else if (start.Y > -1)
+                                return new Vector3(start.X, -1, start.Z);
+                            else
+                                return new Vector3(start.X, -2, start.Z);
+                        }
+                        else
+                            return Vector3.Zero;
+                    }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(120, -2, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 0, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 4f;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = 150;
+                nav.Destination.Y = -2f;
+                nav.Destination.Z = 100;
+                nav.AdjustedDestination = nav.Destination.Vector;
+                nav.CollidingBodyPart = PositionBodyLocation.Bottom;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
+        public DesktopNavigator DesktopNavigatorUnderTestWithSteepDestination
+        {
+            get
+            {
+                var moqUtil = new Mock<IconInteractionUtilityImpl>();
+                moqUtil.Setup(x => x.GetCollision(It.IsAny<Vector3>(), It.IsAny<Vector3>()))
+                    .Returns(
+                    (Vector3 start, Vector3 dest) =>
+                        {
+                            if (start.X == dest.X) // Configure for ground collision
+                            {
+                                if (start.Y > 40)
+                                    return new Vector3(start.X, 40, start.Z);
+                                else if (start.Y > 35)
+                                    return new Vector3(start.X, 35, start.Z);
+                                else if (start.Y > 30)
+                                    return new Vector3(start.X, 30, start.Z);
+                                else if (start.Y > 25)
+                                    return new Vector3(start.X, 25, start.Z);
+                                else if (start.Y > 20)
+                                    return new Vector3(start.X, 20, start.Z);
+                                else if (start.Y > 15)
+                                    return new Vector3(start.X, 15, start.Z);
+                                else if (start.Y > 10)
+                                    return new Vector3(start.X, 10, start.Z);
+                                else if (start.Y > 5)
+                                    return new Vector3(start.X, 5, start.Z);
+                                else
+                                    return new Vector3(start.X, 3, start.Z);
+                            }
+                            else
+                            {
+                                if (start.X < 98)
+                                    return new Vector3(start.X + 1, 3, start.Z);
+                                else if (start.X < 101)
+                                    return new Vector3(start.X + 1, 6, start.Z);
+                                else if (start.X < 104)
+                                    return new Vector3(start.X + 1, 11, start.Z);
+                                else if (start.X < 107)
+                                    return new Vector3(start.X + 1, 16, start.Z);
+                                else if (start.X < 110)
+                                    return new Vector3(start.X + 1, 21, start.Z);
+                                else if (start.X < 113)
+                                    return new Vector3(start.X + 1, 26, start.Z);
+                                else if (start.X < 116)
+                                    return new Vector3(start.X + 1, 31, start.Z);
+                                else if (start.X < 118)
+                                    return new Vector3(start.X + 1, 36, start.Z);
+                                else
+                                    return new Vector3(start.X + 1, 41, start.Z);
+                            }
+                        }
+                    );
+                StandardizedFixture.Customize<DesktopNavigatorImpl>(k => k
+                .With(y => y.AdjustedDestination, new Vector3(120, 45, 100))
+                .With(y => y.AdjustmentVector, new Vector3(0, 0, 0))
+                .With(y => y.PositionBeingNavigated, PositionUnderTest)
+                .With(y => y.Destination, PositionUnderTest)
+                .With(y => y.Direction, Direction.Forward)
+                .With(y => y.CityOfHeroesInteractionUtility, moqUtil.Object)
+                .With(y => y.Speed, 2f)
+                .With(y => y.PositionsToSynchronize, null)
+                );
+                var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
+                nav.PositionBeingNavigated.Size = 6;
+                nav.PositionBeingNavigated.X = 95;
+                nav.PositionBeingNavigated.Y = 0f;
+                nav.PositionBeingNavigated.Z = 100;
+                nav.Destination = PositionUnderTest;
+                nav.Destination.X = 120;
+                nav.Destination.Y = 45;
+                nav.Destination.Z = 100;
+                nav.AdjustedDestination = nav.Destination.Vector;
+                nav.UsingGravity = true;
+
+                nav.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
+
+                return nav;
+            }
+        }
         public IconInteractionUtility MockInteractionUtility => CustomizedMockFixture.Create<IconInteractionUtility>();
         public DesktopNavigator DesktopNavigatorUnderTestWithMovingPositionBelowDestinationPositionsAndMockUtilityWithCollisionAboveMovingPosition {
             get

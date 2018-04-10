@@ -5213,17 +5213,1350 @@
                     "Owner": {
                       "$ref": "5"
                     },
-                    "Count": 0,
+                    "Count": 9,
                     "Name": "Movements",
                     "Type": 2,
-                    "Actions": [],
+                    "Actions": [
+                      {
+                        "$id": "414",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "415",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": true,
+                          "MovementMembers": [
+                            {
+                              "$id": "416",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "358"
+                              },
+                              "AbilityReference": {
+                                "$id": "417",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "358"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "418",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "362"
+                              },
+                              "AbilityReference": {
+                                "$id": "419",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "362"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "420",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "366"
+                              },
+                              "AbilityReference": {
+                                "$id": "421",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "366"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "422",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "370"
+                              },
+                              "AbilityReference": {
+                                "$id": "423",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "370"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "424",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "374"
+                              },
+                              "AbilityReference": {
+                                "$id": "425",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "374"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "426",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "377"
+                              },
+                              "AbilityReference": {
+                                "$id": "427",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "377"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "428",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "380"
+                              },
+                              "AbilityReference": {
+                                "$id": "429",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "380"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Walk",
+                          "Speed": 0.0
+                        },
+                        "Name": "Walk"
+                      },
+                      {
+                        "$id": "430",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "431",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": true,
+                          "MovementMembers": [
+                            {
+                              "$id": "432",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "182"
+                              },
+                              "AbilityReference": {
+                                "$id": "433",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "182"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "434",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "186"
+                              },
+                              "AbilityReference": {
+                                "$id": "435",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "186"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "436",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "178"
+                              },
+                              "AbilityReference": {
+                                "$id": "437",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "178"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "438",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "174"
+                              },
+                              "AbilityReference": {
+                                "$id": "439",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "174"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "440",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "190"
+                              },
+                              "AbilityReference": {
+                                "$id": "441",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "190"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "442",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "194"
+                              },
+                              "AbilityReference": {
+                                "$id": "443",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "194"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "444",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "198"
+                              },
+                              "AbilityReference": {
+                                "$id": "445",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "198"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Run",
+                          "Speed": 0.0
+                        },
+                        "Name": "Run"
+                      },
+                      {
+                        "$id": "446",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "447",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": false,
+                          "MovementMembers": [
+                            {
+                              "$id": "448",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "254"
+                              },
+                              "AbilityReference": {
+                                "$id": "449",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "254"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "450",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "258"
+                              },
+                              "AbilityReference": {
+                                "$id": "451",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "258"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "452",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "262"
+                              },
+                              "AbilityReference": {
+                                "$id": "453",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "262"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "454",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "266"
+                              },
+                              "AbilityReference": {
+                                "$id": "455",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "266"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "456",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "270"
+                              },
+                              "AbilityReference": {
+                                "$id": "457",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "270"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "458",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "273"
+                              },
+                              "AbilityReference": {
+                                "$id": "459",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "273"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "460",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "276"
+                              },
+                              "AbilityReference": {
+                                "$id": "461",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "276"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Swim",
+                          "Speed": 0.0
+                        },
+                        "Name": "Swim"
+                      },
+                      {
+                        "$id": "462",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "463",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": false,
+                          "MovementMembers": [
+                            {
+                              "$id": "464",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "218"
+                              },
+                              "AbilityReference": {
+                                "$id": "465",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "218"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "466",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "222"
+                              },
+                              "AbilityReference": {
+                                "$id": "467",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "222"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "468",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "202"
+                              },
+                              "AbilityReference": {
+                                "$id": "469",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "202"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "470",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "225"
+                              },
+                              "AbilityReference": {
+                                "$id": "471",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "225"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "472",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "214"
+                              },
+                              "AbilityReference": {
+                                "$id": "473",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "214"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "474",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "210"
+                              },
+                              "AbilityReference": {
+                                "$id": "475",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "210"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "476",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "206"
+                              },
+                              "AbilityReference": {
+                                "$id": "477",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "206"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Jump",
+                          "Speed": 0.0
+                        },
+                        "Name": "Jump"
+                      },
+                      {
+                        "$id": "478",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "479",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": false,
+                          "MovementMembers": [
+                            {
+                              "$id": "480",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "229"
+                              },
+                              "AbilityReference": {
+                                "$id": "481",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "229"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "482",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "233"
+                              },
+                              "AbilityReference": {
+                                "$id": "483",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "233"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "484",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "236"
+                              },
+                              "AbilityReference": {
+                                "$id": "485",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "236"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "486",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "239"
+                              },
+                              "AbilityReference": {
+                                "$id": "487",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "239"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "488",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "243"
+                              },
+                              "AbilityReference": {
+                                "$id": "489",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "243"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "490",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "247"
+                              },
+                              "AbilityReference": {
+                                "$id": "491",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "247"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "492",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "250"
+                              },
+                              "AbilityReference": {
+                                "$id": "493",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "250"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Ninja Jump",
+                          "Speed": 0.0
+                        },
+                        "Name": "Ninja Jump"
+                      },
+                      {
+                        "$id": "494",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "495",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": false,
+                          "MovementMembers": [
+                            {
+                              "$id": "496",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "306"
+                              },
+                              "AbilityReference": {
+                                "$id": "497",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "306"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "498",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "310"
+                              },
+                              "AbilityReference": {
+                                "$id": "499",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "310"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "500",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "314"
+                              },
+                              "AbilityReference": {
+                                "$id": "501",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "314"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "502",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "320"
+                              },
+                              "AbilityReference": {
+                                "$id": "503",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "320"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "504",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "317"
+                              },
+                              "AbilityReference": {
+                                "$id": "505",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "317"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "506",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "324"
+                              },
+                              "AbilityReference": {
+                                "$id": "507",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "324"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "508",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "328"
+                              },
+                              "AbilityReference": {
+                                "$id": "509",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "328"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Steam Jump Jetpack",
+                          "Speed": 0.0
+                        },
+                        "Name": "Steam Jump Jetpack"
+                      },
+                      {
+                        "$id": "510",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "511",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": true,
+                          "MovementMembers": [
+                            {
+                              "$id": "512",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "383"
+                              },
+                              "AbilityReference": {
+                                "$id": "513",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "383"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "514",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "387"
+                              },
+                              "AbilityReference": {
+                                "$id": "515",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "387"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "516",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "391"
+                              },
+                              "AbilityReference": {
+                                "$id": "517",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "391"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "518",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "395"
+                              },
+                              "AbilityReference": {
+                                "$id": "519",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "395"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "520",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "399"
+                              },
+                              "AbilityReference": {
+                                "$id": "521",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "399"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "522",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "403"
+                              },
+                              "AbilityReference": {
+                                "$id": "523",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "403"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "524",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "407"
+                              },
+                              "AbilityReference": {
+                                "$id": "525",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "407"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Beast",
+                          "Speed": 0.0
+                        },
+                        "Name": "Beast"
+                      },
+                      {
+                        "$id": "526",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "527",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": true,
+                          "MovementMembers": [
+                            {
+                              "$id": "528",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "332"
+                              },
+                              "AbilityReference": {
+                                "$id": "529",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "332"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "530",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "336"
+                              },
+                              "AbilityReference": {
+                                "$id": "531",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "336"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "532",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "339"
+                              },
+                              "AbilityReference": {
+                                "$id": "533",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "339"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "534",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "343"
+                              },
+                              "AbilityReference": {
+                                "$id": "535",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "343"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "536",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "346"
+                              },
+                              "AbilityReference": {
+                                "$id": "537",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "346"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "538",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "350"
+                              },
+                              "AbilityReference": {
+                                "$id": "539",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "350"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "540",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "354"
+                              },
+                              "AbilityReference": {
+                                "$id": "541",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "354"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Knockback",
+                          "Speed": 0.0
+                        },
+                        "Name": "Knockback"
+                      },
+                      {
+                        "$id": "542",
+                        "$type": "HeroVirtualTabletop.Movement.CharacterMovementImpl, HeroVirtualTabletop",
+                        "Speed": 0.0,
+                        "Movement": {
+                          "$id": "543",
+                          "$type": "HeroVirtualTabletop.Movement.MovementImpl, HeroVirtualTabletop",
+                          "HasGravity": true,
+                          "MovementMembers": [
+                            {
+                              "$id": "544",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "280"
+                              },
+                              "AbilityReference": {
+                                "$id": "545",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "280"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 1,
+                              "Name": "Left"
+                            },
+                            {
+                              "$id": "546",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "284"
+                              },
+                              "AbilityReference": {
+                                "$id": "547",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "284"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 2,
+                              "Name": "Right"
+                            },
+                            {
+                              "$id": "548",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "288"
+                              },
+                              "AbilityReference": {
+                                "$id": "549",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "288"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 3,
+                              "Name": "Forward"
+                            },
+                            {
+                              "$id": "550",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "292"
+                              },
+                              "AbilityReference": {
+                                "$id": "551",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "292"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 4,
+                              "Name": "Backward"
+                            },
+                            {
+                              "$id": "552",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "296"
+                              },
+                              "AbilityReference": {
+                                "$id": "553",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "296"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 5,
+                              "Name": "Upward"
+                            },
+                            {
+                              "$id": "554",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "299"
+                              },
+                              "AbilityReference": {
+                                "$id": "555",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "299"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 6,
+                              "Name": "Downward"
+                            },
+                            {
+                              "$id": "556",
+                              "$type": "HeroVirtualTabletop.Movement.MovementMemberImpl, HeroVirtualTabletop",
+                              "Ability": {
+                                "$ref": "302"
+                              },
+                              "AbilityReference": {
+                                "$id": "557",
+                                "$type": "HeroVirtualTabletop.AnimatedAbility.ReferenceResourceImpl, HeroVirtualTabletop",
+                                "Ability": {
+                                  "$ref": "302"
+                                },
+                                "Character": {
+                                  "$ref": "5"
+                                }
+                              },
+                              "Direction": 7,
+                              "Name": "Still"
+                            }
+                          ],
+                          "Name": "Ice Slide",
+                          "Speed": 0.0
+                        },
+                        "Name": "Ice Slide"
+                      }
+                    ],
                     "Active": null,
                     "Default": null
                   }
                 ],
                 "AllCrowdMembershipParents": [
                   {
-                    "$id": "414",
+                    "$id": "574",
                     "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
                     "Order": 1,
                     "ParentCrowd": {
@@ -5235,7 +6568,7 @@
                     "SavedPosition": null
                   },
                   {
-                    "$id": "415",
+                    "$id": "575",
                     "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
                     "Order": 0,
                     "ParentCrowd": {
@@ -5247,12 +6580,24 @@
                     "SavedPosition": null
                   }
                 ],
-                "RosterParent": null
+                "RosterParent": {
+                  "$id": "576",
+                  "$type": "HeroVirtualTabletop.Roster.RosterParentImpl, HeroVirtualTabletop",
+                  "Name": "System Characters",
+                  "Order": 2,
+                  "RosterGroup": {
+                    "$id": "577",
+                    "$type": "HeroVirtualTabletop.Roster.RostergroupImpl, HeroVirtualTabletop",
+                    "DEFAULT": {
+                      "$ref": "5"
+                    }
+                  }
+                }
               },
               "SavedPosition": null
             },
             {
-              "$id": "416",
+              "$id": "578",
               "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
               "Order": 0,
               "ParentCrowd": {
@@ -5273,7 +6618,7 @@
     ],
     "MemberShips": [
       {
-        "$id": "417",
+        "$id": "579",
         "$type": "HeroVirtualTabletop.Crowd.CrowdMemberShipImpl, HeroVirtualTabletop",
         "Order": 0,
         "ParentCrowd": {
