@@ -428,7 +428,46 @@ namespace HeroVirtualTabletop.Desktop
             distance = Vector3.Distance(moving.Vector, navigator.CityOfHeroesInteractionUtility.Collision);
             Assert.IsTrue(distance < 5);
         }
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateByDistanceWithNoCollision_StopsAfterCrossingDistance()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithNoCollision;
+            navigator.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;
+            Position moving = navigator.PositionBeingNavigated;
+            Vector3 initPositionVector = moving.Vector;
+            double distanceToTravel = 100;
+            navigator.Destination = null;
+            navigator.IsNavigatingToDestination = false;
 
+            //act
+            await navigator.NavigateByDistance(moving, distanceToTravel, Direction.Forward, 10f, false);
+            //assert
+            var distance = Vector3.Distance(moving.Vector, initPositionVector);
+            Assert.IsTrue(distance >= distanceToTravel);
+        }
+
+        [TestMethod]
+        [TestCategory("DesktopCharacterNavigator")]
+        public async Task NavigateByDistanceWithCollision_StopsAtCollision()
+        {
+            //arrange
+            DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithMidwayCollision;
+            navigator.CityOfHeroesInteractionUtility.Collision = new Vector3(150, 0, 100);
+            Position moving = navigator.PositionBeingNavigated;
+            Position destination = null;
+            navigator.IsNavigatingToDestination = false;
+            double distanceToTravel = 100;
+            Vector3 initPositionVector = moving.Vector;
+            //act
+            await navigator.NavigateByDistance(moving, distanceToTravel, Direction.Right, 10f, false);
+            //assert
+            var distance = Vector3.Distance(moving.Vector, initPositionVector);
+            Assert.IsTrue(distance < distanceToTravel);
+            distance = Vector3.Distance(moving.Vector, navigator.CityOfHeroesInteractionUtility.Collision);
+            Assert.IsTrue(distance < 5);
+        }
         [TestMethod]
         [TestCategory("DesktopCharacterNavigator")]
         public async Task NavigateWithNoCollision_MovesOneStepInMovingDirection()
@@ -1129,6 +1168,7 @@ namespace HeroVirtualTabletop.Desktop
                .With(y => y.CityOfHeroesInteractionUtility, MockInteractionUtility)
                .With(y => y.Speed, 2f)
                .With(y => y.PositionsToSynchronize, null)
+               .With(y => y.IsInCollision, false)
                );
                 var nav = StandardizedFixture.Create<DesktopNavigatorImpl>();
                 nav.CityOfHeroesInteractionUtility.Collision = Vector3.Zero;

@@ -360,6 +360,72 @@ namespace HeroVirtualTabletop.Movement
         }
         [TestMethod]
         [TestCategory("Movement")]
+        public async Task ExecuteKnockback_SetsSpeedAppropriateForKnockback()
+        {
+            // arrange
+            MovableCharacter attacker = TestObjectFactory.MockMovableCharacter;
+            MovableCharacter defender1 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter defender2 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            double distance = 100;
+            // act
+            await movement.ExecuteKnockback(attacker, new List<MovableCharacter> { defender1, defender2 }, distance);
+            // assert
+            Assert.AreEqual(movement.Speed, 2.5);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task ExecuteKnockback_MovesKnockbackTargetsBackwardsByCalculatedDistance()
+        {
+            // arrange
+            MovableCharacter attacker = TestObjectFactory.MockMovableCharacter;
+            MovableCharacter defender1 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter defender2 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            double distance = 100;
+            // act
+            await movement.ExecuteKnockback(attacker, new List<MovableCharacter> { defender1, defender2 }, distance);
+            // assert
+            var mocker = Mock.Get<DesktopNavigator>(defender1.DesktopNavigator);
+            mocker.Verify(m => m.NavigateByDistance(defender1.Position, distance * 8, Direction.Backward, movement.Speed, movement.HasGravity, It.Is<List<Position>>(t => t.Contains(defender2.Position))));
+
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task ExecuteKnockback_SetsTargetFacingToAttacker()
+        {
+            // arrange
+            MovableCharacter attacker = TestObjectFactory.MockMovableCharacter;
+            MovableCharacter defender1 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter defender2 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            // act
+            await movement.ExecuteKnockback(attacker, new List<MovableCharacter> { defender1, defender2 }, 100);
+            // assert
+            var mocker = Mock.Get<Position>(defender1.Position);
+            mocker.Verify(
+                x => x.Face(attacker.Position));
+            mocker = Mock.Get<Position>(defender1.Position);
+            mocker.Verify(
+                x => x.Face(attacker.Position));
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
+        public async Task ExecuteKnockback_PlaysDownwardMovementWhenKnockbackIsCompleted()
+        {
+            // arrange
+            MovableCharacter attacker = TestObjectFactory.MockMovableCharacter;
+            MovableCharacter defender1 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            MovableCharacter defender2 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            Movement movement = TestObjectFactory.MovementUnderTest;
+            // act
+            await movement.ExecuteKnockback(attacker, new List<MovableCharacter> { defender1, defender2 }, 100);
+            // assert
+            var mocker = Mock.Get<AnimatedAbility.AnimatedAbility>(movement.MovementMembers.First(mm => mm.Direction == Direction.Downward).Ability);
+            mocker.Verify(x => x.Play(It.Is<List<AnimatedCharacter>>(t => t.Contains(defender1) && t.Contains(defender2))), Times.Once);
+        }
+        [TestMethod]
+        [TestCategory("Movement")]
         public async Task MoveMultipleCharacters_OnlyNavigatesTheLeader()
         {
             // arrange

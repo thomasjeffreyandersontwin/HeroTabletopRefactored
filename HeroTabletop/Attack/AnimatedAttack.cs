@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Collections.ObjectModel;
 using Caliburn.Micro;
 using System.Windows;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -55,6 +56,7 @@ namespace HeroVirtualTabletop.Attack
             turnTowards(instructions.Defender.Position);
             Play(Attacker);
             playDefenderAnimation(instructions);
+            PlayKnockback(instructions);
             playAttackEffectsOnDefender(instructions);
             Stop();
             instructions.Defender.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK);
@@ -116,6 +118,14 @@ namespace HeroVirtualTabletop.Attack
                     instructions.Defender.Abilities[DefaultAbilities.HIT].Play(instructions.Defender);
                 else
                     OnHitAnimation.Play(instructions.Defender);
+            }
+        }
+
+        private void PlayKnockback(AttackInstructions instructions)
+        {
+            if(instructions.KnockbackDistance > 0)
+            {
+                (this.Attacker as MovableCharacter).ExecuteKnockback(new List<MovableCharacter> { instructions.Defender as MovableCharacter}, instructions.KnockbackDistance);
             }
         }
 
@@ -216,7 +226,13 @@ namespace HeroVirtualTabletop.Attack
             else
                 OnHitAnimation.Play(instructions.DefendersHit);
         }
-
+        private void PlayKnockback(AreaAttackInstructions instructions)
+        {
+            if (instructions.KnockbackDistance > 0)
+            {
+                (this.Attacker as MovableCharacter).ExecuteKnockback(instructions.Defenders.Cast<MovableCharacter>().ToList(), instructions.KnockbackDistance);
+            }
+        }
         private void playAttackEffectsOnDefenders(AreaAttackInstructions instructions)
         {
             DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DEAD));

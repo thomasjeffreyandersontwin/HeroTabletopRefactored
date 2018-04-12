@@ -173,9 +173,11 @@ namespace HeroVirtualTabletop.Desktop
         bool WillCollide { get; set; }
         bool IsInCollision { get; set; }
         bool IsNavigatingToDestination { get; set; }
+        bool IsKnockbackNavigation { get; set; }
         IconInteractionUtility CityOfHeroesInteractionUtility { get; set; }      
         Task Navigate();
         Task NavigateToDestination(Position characterPosition, Position destination, Direction direction, double speed, bool hasGravity, List<Position> positionsToSynchronize = null);
+        Task NavigateByDistance(Position characterPosition, double distance, Direction direction, double speed, bool hasGravity, List<Position> positionsToSynchronize = null);
         Task Navigate(Position position, Direction direction, double speed, bool applyGravity, List<Position> positionsToSynchronize = null);
         void ResetNavigation();
         void ChangeDirection(Direction direction = Direction.None);

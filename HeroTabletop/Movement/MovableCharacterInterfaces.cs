@@ -46,6 +46,7 @@ namespace HeroVirtualTabletop.Movement
         void TurnByKeyPress(Key key);
         void Turn(TurnDirection direction, double angle = 5);
         void TurnTowardDestination(Desktop.Position destination);
+        Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance);
     }
     public interface MovementCommands
     {
@@ -61,6 +62,7 @@ namespace HeroVirtualTabletop.Movement
         Task TurnByKeyPress(List<MovableCharacter> charactersToTurn, Key key);
         Task Turn(List<MovableCharacter> charactersToTurn, TurnDirection direction, double angle = 5);
         Task TurnTowardDestination(List<MovableCharacter> charactersToTurn, Position destination);
+        Task ExecuteKnockback(MovableCharacter characterAttacking, List<MovableCharacter> charactersBeingKnockedBack, double distance, double speed = 0);
         void Pause(MovableCharacter character);
         void Resume(MovableCharacter character);
         void Stop(MovableCharacter character);

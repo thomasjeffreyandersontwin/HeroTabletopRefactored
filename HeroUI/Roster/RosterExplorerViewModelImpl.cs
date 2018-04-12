@@ -242,7 +242,7 @@ namespace HeroVirtualTabletop.Roster
         {
             CharacterMovement characterMovement = message.CharacterMovementToActivate;
             List<MovableCharacter> charactersToMove = this.Roster?.Selected?.Participants?.Cast<MovableCharacter>().ToList();
-            if (charactersToMove == null || charactersToMove.Count == 0)
+            if (charactersToMove == null || charactersToMove.Count == 0 || !charactersToMove.Contains(characterMovement.Owner as MovableCharacter))
             {
                 charactersToMove = new List<MovableCharacter> { characterMovement.Owner as MovableCharacter };
             }
@@ -253,7 +253,7 @@ namespace HeroVirtualTabletop.Roster
         {
             CharacterMovement characterMovement = message.CharacterMovementToDeactivate;
             List<MovableCharacter> charactersToStop = this.Roster?.Selected?.Participants?.Cast<MovableCharacter>().ToList();
-            if(charactersToStop == null || charactersToStop.Count == 0)
+            if(charactersToStop == null || charactersToStop.Count == 0 || !charactersToStop.Contains(characterMovement.Owner as MovableCharacter))
             {
                 charactersToStop = new List<MovableCharacter> { characterMovement.Owner as MovableCharacter};
             }

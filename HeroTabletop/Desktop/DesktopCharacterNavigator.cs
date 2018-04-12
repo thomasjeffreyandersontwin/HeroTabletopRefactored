@@ -31,11 +31,12 @@ namespace HeroVirtualTabletop.Desktop
         public Direction Direction { get; set; }  
         public bool CanAvoidCollision { get; set; }
         public List<Position> PositionsToSynchronize { get; set; }
+        
+        public double DistanceToTravel { get; set; }
 
         public Vector3 AdjustmentVector
         {
             get;set;
-
         }
 
         public Vector3 AdjustedDestination
@@ -103,7 +104,9 @@ namespace HeroVirtualTabletop.Desktop
                 }
                 else
                 {
-                    foreach (var part in CollisionMapForEachPositionBodyLocation)
+                    foreach (var part in CollisionMapForEachPositionBodyLocation
+                        .Where(m => !(this.IsKnockbackNavigation && (m.Key == PositionBodyLocation.Bottom 
+                        || m.Key == PositionBodyLocation.BottomSemiMiddle || m.Key == PositionBodyLocation.BottomMiddle))))
                     {
                         if (part.Value.Item2 < minDistance || part.Value.Item2 == minDistance)
                         {
@@ -117,7 +120,7 @@ namespace HeroVirtualTabletop.Desktop
 
                 collisionVector = new Vector3(collisionVector.X,
                        collisionVector.Y, collisionVector.Z);
-                if (IsKnockbackNavigation)
+                if (IsKnockbackNavigation && collisionVector != Vector3.Zero)
                     collisionVector = GetKnockbackCollision(collisionVector);
                 CollidingBodyPart = collidingLocation;
             }
@@ -168,19 +171,15 @@ namespace HeroVirtualTabletop.Desktop
             this.IsNavigatingToDestination = true;
             this.Direction = direction;
             this.PositionsToSynchronize = positionsToSynchronize;
-            if(this.AdjustedDestination == Vector3.Zero)
-            {
-                this.AdjustedDestination = destination.Vector;
-            }
+            this.AdjustedDestination = destination.Vector;
             Destination = destination;
             SetNavigationSpeed(speed);
             UsingGravity = hasGravity;
             await NavigateToDestination();
         }
 
-        public async Task NavigateToDestination()
+        private async Task NavigateToDestination()
         {
-            //StartNavigationTimer();
             var dist = Vector3.Distance(this.Destination.Vector, this.PositionBeingNavigated.Vector);
             bool navigationCompleted = dist < 5 || this.IsInCollision;
             while (!navigationCompleted)
@@ -190,6 +189,37 @@ namespace HeroVirtualTabletop.Desktop
                 navigationCompleted = dist < 5 || this.IsInCollision;
             }
             await Task.Delay(2);
+            OnNavigationCompleted(this, null);
+        }
+
+        public async Task NavigateByDistance(Position characterPosition, double distance, Direction direction, double speed, bool hasGravity, List<Position> positionsToSynchronize = null)
+        {
+            this.PositionBeingNavigated = characterPosition;
+            this.DistanceToTravel = distance;
+            this.Direction = direction;
+            this.PositionsToSynchronize = positionsToSynchronize;
+            //this.AdjustedDestination = destination.Vector;
+            //Destination = destination;
+            SetNavigationSpeed(speed);
+            UsingGravity = hasGravity;
+            await NavigateByDistance();
+        }
+
+        private async Task NavigateByDistance()
+        {
+            Vector3 initialPositinVector = this.PositionBeingNavigated.Vector;
+            float distanceTravelled = 0;
+            bool navigationCompleted = distanceTravelled >= this.DistanceToTravel || this.IsInCollision;
+            while (!navigationCompleted)
+            {
+                await Navigate();
+                distanceTravelled = Vector3.Distance(initialPositinVector, this.PositionBeingNavigated.Vector);
+                navigationCompleted = distanceTravelled >= this.DistanceToTravel || this.IsInCollision;
+            }
+            if (this.IsKnockbackNavigation && this.UsingGravity)
+                this.ApplyGravity(this.PositionBeingNavigated.Vector);      
+            if(!this.IsKnockbackNavigation)                                                                                                                                                                                                                        
+                await Task.Delay(2);
             OnNavigationCompleted(this, null);
         }
 
@@ -517,7 +547,8 @@ namespace HeroVirtualTabletop.Desktop
                 Vector3 previousPosition = PositionBeingNavigated.Vector;
                 PositionBeingNavigated.MoveTo(allowableDestinationVector);
                 SynchronizeSecondaryPositions(previousPosition, PositionBeingNavigated.Vector);
-                await Task.Delay(5);
+                if (!this.IsKnockbackNavigation)
+                    await Task.Delay(2);
             }
         }
 
@@ -566,6 +597,9 @@ namespace HeroVirtualTabletop.Desktop
         public void ResetNavigation()
         {
             this.IsInCollision = false;
+            this.PositionsToSynchronize = null;
+            this.DistanceToTravel = 0;
+            this.IsKnockbackNavigation = false;
             this.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
             this.PreviousDirection = Direction.None;
             this.Destination = null;

@@ -78,7 +78,12 @@ namespace HeroVirtualTabletop.Movement
                 Movements.Active = DefaultMovement;
             ActiveMovement?.TurnTowardDestination(destination);
         }
-
+        public async Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance)
+        {
+            if (ActiveMovement == null)
+                Movements.Active = DefaultMovement;
+            await ActiveMovement?.ExecuteKnockback(charactersBeingKnockedback, distance);
+        }
         CharacterActionList<CharacterMovement> _movements;
         public CharacterActionList<CharacterMovement> Movements
         {
@@ -195,6 +200,7 @@ namespace HeroVirtualTabletop.Movement
 
     public class CharacterMovementImpl : CharacterActionImpl, CharacterMovement
     {
+        private const string KNOCKBACK_MOVEMENT_NAME = "Knockback";
         public CharacterMovementImpl(Movement movement)
         {
             Movement = movement;
@@ -235,7 +241,11 @@ namespace HeroVirtualTabletop.Movement
         {
             Movement?.MoveByKeyPress(Character, key, Speed);
         }
-
+        public async Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance)
+        {
+            Movement knockbackMovement = ((MovableCharacter)DefaultAbilities.DefaultCharacter).Movements.Where(m => m.Movement.Name == KNOCKBACK_MOVEMENT_NAME).Select(m => m.Movement).FirstOrDefault();
+            await knockbackMovement?.ExecuteKnockback((MovableCharacter)Owner, charactersBeingKnockedback, distance, this.Speed);
+        }
         public void Move(Direction direction, Position destination = null)
         {
             Movement?.Move(Character, direction, destination, Speed);
@@ -257,8 +267,19 @@ namespace HeroVirtualTabletop.Movement
         {
             Movement?.TurnTowardDestination(Character, destination);
         }
-
-        public bool IsActive { get; set; }
+        private bool isActive;
+        public bool IsActive
+        {
+            get
+            {
+                return isActive;
+            }
+            set
+            {
+                isActive = value;
+                NotifyOfPropertyChange(() => IsActive);
+            }
+        }
         private bool isPaused;
         public bool IsPaused
         {
@@ -477,6 +498,25 @@ namespace HeroVirtualTabletop.Movement
         {
             await Move(charactersToMove, Direction.Forward, destination, speed);
         }
+
+        public async Task ExecuteKnockback(MovableCharacter characterAttacking, List<MovableCharacter> charactersBeingKnockedBack, double distance, double speed = 0)
+        {
+            var knockbackDistance = distance * 8;
+            if (speed < 2.5)
+                speed = 2.5;
+            this.Speed = speed;
+            foreach (var characterBeingKnockedBack in charactersBeingKnockedBack)
+            {
+                // Face the attacking character
+                characterBeingKnockedBack.Position.Face(characterAttacking.Position);
+                // Configure
+                characterBeingKnockedBack.DesktopNavigator.Direction = Direction.Backward;
+                characterBeingKnockedBack.DesktopNavigator.IsKnockbackNavigation = true;
+            }
+            await MoveByDistance(charactersBeingKnockedBack, knockbackDistance);
+        }
+
+        
         private MovableCharacter GetLeadingCharacterForMovement(List<MovableCharacter> characters)
         {
             if (characters.Count > 1)
@@ -670,14 +710,8 @@ namespace HeroVirtualTabletop.Movement
             target.DesktopNavigator.ChangeDirection(target.DesktopNavigator.Direction);
             List<Position> followerPositions = targets.Where(t => t != target).Select(t => t.Position).ToList();
             await target.DesktopNavigator.NavigateToDestination(target.Position, destination, target.DesktopNavigator.Direction, this.Speed, this.HasGravity, followerPositions);
-            if (this.Name == "Knockback")
-            {
-                PlayAppropriateAbility(Direction.Downward, targets);
-            }
-            else
-            {
-                PlayAppropriateAbility(Direction.Still, targets);
-            }
+
+            PlayAppropriateAbility(Direction.Still, targets);
 
             targets.ForEach(t => t.AlignGhost());
 
@@ -687,6 +721,29 @@ namespace HeroVirtualTabletop.Movement
             target.Movements.Active = null;
         }
 
+        private async Task MoveByDistance(List<MovableCharacter> targets, double distance)
+        {
+            MovableCharacter target = GetLeadingCharacterForMovement(targets);
+            if (target.DesktopNavigator.Direction == Direction.None)
+            {
+                target.DesktopNavigator.Direction = Direction.Forward;
+            }
+            PlayAppropriateAbility(target.DesktopNavigator.Direction, targets);
+            target.DesktopNavigator.ChangeDirection(target.DesktopNavigator.Direction);
+            List<Position> followerPositions = targets.Where(t => t != target).Select(t => t.Position).ToList();
+            await target.DesktopNavigator.NavigateByDistance(target.Position, distance, target.DesktopNavigator.Direction, this.Speed, this.HasGravity, followerPositions);
+            if (target.DesktopNavigator.IsKnockbackNavigation)
+            {
+                PlayAppropriateAbility(Direction.Downward, targets);
+            }
+            PlayAppropriateAbility(Direction.Still, targets);
+            targets.ForEach(t => t.AlignGhost());
+
+            this.Stop(target);
+            target.ActiveMovement.IsCharacterMovingToDestination = false;
+            target.ActiveMovement.IsCharacterTurning = false;
+            target.Movements.Active = null;
+        }
 
         private async Task AdvanceInMovementDirection(List<MovableCharacter> targets)
         {
