@@ -25,7 +25,7 @@ namespace HeroVirtualTabletop.Crowd
         void LinkCrowdMember();
         void CloneLinkCharacter(CrowdMember crowdMember);
         void PasteCrowdMember();
-        void SyncCrowdMembersWithRoster();
+        Task SyncCrowdMembersWithRoster();
         void CreateCrowdFromModels();
         void ApplyFilter(string filter);
         Task LoadCrowdCollection();

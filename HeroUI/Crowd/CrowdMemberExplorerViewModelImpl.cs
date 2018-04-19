@@ -41,6 +41,8 @@ namespace HeroVirtualTabletop.Crowd
         private string OriginalName;
         private bool IsUpdatingCharacter;
         private BusyService busyService;
+        private bool rosterSyncNeeded;
+        private bool crowdCollectionLoaded;
 
         #endregion
 
@@ -259,15 +261,28 @@ namespace HeroVirtualTabletop.Crowd
             AddToRoster();
         }
 
-        public void SyncCrowdMembersWithRoster()
+        public async Task SyncCrowdMembersWithRoster()
         {
-            var rosterMembers = this.CrowdRepository.AllMembersCrowd.Members.Where(x => { return x is CharacterCrowdMember && (x as CharacterCrowdMember).RosterParent != null; }).Cast<CharacterCrowdMember>();
-            rosterMembers = rosterMembers.ToList();
-            foreach (var rosterMember in rosterMembers)
+            this.rosterSyncNeeded = true;
+            if (this.crowdCollectionLoaded)
             {
-                rosterMember.Parent = this.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == rosterMember.RosterParent.Name) as Crowd;
+                this.busyService.ShowBusy();
+                await Task.Run(
+                        () =>
+                        {
+                            var rosterMembers = this.CrowdRepository.AllMembersCrowd.Members.Where(x => { return x is CharacterCrowdMember && (x as CharacterCrowdMember).RosterParent != null; }).Cast<CharacterCrowdMember>();
+                            rosterMembers = rosterMembers.ToList();
+                            foreach (var rosterMember in rosterMembers)
+                            {
+                                rosterMember.Parent = this.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(x => x.Name == rosterMember.RosterParent.Name) as Crowd;
+                            }
+                            this.EventAggregator.Publish(new SyncWithRosterEvent(rosterMembers.ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                        }
+                    );
+                this.rosterSyncNeeded = false;
+                this.busyService.HideBusy();
             }
-            this.EventAggregator.Publish(new SyncWithRosterEvent(rosterMembers.ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            
         }
 
         public bool CanAddToRoster
@@ -415,10 +430,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public async void Handle(GameLaunchedEvent message)
         {
-            await this.LoadCrowdCollection();
-            this.CrowdRepository.AddDefaultCharacter();
-            this.CrowdRepository.AddDefaultMovementsToCharacters();
-            this.SyncCrowdMembersWithRoster();
+            await this.SyncCrowdMembersWithRoster();
             this.EventAggregator.PublishOnUIThread(new ListenForDesktopTargetChangeEvent());
         }
 
@@ -430,9 +442,17 @@ namespace HeroVirtualTabletop.Crowd
 
         public async Task LoadCrowdCollection()
         {
-            this.busyService.ShowBusy();
-            await this.CrowdRepository.LoadCrowds();
-            this.busyService.HideBusy();
+            if (!this.crowdCollectionLoaded)
+            {
+                this.busyService.ShowBusy();
+                await this.CrowdRepository.LoadCrowds();
+                this.crowdCollectionLoaded = true;
+                this.CrowdRepository.AddDefaultCharacter();
+                this.CrowdRepository.AddDefaultMovementsToCharacters();
+                if (this.rosterSyncNeeded)
+                    await SyncCrowdMembersWithRoster();
+                this.busyService.HideAllBusy();
+            }
         }
         public async Task SaveCrowdCollection()
         {

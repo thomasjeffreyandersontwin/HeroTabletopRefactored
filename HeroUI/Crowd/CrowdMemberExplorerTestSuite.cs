@@ -64,18 +64,6 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCrowd_SavesCrowds()
-        {
-            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepository;
-            charExpVM.CrowdRepository = repo;
-
-            charExpVM.AddCrowd();
-
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
-        }
-        [TestMethod]
-        [TestCategory("CrowdMemberExplorer")]
         public void AddCrowd_InvokesRepositoryAddCrowdWithParentOfSelectedCharacterCrowdMemberAsParent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -196,23 +184,6 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void DeleteCrowdMember_SavesCrowds()
-        {
-            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-            var repo = TestObjectsFactory.MockRepository;
-            charExpVM.CrowdRepository = repo;
-            var crowd0 = TestObjectsFactory.MockCrowd;
-            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
-            charCrowd0.Parent = crowd0;
-            charExpVM.SelectedCrowdMember = crowd0;
-            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
-
-            charExpVM.DeleteCrowdMember();
-
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
-        }
-        [TestMethod]
-        [TestCategory("CrowdMemberExplorer")]
         public void CloneCrowdMember_InvokesClipboardCopy()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -299,15 +270,17 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void SyncCrowdMembersWithRoster_FiresSyncCrowdMembersWithRosterEvent()
+        public async Task SyncCrowdMembersWithRoster_FiresSyncCrowdMembersWithRosterEvent()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-
+            charExpVM.CrowdRepository = TestObjectsFactory.MockRepository;
             var crowd0 = TestObjectsFactory.MockCrowd;
             var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
             charCrowd0.Parent = crowd0;
-
-            charExpVM.SyncCrowdMembersWithRoster();
+            Mock.Get<Crowd>(crowd0).SetupGet(t => t.Members).Returns(new System.Collections.ObjectModel.ObservableCollection<CrowdMember> { charCrowd0 });
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).SetupGet(t => t.AllMembersCrowd).Returns(crowd0);
+            await charExpVM.LoadCrowdCollection();
+            await charExpVM.SyncCrowdMembersWithRoster();
 
             Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<SyncWithRosterEvent>(), It.IsAny<System.Action<System.Action>>()));
         }

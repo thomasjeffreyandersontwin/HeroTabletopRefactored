@@ -31,7 +31,7 @@ namespace HeroVirtualTabletop.Crowd
         {
             InitializeComponent();
         }
-        private void CrowdMemberExplorerView_Loaded(object sender, RoutedEventArgs e)
+        private async void CrowdMemberExplorerView_Loaded(object sender, RoutedEventArgs e)
         {
             this.viewModel = this.DataContext as CrowdMemberExplorerViewModelImpl;
             this.viewModel.EditModeEnter -= viewModel_EditModeEnter;
@@ -42,6 +42,7 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
+            await this.viewModel.LoadCrowdCollection();
         }
 
         //JA TO DO can we please createe some intention revealing functions so we have less nested cyclomatic complexity
