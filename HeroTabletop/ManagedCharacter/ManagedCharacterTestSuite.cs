@@ -211,7 +211,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         [TestMethod]
         [TestCategory("ManagedCharacter")]
-        public void MoveCharacterToCamera_GeneratesCorrectCommand()
+        public void MoveCharacterToCamera_DoesNotUseKeybindsToMove()
         {
             //arrange
             string[] paras = {};
@@ -222,7 +222,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             characterUnderTest.MoveCharacterToCamera();
             //assert
             var mocker = Mock.Get(characterUnderTest.Generator);
-            mocker.VerifyAll();
+            mocker.Verify(g => g.GenerateDesktopCommandText(DesktopCommand.MoveNPC, It.IsAny<string[]>()), Times.Never);
         }
     }
 

@@ -247,7 +247,7 @@ namespace HeroVirtualTabletop.Crowd
                 (c as MovableCharacter).AddDefaultMovements();
             }
         }
-        public async Task LoadCrowdsAsync()
+        public async Task LoadCrowds()
         {
             await Task.Run(() =>
             {
@@ -260,7 +260,7 @@ namespace HeroVirtualTabletop.Crowd
 
         }
 
-        public async Task SaveCrowdsAsync()
+        public async Task SaveCrowds()
         {
             await Task.Run(() =>
             {

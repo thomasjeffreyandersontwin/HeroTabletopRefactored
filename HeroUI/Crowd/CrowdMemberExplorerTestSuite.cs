@@ -72,7 +72,7 @@ namespace HeroVirtualTabletop.Crowd
 
             charExpVM.AddCrowd();
 
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
@@ -209,7 +209,7 @@ namespace HeroVirtualTabletop.Crowd
 
             charExpVM.DeleteCrowdMember();
 
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
@@ -346,8 +346,8 @@ namespace HeroVirtualTabletop.Crowd
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             charExpVM.CrowdRepository = TestObjectsFactory.MockRepository;
 
-            await charExpVM.LoadCrowdCollectionAsync();
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.LoadCrowdsAsync());
+            await charExpVM.LoadCrowdCollection();
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.LoadCrowds());
         }
 
         [TestMethod]
@@ -356,8 +356,8 @@ namespace HeroVirtualTabletop.Crowd
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
             charExpVM.CrowdRepository = TestObjectsFactory.MockRepository;
-            await charExpVM.SaveCrowdCollectionAsync();
-            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowdsAsync());
+            await charExpVM.SaveCrowdCollection();
+            Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
         }
     }
 }

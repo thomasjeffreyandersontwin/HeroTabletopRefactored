@@ -23,7 +23,7 @@ namespace HeroVirtualTabletop.Attack
     {
         public static string Stunned => "Stunned";
 
-        public static string Unconsious => "Unconsious";
+        public static string Unconscious => "Unconscious";
 
         public static string Hit => "Hit";
 

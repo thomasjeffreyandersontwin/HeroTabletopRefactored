@@ -105,7 +105,7 @@ namespace HeroVirtualTabletop.Attack
             instructions.Defender = defender;
             instructions.AttackHit = true;
             instructions.Impacts.Add(AttackEffects.Stunned);
-            instructions.Impacts.Add(AttackEffects.Unconsious);
+            instructions.Impacts.Add(AttackEffects.Unconscious);
             instructions.Impacts.Add(AttackEffects.Dead);
             instructions.Impacts.Add(AttackEffects.Dying);
             attack.CompleteTheAttackCycle(instructions);
@@ -139,7 +139,7 @@ namespace HeroVirtualTabletop.Attack
                 .Verify(x => x.Play(defender), Times.Once);
 
             //act-assert
-            instructions.Impacts.Remove(AttackEffects.Unconsious);
+            instructions.Impacts.Remove(AttackEffects.Unconscious);
             attack.CompleteTheAttackCycle(instructions);
             Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
                 .Verify(x => x.Play(defender), Times.Once);

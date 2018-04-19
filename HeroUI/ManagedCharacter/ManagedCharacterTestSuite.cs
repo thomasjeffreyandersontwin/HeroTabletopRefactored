@@ -78,15 +78,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         [TestMethod]
         [TestCategory("CharacterEditor")]
-        public void AddActionGroup_SavesChanges()
-        {
-            var viewModel = CharacterEditorViewModelUnderTest;
-            viewModel.AddActionGroup();
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
-        }
-
-        [TestMethod]
-        [TestCategory("CharacterEditor")]
         public void RemoveActionGroup_InvokesEditedCharacterRemoveActionGroup()
         {
             var viewModel = CharacterEditorViewModelUnderTest;
@@ -94,17 +85,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
             viewModel.CharacterActionGroups.Last().ActionGroup = viewModel.SelectedCharacterActionGroup;
             viewModel.RemoveActionGroup();
             Mock.Get<CharacterCrowdMember>(viewModel.EditedCharacter).Verify(a => a.RemoveActionGroup(It.IsAny<CharacterActionGroup>()));
-        }
-
-        [TestMethod]
-        [TestCategory("CharacterEditor")]
-        public void RemoveActionGroup_SavesChanges()
-        {
-            var viewModel = CharacterEditorViewModelUnderTest;
-            viewModel.SelectedCharacterActionGroup = viewModel.EditedCharacter.CharacterActionGroups.Last();
-            viewModel.CharacterActionGroups.Last().ActionGroup = viewModel.SelectedCharacterActionGroup;
-            viewModel.RemoveActionGroup();
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
         }
 
         [TestMethod]
@@ -122,20 +102,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
             //Mock.Get<ObservableCollection<CharacterActionGroupViewModel>>(viewModel.CharacterActionGroups).Verify(c => c.Insert(1, sourceVM));
             Mock.Get<CharacterCrowdMember>(viewModel.EditedCharacter).Verify(a => a.RemoveActionGroupAt(0));
             Mock.Get<CharacterCrowdMember>(viewModel.EditedCharacter).Verify(a => a.InsertActionGroup(1, It.IsAny<CharacterActionGroup>()));
-        }
-
-        [TestMethod]
-        [TestCategory("CharacterEditor")]
-        public void ReOrderActionGroups_SavesChanges()
-        {
-            var viewModel = CharacterEditorViewModelUnderTest;
-            viewModel.CharacterActionGroups = TestObjectsFactory.CustomizedMockFixture.Create<ObservableCollection<CharacterActionGroupViewModel>>();
-            var sourceVM = viewModel.CharacterActionGroups[0];
-            var destVM = viewModel.CharacterActionGroups[1];
-
-            viewModel.ReOrderActionGroups(0, 1);
-
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
         }
     }
 
@@ -216,16 +182,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         [TestMethod]
         [TestCategory("ActionGroups")]
-        public void RemoveAction_SavesChanges()
-        {
-            var viewModel = CharacterActionGroupViewModelUnderTest;
-            viewModel.SelectedAction = (viewModel.ActionGroup as CharacterActionList<Identity>)[0];
-            viewModel.RemoveAction();
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
-        }
-
-        [TestMethod]
-        [TestCategory("ActionGroups")]
         public void InsertAction_InvokesCharacterActionListInsertAction()
         {
             var viewModel = CharacterActionGroupViewModelUnderTest;
@@ -255,31 +211,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         [TestMethod]
         [TestCategory("ActionGroups")]
-        public void RemoveActionWithIndex_SavesChanges()
-        {
-            var viewModel = CharacterActionGroupViewModelUnderTest;
-            viewModel.RemoveAction(0);
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
-        }
-
-        [TestMethod]
-        [TestCategory("ActionGroups")]
         public void SetDefaultAction_SetsCharacterActionListDefault()
         {
             var viewModel = CharacterActionGroupViewModelUnderTest;
             viewModel.SelectedAction = (viewModel.ActionGroup as CharacterActionList<Identity>)[1];
             viewModel.SetDefaultAction();
             Assert.AreEqual((viewModel.ActionGroup as CharacterActionList<Identity>).Default, viewModel.SelectedAction);
-        }
-
-        [TestMethod]
-        [TestCategory("ActionGroups")]
-        public void SetDefaultAction_SavesChanges()
-        {
-            var viewModel = CharacterActionGroupViewModelUnderTest;
-            viewModel.SelectedAction = (viewModel.ActionGroup as CharacterActionList<Identity>)[1];
-            viewModel.SetDefaultAction();
-            Mock.Get<IEventAggregator>(viewModel.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
         }
 
         [TestMethod]

@@ -352,7 +352,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void MoveCharacterToCamera(bool completeEvent = true)
         {
             Target();
-            (this as MovableCharacter).MoveForwardTo(this.Camera.Position);
+            var movableCharacter = this as MovableCharacter;
+            movableCharacter?.MoveForwardTo(this.Camera.Position);
         }
 
         public void SyncWithGame()

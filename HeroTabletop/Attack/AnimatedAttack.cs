@@ -101,7 +101,7 @@ namespace HeroVirtualTabletop.Attack
                 instructions.Defender.Abilities[DefaultAbilities.DEAD].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Dying))
                 instructions.Defender.Abilities[DefaultAbilities.DYING].Play(instructions.Defender);
-            else if (instructions.Impacts.Contains(AttackEffects.Unconsious))
+            else if (instructions.Impacts.Contains(AttackEffects.Unconscious))
                 instructions.Defender.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.Defender);
             else if (instructions.Impacts.Contains(AttackEffects.Stunned))
                 instructions.Defender.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);

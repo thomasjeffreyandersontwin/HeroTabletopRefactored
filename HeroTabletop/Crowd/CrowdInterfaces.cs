@@ -30,8 +30,8 @@ namespace HeroVirtualTabletop.Crowd
         string CreateUniqueName(string name, IEnumerable<CrowdMember> context);
         void AddDefaultCharacter();
         void AddDefaultMovementsToCharacters();
-        Task LoadCrowdsAsync();
-        Task SaveCrowdsAsync();
+        Task LoadCrowds();
+        Task SaveCrowds();
         void AddCrowd(Crowd crowd);
         void RemoveCrowd(Crowd crowd);
         void SortCrowds(bool ascending = true);

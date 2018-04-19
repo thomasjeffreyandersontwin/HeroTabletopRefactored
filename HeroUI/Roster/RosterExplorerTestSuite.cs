@@ -55,17 +55,6 @@ namespace HeroVirtualTabletop.Roster
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
-        public void Spawn_FiresEventToSaveCrowdCollection()
-        {
-            var rosterVM = RosterExplorerViewModelUnderTest;
-            SelectTwoMockParticipants(rosterVM);
-
-            rosterVM.Spawn();
-
-            Mock.Get<IEventAggregator>(rosterVM.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
-        }
-        [TestMethod]
-        [TestCategory("RosterExplorer")]
         public void UpdateRosterSelection_InvokesRosterSelectParticipant()
         {
             var rosterVM = RosterExplorerViewModelUnderTest;
@@ -108,17 +97,6 @@ namespace HeroVirtualTabletop.Roster
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
-        public void ClearFromDesktop_FiresEventToSaveCrowdCollection()
-        {
-            var rosterVM = RosterExplorerViewModelUnderTest;
-            SelectTwoMockParticipants(rosterVM);
-
-            rosterVM.ClearFromDesktop();
-
-            Mock.Get<IEventAggregator>(rosterVM.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
-        }
-        [TestMethod]
-        [TestCategory("RosterExplorer")]
         public void MoveToCamera_InvokesRosterSelectionMoveToCamera()
         {
             var rosterVM = RosterExplorerViewModelUnderTest;
@@ -138,17 +116,6 @@ namespace HeroVirtualTabletop.Roster
             rosterVM.SavePosition();
 
             Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.SaveCurrentTableTopPosition());
-        }
-        [TestMethod]
-        [TestCategory("RosterExplorer")]
-        public void SavePosition_FiresEventToSaveCrowdCollection()
-        {
-            var rosterVM = RosterExplorerViewModelUnderTest;
-            SelectTwoMockParticipants(rosterVM);
-
-            rosterVM.SavePosition();
-
-            Mock.Get<IEventAggregator>(rosterVM.EventAggregator).Verify(e => e.Publish(It.IsAny<CrowdCollectionModifiedEvent>(), It.IsAny<System.Action<System.Action>>()));
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]

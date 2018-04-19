@@ -223,10 +223,8 @@ namespace HeroVirtualTabletop.Crowd
             var charCrowd = this.CrowdRepository.NewCharacterCrowdMember(this.SelectedCrowdMember);
             //// Add default movements
             //charCrowd.AddDefaultMovements();
-            //this.CrowdRepository.SaveCrowds();
             //// Enter edit mode for the added character
             OnEditNeeded(charCrowd, null);
-            SaveCrowdCollectionAsync();
         }
 
         public void AddCrowd()
@@ -237,8 +235,7 @@ namespace HeroVirtualTabletop.Crowd
             var crowd = this.CrowdRepository.NewCrowd(this.SelectedCrowdMember);
             if(this.SelectedCrowdMember == null)
                 this.CrowdRepository.AddCrowd(crowd);
-
-            //this.CrowdRepository.SaveCrowds();
+            
             // UnLock character crowd Tree from updating;
             this.LockTreeUpdate(false);
             // Update character crowd if necessary
@@ -251,7 +248,6 @@ namespace HeroVirtualTabletop.Crowd
             // Enter Edit mode for the added model
             OnEditNeeded(crowd, null);
             this.CrowdRepository.SortCrowds();
-            SaveCrowdCollectionAsync();
         }
 
         #endregion
@@ -401,8 +397,6 @@ namespace HeroVirtualTabletop.Crowd
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowdMember, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Delete });
             }
-            // Finally save repository
-            SaveCrowdCollectionAsync();
         }
 
 
@@ -421,7 +415,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public async void Handle(GameLaunchedEvent message)
         {
-            await this.LoadCrowdCollectionAsync();
+            await this.LoadCrowdCollection();
             this.CrowdRepository.AddDefaultCharacter();
             this.CrowdRepository.AddDefaultMovementsToCharacters();
             this.SyncCrowdMembersWithRoster();
@@ -430,21 +424,26 @@ namespace HeroVirtualTabletop.Crowd
 
         public async void Handle(CrowdCollectionModifiedEvent message)
         {
-            await this.SaveCrowdCollectionAsync();
+            //// If in future, we decide to do something on the event of any modification to the repository members, we'd do it here
+            //await this.SaveCrowdCollectionAsync();
         }
 
-        public async Task LoadCrowdCollectionAsync()
+        public async Task LoadCrowdCollection()
         {
             this.busyService.ShowBusy();
-            await this.CrowdRepository.LoadCrowdsAsync();
+            await this.CrowdRepository.LoadCrowds();
+            this.busyService.HideBusy();
+        }
+        public async Task SaveCrowdCollection()
+        {
+            this.busyService.ShowBusy();
+            await this.CrowdRepository.SaveCrowds();
             this.busyService.HideBusy();
         }
 
-        public async Task SaveCrowdCollectionAsync()
+        public async void Save()
         {
-            this.busyService.ShowBusy();
-            await this.CrowdRepository.SaveCrowdsAsync();
-            this.busyService.HideBusy();
+            await SaveCrowdCollection();
         }
 
         #endregion
@@ -533,8 +532,6 @@ namespace HeroVirtualTabletop.Crowd
                 {
                     RenameCrowdMember(updatedName);
                     OnEditModeLeave(state, null);
-                    //this.SaveCrowdCollection();
-                    SaveCrowdCollectionAsync();
                 }
                 else
                 {
@@ -682,8 +679,6 @@ namespace HeroVirtualTabletop.Crowd
             {
                 OnEditNeeded(pastedMember, null);
             }
-
-            SaveCrowdCollectionAsync();
             if (SelectedCrowdMember != null)
             {
                 OnExpansionUpdateNeeded(this.SelectedCrowdMember, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Paste });
@@ -698,7 +693,6 @@ namespace HeroVirtualTabletop.Crowd
 
         public void DragDropSelectedCrowdMember(Crowd targetCrowd)
         {
-            bool saveNeeded = false;
             this.LockTreeUpdate(true);
             if (this.SelectedCharacterCrowdMember != null) // dragged a Character
             {
@@ -737,7 +731,6 @@ namespace HeroVirtualTabletop.Crowd
                         canLinkCrowd = true;
                     if (canLinkCrowd)
                     {
-                        saveNeeded = true;
                         if (!targetCrowd.ContainsMember(this.SelectedCrowdMember))
                         {
                             // Link
@@ -754,7 +747,6 @@ namespace HeroVirtualTabletop.Crowd
                     }
                 }
             }
-            SaveCrowdCollectionAsync();
             if (targetCrowd != null)
             {
                 OnExpansionUpdateNeeded(targetCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.DragDrop });

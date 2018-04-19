@@ -350,7 +350,7 @@ namespace HeroVirtualTabletop.Movement
         public bool IsCharacterTurning { get; set; }
     }
 
-    class MovementImpl : PropertyChangedBase, Movement
+    public class MovementImpl : PropertyChangedBase, Movement
     {
         private Dictionary<MovableCharacter, System.Threading.Timer> characterMovementTimerDictionary;
         private TurnDirection currentTurnDirection;
