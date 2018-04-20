@@ -22,6 +22,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
         ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
         void RemoveStateFromActiveStates(string stateName);
         void AddAsAttackTarget(AttackInstructions instructions);
+        void AddState(AnimatableCharacterState state, bool playImmediately = true);
+        void AddDefaultState(string state, bool playImmediately = true);
+        void RemoveState(AnimatableCharacterState state, bool playImmediately = true);
+        void ResetAllAbiltitiesAndState();
+        void TurnTowards(Position position);
+        void ResetActiveAttack();
+        void CopyAbilitiesTo(AnimatedCharacter targetCharacter);
+        void RemoveAbilities();
     }
 
     public class DefaultAbilities
@@ -59,15 +67,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         AnimatedAttack ActiveAttack { get; set; }
         bool CheckIfAbilityNameIsDuplicate(string updatedName);
         Position Facing { get; set; }
-        void PlayExternalAnimatedAbility(AnimatedAbility ability);
-        KnockbackCollisionInfo PlayCompleteExternalAttack(AnimatedAttack attack, AttackInstructions instructions);
-        void AddState(AnimatableCharacterState state, bool playImmediately = true);
-        void AddDefaultState(string state, bool playImmediately = true);
-        void RemoveState(AnimatableCharacterState state, bool playImmediately = true);
-        void ResetAllAbiltitiesAndState();
-        void RemoveStateFromActiveStates(string name);
-        void TurnTowards(Position position);
-        void RemoveActiveAttack();
+        string GetNewValidAbilityName(string name = "Ability");
     }
     public interface AnimatableCharacterState
     {

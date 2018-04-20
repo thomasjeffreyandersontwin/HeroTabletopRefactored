@@ -30,5 +30,8 @@ namespace HeroVirtualTabletop.Crowd
         void ApplyFilter(string filter);
         Task LoadCrowdCollection();
         Task SaveCrowdCollection();
+        void CopyAllActions();
+        void PasteAllActions();
+        void RemoveAllActions();
     }
 }

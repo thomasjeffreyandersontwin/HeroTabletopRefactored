@@ -956,6 +956,61 @@ namespace HeroVirtualTabletop.Roster
         {
             throw new NotImplementedException();
         }
+
+        public void AddState(AnimatableCharacterState state, bool playImmediately = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddDefaultState(string state, bool playImmediately = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveState(AnimatableCharacterState state, bool playImmediately = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResetAllAbiltitiesAndState()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TurnTowards(Position position)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResetActiveAttack()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyAbilitiesTo(AnimatedCharacter targetCharacter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyIdentitiesTo(ManagedCharacter.ManagedCharacter targetCharacter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveIdentities()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAbilities()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAllActions()
+        {
+            throw new NotImplementedException();
+        }
     }
     class RosterSelectionCharacterActionsWrapper : CharacterActionImpl
     {

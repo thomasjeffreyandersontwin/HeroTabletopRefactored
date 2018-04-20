@@ -57,6 +57,7 @@ namespace HeroVirtualTabletop.Crowd
     {
         new string Name { get; set; }
         new int Order { get; set; }
+        void CopyActionsTo(CrowdMember targetMember);
     }
     public interface CrowdMember : CrowdMemberCommands, INotifyPropertyChanged
     {
@@ -88,6 +89,7 @@ namespace HeroVirtualTabletop.Crowd
         void SaveCurrentTableTopPosition();
         void PlaceOnTableTop(Position position = null);
         void PlaceOnTableTopUsingRelativePos();
+        void RemoveAllActions();
     }
     public interface CrowdClipboard
     {

@@ -332,5 +332,58 @@ namespace HeroVirtualTabletop.Crowd
             await charExpVM.SaveCrowdCollection();
             Mock.Get<CrowdRepository>(charExpVM.CrowdRepository).Verify(c => c.SaveCrowds());
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void PasteAllActions_InvokesCopyAllActionsMethodForUnderlyingCharacter()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
+            charExpVM.CrowdRepository = repo;
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
+            var charCrowd1 = TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            charCrowd0.Parent = crowd0;
+            charCrowd1.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = null;
+            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
+
+            charExpVM.CopyAllActions();
+            charExpVM.SelectedCharacterCrowdMember = charCrowd1;
+            charExpVM.PasteAllActions();
+
+            Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.CopyActionsTo(It.Is<CharacterCrowdMember>(x => x == charCrowd1)));
+        }
+        
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void RemoveAllActionsFromCharacter_InvokesRemoveAllActionsMethodForUnderlyingCharacter()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
+            charExpVM.CrowdRepository = repo;
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var charCrowd0 = TestObjectsFactory.MockCharacterCrowdMember;
+            charCrowd0.Parent = crowd0;
+            charExpVM.SelectedCrowdMember = null;
+            charExpVM.SelectedCharacterCrowdMember = charCrowd0;
+
+            charExpVM.RemoveAllActions();
+
+            Mock.Get<CharacterCrowdMember>(charCrowd0).Verify(c => c.RemoveAllActions());
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void RemoveAllActionsFromCrowd_InvokesRemoveAllActionsMethodForUnderlyingCrowd()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var repo = TestObjectsFactory.MockRepositoryImpl;
+            charExpVM.CrowdRepository = repo;
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            charExpVM.SelectedCharacterCrowdMember = null;
+            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.RemoveAllActions();
+
+            Mock.Get<Crowd>(crowd0).Verify(c => c.RemoveAllActions());
+        }
     }
 }

@@ -702,6 +702,16 @@ namespace HeroVirtualTabletop.Crowd
             this.OldName = this.Name;
             this.Name = newName;
         }
+        public void RemoveAllActions()
+        {
+            List<CrowdMember> members = this.CrowdRepository.GetFlattenedMemberList(this.Members.ToList());
+            foreach (CharacterCrowdMember targetCharacter in members.Where(m => m is CharacterCrowdMember))
+            {
+                targetCharacter.RemoveIdentities();
+                targetCharacter.RemoveAbilities();
+                targetCharacter.RemoveMovements();
+            }
+        }
     }
 
     public class CrowdMemberShipImpl : PropertyChangedBase, CrowdMemberShip
@@ -978,6 +988,10 @@ namespace HeroVirtualTabletop.Crowd
             clone.Name = CrowdRepository.CreateUniqueName(Name, CrowdRepository.AllMembersCrowd.Members);
             foreach (var id in Identities)
                 clone.Identities.InsertAction((Identity)id.Clone());
+            foreach (var ab in Abilities)
+                clone.Abilities.InsertAction((AnimatedAbility.AnimatedAbility)ab.Clone());
+            foreach (var cm in Movements)
+                clone.Movements.InsertAction((CharacterMovement)cm.Clone());
 
             clone.Generator = Generator;
             clone.Targeter = Targeter;
@@ -1010,6 +1024,34 @@ namespace HeroVirtualTabletop.Crowd
                 parent = this.CrowdRepository.AllMembersCrowd.Members.First(x => x.Name == this.RosterParent.Name) as Crowd;
 
             return parent;
+        }
+
+        public void CopyActionsTo(CrowdMember targetMember)
+        {
+            if(targetMember is CharacterCrowdMember)
+            {
+                CharacterCrowdMember targetCharacter = targetMember as CharacterCrowdMember;
+                this.CopyIdentitiesTo(targetCharacter);
+                this.CopyAbilitiesTo(targetCharacter);
+                this.CopyMovementsTo(targetCharacter);
+            }
+            else
+            {
+                Crowd targetCrowd = targetMember as Crowd;
+                List<CrowdMember> members = this.CrowdRepository.GetFlattenedMemberList(targetCrowd.Members.ToList());
+                foreach (CharacterCrowdMember targetCharacter in members.Where(m => m is CharacterCrowdMember))
+                {
+                    this.CopyIdentitiesTo(targetCharacter);
+                    this.CopyAbilitiesTo(targetCharacter);
+                    this.CopyMovementsTo(targetCharacter);
+                }
+            }
+        }
+        public void RemoveAllActions()
+        {
+            this.RemoveAbilities();
+            this.RemoveIdentities();
+            this.RemoveMovements();
         }
     }
 

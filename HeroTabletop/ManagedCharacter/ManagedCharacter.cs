@@ -407,8 +407,40 @@ namespace HeroVirtualTabletop.ManagedCharacter
             return validName;
         }
 
+        public void CopyIdentitiesTo(ManagedCharacter targetCharacter)
+        {
+            foreach(var id in this.Identities.Where(i => i.Name != this.Name))
+            {
+                Identity identity = id.Clone() as Identity;
+                identity.Name = targetCharacter.GetNewValidIdentityName(identity.Name);
+                if (identity.AnimationOnLoad != null)
+                    identity.AnimationOnLoad.Owner = targetCharacter;
+                targetCharacter.Identities.InsertAction(identity);
+            }
+        }
+
         public CharacterProgressBarStats ProgressBar { get; set; }
-        
+        public string GetNewValidIdentityName(string name = "Identity")
+        {
+            string suffix = string.Empty;
+            int i = 0;
+            while ((this.Identities.Any((Identity identity) => { return identity.Name == name + suffix; })))
+            {
+                suffix = string.Format(" ({0})", ++i);
+            }
+            return string.Format("{0}{1}", name, suffix).Trim();
+        }
+        public void RemoveIdentities()
+        {
+            var identities = this.Identities.ToList();
+            foreach(var id in identities.Where(i => i.Name != this.Name))
+            {
+                if (this.Identities.Count() <= 1)
+                    break;
+                var identityToRemove = this.Identities.FirstOrDefault(a => a.Name == id.Name);
+                this.Identities.RemoveAction(identityToRemove);
+            }
+        }
     }
 
     public class CharacterComparer : IMultiValueConverter

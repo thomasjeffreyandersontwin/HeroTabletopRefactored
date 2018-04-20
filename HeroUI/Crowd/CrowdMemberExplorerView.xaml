@@ -73,6 +73,9 @@
                     <MenuItem Header="Add Crowd"  cal:Message.Attach="AddCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Edit Character" cal:Message.Attach="EditCharacterCrowd" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Remove" cal:Message.Attach="DeleteCrowdMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                    <MenuItem Header="Copy All Actions" cal:Message.Attach="CopyAllActions" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                    <MenuItem Header="Paste All Actions" cal:Message.Attach="PasteAllActions" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                    <MenuItem Header="Remove All Actions" cal:Message.Attach="RemoveAllActions" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                     <MenuItem Header="Add Crowd From Models" cal:Message.Attach="AddCrowdFromModels" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 </ContextMenu>
                 <HierarchicalDataTemplate DataType="{x:Type crowd:CrowdImpl}"

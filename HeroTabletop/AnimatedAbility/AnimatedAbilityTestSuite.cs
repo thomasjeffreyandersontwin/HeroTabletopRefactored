@@ -791,6 +791,35 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 else
                     Assert.AreEqual(defaultAbility, character.Abilities[defaultAbility.Name]);
         }
+        [TestMethod]
+        [TestCategory("AnimatedCharacter")]
+        public void CopyAbilitiesToAnotherCharacter_CopiesAbilitiesAsReference()
+        {
+            var characterUnderTest = TestObjectsFactory.AnimatedCharacterUnderTestWithAbilities;
+            var destinationCharacter = TestObjectsFactory.MockAnimatedCharacter;
+            Mock.Get<AnimatedCharacter>(destinationCharacter).SetupGet(c => c.Abilities).Returns(TestObjectsFactory.MockAbilities);
+            Mock.Get<AnimatedCharacter>(destinationCharacter).Setup(c => c.GetNewValidAbilityName(It.IsAny<string>())).Returns((string name) => { return name; });
+
+            characterUnderTest.CopyAbilitiesTo(destinationCharacter);
+
+            var mocker = Mock.Get<CharacterActionList<AnimatedAbility>>(destinationCharacter.Abilities);
+            foreach (var ability in characterUnderTest.Abilities)
+            {
+                mocker.Verify(m => m.InsertAction(It.Is<AnimatedAbilityImpl>(a => a.Name == ability.Name
+                && a.AnimationElements[0] is ReferenceElement && (a.AnimationElements[0] as ReferenceElement).Reference.Ability == ability)));
+            }
+        }
+        [TestMethod]
+        [TestCategory("AnimatedCharacter")]
+        public void RemoveAbilities_RemovesAllAbilities()
+        {
+            var characterUnderTest = TestObjectsFactory.AnimatedCharacterUnderTestWithAbilities;
+            Assert.IsTrue(characterUnderTest.Abilities.Count() > 0);
+
+            characterUnderTest.RemoveAbilities();
+
+            Assert.AreEqual(characterUnderTest.Abilities.Count(), 0);
+        }
     }
 
     public class AnimatedAbilityTestObjectsFactory : ManagedCharacterTestObjectsFactory
@@ -822,6 +851,34 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     .Create();
                 a.CharacterActionGroups = GetStandardCharacterActionGroup(a);
                 return a;
+            }
+        }
+
+        public AnimatedCharacter AnimatedCharacterUnderTestWithAbilities
+        {
+            get
+            {
+                AnimatedCharacter a = StandardizedFixture.Build<AnimatedCharacterImpl>()
+                    .Without(x => x.ActiveAttack)
+                    .Create();
+                a.CharacterActionGroups = GetStandardCharacterActionGroup(a);
+                var abx = StandardizedFixture.CreateMany<AnimatedAbility>().ToList();
+                a.Abilities.InsertMany(abx);
+                return a;
+            }
+        }
+
+        public CharacterActionList<AnimatedAbility> MockAbilities
+        {
+            get
+            {
+                var abilityActionList = CustomizedMockFixture.Create<CharacterActionList<AnimatedAbility>>();
+                var abilities = CustomizedMockFixture.Create<IEnumerable<AnimatedAbility>>();
+
+                foreach (var id in abilities)
+                    abilityActionList.InsertAction(id);
+
+                return abilityActionList;
             }
         }
 

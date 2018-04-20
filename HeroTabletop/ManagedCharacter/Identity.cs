@@ -1,5 +1,6 @@
 ﻿using HeroVirtualTabletop.Desktop;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -83,6 +84,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public override CharacterAction Clone()
         {
             Identity clone = new IdentityImpl(((ManagedCharacter)Owner), Name, Surface, Type, Generator, KeyboardShortcut);
+            if(this.AnimationOnLoad != null)
+            {
+                clone.AnimationOnLoad = this.AnimationOnLoad.Clone() as AnimatedAbility.AnimatedAbility;
+            }
             return clone;
         }
     }

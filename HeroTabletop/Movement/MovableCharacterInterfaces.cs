@@ -47,6 +47,8 @@ namespace HeroVirtualTabletop.Movement
         void Turn(TurnDirection direction, double angle = 5);
         void TurnTowardDestination(Desktop.Position destination);
         Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance);
+        void CopyMovementsTo(MovableCharacter targetCharacter);
+        void RemoveMovements();
     }
     public interface MovementCommands
     {
@@ -82,6 +84,7 @@ namespace HeroVirtualTabletop.Movement
         void RemoveMovement(Movement movement);
         Movement GetNewMovement();
         void AddDefaultMovements();
+        string GetNewValidCharacterMovementName(string name = "Movement");
     }
     public interface CharacterMovement :  MovableCharacterCommands, CharacterAction
     {
@@ -103,6 +106,7 @@ namespace HeroVirtualTabletop.Movement
         double Speed { get; set; }
         void UpdateSoundBasedOnPosition(MovableCharacter character);
         void AddMovementMember(Direction direction, AnimatedAbility.AnimatedAbility ability);
+        Movement Clone();
     }
     public interface MovementMember
     {
@@ -111,6 +115,7 @@ namespace HeroVirtualTabletop.Movement
         Direction Direction { get; set; }
         Key Key { get; }
         string Name { get; set; }
+        MovementMember Clone();
     }
    
     public interface MovementRepository

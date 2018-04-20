@@ -134,7 +134,7 @@ namespace HeroVirtualTabletop.Attack
             IsActive = false;
             foreach (var element in Attacker.ActiveAttack.AnimationElements.Where(e => !(e is FXElement)))
                 element.Stop();
-            Attacker.RemoveActiveAttack();
+            Attacker.ResetActiveAttack();
         }
      
         public void FireAtDesktop(Position desktopPosition)
@@ -150,7 +150,7 @@ namespace HeroVirtualTabletop.Attack
             instructions.Impacts.Clear();
             instructions.Defender.ResetAllAbiltitiesAndState();
             instructions.KnockbackDistance = 0;
-            this.Attacker.RemoveActiveAttack();
+            this.Attacker.ResetActiveAttack();
         }
 
         public AreaEffectAttack TransformToAreaEffectAttack()
@@ -250,7 +250,7 @@ namespace HeroVirtualTabletop.Attack
                 ins.IsCenterOfAreaEffectAttack = false;
                 ins.KnockbackDistance = 0;
             }
-            this.Attacker.RemoveActiveAttack();
+            this.Attacker.ResetActiveAttack();
         }
     }
 

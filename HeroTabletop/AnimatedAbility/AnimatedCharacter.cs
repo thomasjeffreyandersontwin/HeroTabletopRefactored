@@ -94,10 +94,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     //to do load the rest of the default abilities
                 }
         }
-        public void PlayExternalAnimatedAbility(AnimatedAbility ability)
-        {
-            throw new NotImplementedException();
-        }
         public override Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> StandardActionGroups
         {
             get
@@ -140,7 +136,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyPropertyChanged();
             }
         }
-        public void RemoveActiveAttack()
+        public void ResetActiveAttack()
         {
             if (Abilities.Active == ActiveAttack)
                 Abilities.Active = null;
@@ -165,11 +161,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 instructions.Defender = this;
             }
-        }
-
-        public KnockbackCollisionInfo PlayCompleteExternalAttack(AnimatedAttack attack, AttackInstructions instructions)
-        {
-            throw new NotImplementedException();
         }
 
         private bool _isSelected;
@@ -270,6 +261,53 @@ namespace HeroVirtualTabletop.AnimatedAbility
             Position.TurnTowards(position);
         }
 
+        public void CopyAbilitiesTo(AnimatedCharacter targetCharacter)
+        {
+            foreach (AnimatedAbility ability in this.Abilities)
+            {
+                string abilityName = targetCharacter.GetNewValidAbilityName(ability.Name);
+                AnimatedAbility copiedAbility = new AnimatedAbilityImpl();
+                ReferenceElement refElement = new ReferenceElementImpl();
+                ReferenceResource refResource = new ReferenceResourceImpl();
+                refResource.Ability = ability;
+                refResource.Character = this;
+                refElement.Reference = refResource;
+                refElement.Name = ability.Name;
+                copiedAbility.InsertElement(refElement);
+                copiedAbility.Name = abilityName;
+                if(ability is AnimatedAttack)
+                {
+                    AnimatedAttack attack = ability as AnimatedAttack;
+                    AnimatedAttack copiedAttack = ability.TransformToAttack();
+                    AnimatedAbility copiedOnHitAbility = new AnimatedAbilityImpl();
+                    ReferenceElement refElementOnHit = new ReferenceElementImpl();
+                    ReferenceResource refResourceOnHit = new ReferenceResourceImpl();
+                    refResource.Ability = attack.OnHitAnimation;
+                    refResource.Character = this;
+                    refElementOnHit.Reference = refResourceOnHit;
+                    refElementOnHit.Name = attack.OnHitAnimation.Name;
+                    copiedOnHitAbility.InsertElement(refElementOnHit);
+                    copiedAttack.OnHitAnimation = copiedOnHitAbility;
+                    if(ability is AreaEffectAttack)
+                    {
+                        copiedAttack = copiedAttack.TransformToAreaEffectAttack();
+                    }
+                    copiedAbility = copiedAttack;
+                }
+                targetCharacter.Abilities.InsertAction(copiedAbility);
+            }
+        }
+
+        public void RemoveAbilities()
+        {
+            var abilities = this.Abilities.ToList();
+            foreach (var ability in abilities)
+            {
+                var abilityToRemove = this.Abilities.FirstOrDefault(a => a.Name == ability.Name);
+                this.Abilities.RemoveAction(abilityToRemove);
+            }
+        }
+
         private bool checkIfStopAbilityShouldBePlayedForAttackImpacts(AnimatableCharacterState state)
         {
             switch (state.StateName)
@@ -283,6 +321,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 default:
                     return true;
             }
+        }
+
+        public string GetNewValidAbilityName(string name = "Ability")
+        {
+            string suffix = string.Empty;
+            int i = 0;
+            while ((this.Abilities.Any((AnimatedAbility ability) => { return ability.Name == name + suffix; })))
+            {
+                suffix = string.Format(" ({0})", ++i);
+            }
+            return string.Format("{0}{1}", name, suffix).Trim();
         }
     }
     public class AnimatableCharacterStateImpl : AnimatableCharacterState

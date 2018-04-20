@@ -33,13 +33,13 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveActionGroupAt(int index);
         string GetnewValidActionGroupName();
         void AlignGhost();
+        void CopyIdentitiesTo(ManagedCharacter targetCharacter);
+        void RemoveIdentities();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
     {
-        
         DesktopCharacterTargeter Targeter { get; set; }
-        
         string DesktopLabel { get; }
         Position Position { get; }
         bool IsTargeted { get; set; }
@@ -52,6 +52,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         KeyBindCommandGenerator Generator { get; set; }
         CharacterProgressBarStats ProgressBar { get; set; }
         Camera Camera { get; set; }
+        string GetNewValidIdentityName(string name = "Identity");
     }
 
     public enum CharacterActionType

@@ -136,6 +136,44 @@ namespace HeroVirtualTabletop.Movement
             Assert.AreEqual(character.ActiveMovement, null);
             mockMovement.Verify(m => m.Stop(character));
         }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void CopyMovementsToAnotherCharacter_CopiesAllMovementsExceptDefaultMovements()
+        {
+            var characterUnderTest = TestObjectFactory.MovableCharacterUnderTestWithMultipleCharacterMovements;
+            var destinationCharacter = TestObjectFactory.MockMovableCharacter;
+            Mock.Get<MovableCharacter>(destinationCharacter).SetupGet(c => c.Movements).Returns(TestObjectFactory.MockMovements);
+            Mock.Get<MovableCharacter>(destinationCharacter).Setup(c => c.GetNewValidCharacterMovementName(It.IsAny<string>())).Returns((string name) => { return name; });
+            string[] defaultMovements = { "Walk", "Run", "Swim"};
+
+            characterUnderTest.CopyMovementsTo(destinationCharacter);
+
+            var mocker = Mock.Get<CharacterActionList<CharacterMovement>>(destinationCharacter.Movements);
+            foreach (var characterMovement in characterUnderTest.Movements.Where(m => !defaultMovements.Contains(m.Movement.Name)))
+            {
+                mocker.Verify(m => m.InsertAction(It.Is<CharacterMovementImpl>(a => a.Movement.Name == characterMovement.Movement.Name)));
+            }
+            foreach (var characterMovement in characterUnderTest.Movements.Where(m => defaultMovements.Contains(m.Name)))
+            {
+                mocker.Verify(m => m.InsertAction(It.Is<CharacterMovementImpl>(a => a.Movement.Name == characterMovement.Movement.Name)), Times.Never);
+            }
+        }
+        [TestMethod]
+        [TestCategory("MovableCharacter")]
+        public void RemoveMovements_RemovesAllMovementsExceptDefaultOnes()
+        {
+            var characterUnderTest = TestObjectFactory.MovableCharacterUnderTestWithMultipleCharacterMovements;
+            string[] defaultMovements = { "Walk", "Run", "Swim" };
+            Assert.IsTrue(characterUnderTest.Movements.Count() > 3);
+
+            characterUnderTest.RemoveMovements();
+
+            Assert.AreEqual(characterUnderTest.Movements.Count(), 3);
+            foreach(var defaultMove in defaultMovements)
+            {
+                Assert.IsTrue(characterUnderTest.Movements.Any(m => m.Movement.Name == defaultMove));
+            }
+        }
     }
 
     [TestClass]
@@ -662,7 +700,19 @@ namespace HeroVirtualTabletop.Movement
         }
 
         public Movement MockMovement => CustomizedMockFixture.Create<Movement>();
+        public CharacterActionList<CharacterMovement> MockMovements
+        {
+            get
+            {
+                var movementActionList = CustomizedMockFixture.Create<CharacterActionList<CharacterMovement>>();
+                var movements = CustomizedMockFixture.Create<IEnumerable<CharacterMovement>>();
 
+                foreach (var m in movements)
+                    movementActionList.InsertAction(m);
+
+                return movementActionList;
+            }
+        }
         public MovableCharacter MovableCharacterUnderTestWithCharacterMovement
         {
             get
@@ -677,6 +727,35 @@ namespace HeroVirtualTabletop.Movement
                 repo.Characters.Add(defaultCharacter);
                 character.Repository = repo;
                 character.AddMovement(mov);
+                return character;
+
+            }
+        }
+
+        public MovableCharacter MovableCharacterUnderTestWithMultipleCharacterMovements
+        {
+            get
+            {
+                MovableCharacter character = MovableCharacterUnderTest;
+                Movement mov1 = MovementUnderTest;
+                mov1.Name = "Walk";
+                Movement mov2 = MovementUnderTest;
+                mov2.Name = "Run";
+                Movement mov3 = MovementUnderTest;
+                mov3.Name = "Swim";
+                Movement mov4 = MovementUnderTest;
+                mov4.Name = "Jump";
+                MovableCharacter defaultCharacter = MovableCharacterUnderTest;
+                defaultCharacter.Name = DefaultAbilities.CHARACTERNAME;
+                DefaultAbilities.DefaultCharacter = defaultCharacter;
+                AnimatedCharacterRepository repo = AnimatedCharacterRepositoryUnderTest;
+                repo.Characters.Add(character);
+                repo.Characters.Add(defaultCharacter);
+                character.Repository = repo;
+                character.AddMovement(mov1);
+                character.AddMovement(mov2);
+                character.AddMovement(mov3);
+                character.AddMovement(mov4);
                 return character;
 
             }

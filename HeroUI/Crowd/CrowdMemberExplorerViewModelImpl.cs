@@ -145,6 +145,7 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanLinkCrowdMember);
                 NotifyOfPropertyChange(() => CanPasteCrowdMember);
                 NotifyOfPropertyChange(() => CanAddToRoster);
+                NotifyOfPropertyChange(() => CanRemoveAllActions);
             }
         }
 
@@ -166,6 +167,8 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanLinkCrowdMember);
                 NotifyOfPropertyChange(() => CanAddToRoster);
                 NotifyOfPropertyChange(() => CanEditCharacterCrowd);
+                NotifyOfPropertyChange(() => CanCopyAllActions);
+                NotifyOfPropertyChange(() => CanRemoveAllActions);
             }
         }
 
@@ -195,6 +198,8 @@ namespace HeroVirtualTabletop.Crowd
                 ApplyFilter(value);
             }
         }
+
+        public CharacterCrowdMember CharacterToCopyActionsFrom { get; private set; }
 
         #endregion
 
@@ -772,6 +777,56 @@ namespace HeroVirtualTabletop.Crowd
                 OnExpansionUpdateNeeded(targetCrowd, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.DragDrop });
             }
             this.LockTreeUpdate(false);
+        }
+
+        #endregion
+
+        #region Copy/Remove Actions
+
+        public bool CanCopyAllActions
+        {
+            get
+            {
+                return this.SelectedCharacterCrowdMember != null;
+            }
+        }
+
+        public void CopyAllActions()
+        {
+            this.CharacterToCopyActionsFrom = this.SelectedCharacterCrowdMember;
+            NotifyOfPropertyChange(() => CanPasteAllActions);
+
+        }
+
+        public bool CanPasteAllActions
+        {
+            get
+            {
+                return this.CharacterToCopyActionsFrom != null;
+            }
+        }
+        public void PasteAllActions()
+        {
+            if(this.SelectedCharacterCrowdMember != null || this.SelectedCrowdMember != null)
+            {
+                this.CharacterToCopyActionsFrom.CopyActionsTo((CrowdMember)this.SelectedCharacterCrowdMember ?? (CrowdMember)this.SelectedCrowdMember);
+                this.CharacterToCopyActionsFrom = null;
+                NotifyOfPropertyChange(() => CanPasteAllActions);
+            }
+        }
+
+        public bool CanRemoveAllActions
+        {
+            get
+            {
+                return this.SelectedCharacterCrowdMember != null || (this.SelectedCrowdMember != null);
+            }
+        }
+
+        public void RemoveAllActions()
+        {
+            CrowdMember selectedMember = (CrowdMember)this.SelectedCharacterCrowdMember ?? (CrowdMember)this.SelectedCrowdMember;
+            selectedMember.RemoveAllActions();
         }
 
         #endregion

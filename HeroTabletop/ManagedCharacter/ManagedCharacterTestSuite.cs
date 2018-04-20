@@ -224,6 +224,36 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var mocker = Mock.Get(characterUnderTest.Generator);
             mocker.Verify(g => g.GenerateDesktopCommandText(DesktopCommand.MoveNPC, It.IsAny<string[]>()), Times.Never);
         }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void CopyIdentitiesToAnotherCharacter_ClonesAndMovesAllIdentitiesExceptDefault()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithIdentities;
+            characterUnderTest.Identities[0].Name = characterUnderTest.Name;
+            var destinationCharacter = TestObjectsFactory.MockCharacter;
+            Mock.Get<ManagedCharacter>(destinationCharacter).SetupGet(c => c.Identities).Returns(TestObjectsFactory.MockIdentities);
+            Mock.Get<ManagedCharacter>(destinationCharacter).Setup(c => c.GetNewValidIdentityName(It.IsAny<string>())).Returns((string id) => { return id; });
+
+            characterUnderTest.CopyIdentitiesTo(destinationCharacter);
+
+            var mocker = Mock.Get<CharacterActionList<Identity>>(destinationCharacter.Identities);
+            foreach (var i in characterUnderTest.Identities.Where(id => id.Name != characterUnderTest.Name))
+                mocker.Verify(m => m.InsertAction(It.Is<IdentityImpl>(x => x.Name == i.Name)));
+            mocker.Verify(m => m.InsertAction(It.Is<IdentityImpl>(x => x.Name == characterUnderTest.Name)), Times.Never);
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void RemoveIdentities_RemovesAllIdentitiesExceptDefault()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithIdentities;
+            characterUnderTest.Identities[0].Name = characterUnderTest.Name;
+            Assert.IsTrue(characterUnderTest.Identities.Count() > 1);
+
+            characterUnderTest.RemoveIdentities();
+
+            Assert.IsTrue(characterUnderTest.Identities.Count() == 1);
+            Assert.AreEqual(characterUnderTest.Identities[0].Name, characterUnderTest.Name);
+        }
     }
 
     [TestClass]
@@ -504,13 +534,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             get
             {
-                return StandardizedFixture.Build<ManagedCharacterImpl>()
-                    .Do(
-                        c => c.Identities.InsertMany(
-                            StandardizedFixture.Build<Identity>()
-                                .With(y => y.Owner, c).CreateMany().ToList()
-                        )
-                    ).Create();
+                var managedChar = StandardizedFixture.Create<ManagedCharacter>();
+                managedChar.CharacterActionGroups = GetStandardCharacterActionGroup(managedChar);
+                var ids = StandardizedFixture.CreateMany<Identity>().ToList();
+                managedChar.Identities.InsertMany(ids);
+                return managedChar;
             }
         }
 

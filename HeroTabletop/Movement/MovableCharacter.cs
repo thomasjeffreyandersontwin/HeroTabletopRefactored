@@ -196,6 +196,36 @@ namespace HeroVirtualTabletop.Movement
                 }
             }
         }
+
+        public void CopyMovementsTo(MovableCharacter targetCharacter)
+        {
+            foreach (CharacterMovement cm in this.Movements.Where(m => !defaultMovementNames.Contains(m.Movement.Name)))
+            {
+                CharacterMovement characterMovement = cm.Clone() as CharacterMovement;
+                characterMovement.Name = targetCharacter.GetNewValidCharacterMovementName(characterMovement.Name);
+                targetCharacter.Movements.InsertAction(characterMovement);
+            }
+        }
+
+        public string GetNewValidCharacterMovementName(string name = "Movement")
+        {
+            string suffix = string.Empty;
+            int i = 0;
+            while ((this.Movements.Any((CharacterMovement characterMovement) => { return characterMovement.Name == name + suffix; })))
+            {
+                suffix = string.Format(" ({0})", ++i);
+            }
+            return string.Format("{0}{1}", name, suffix).Trim();
+        }
+        public void RemoveMovements()
+        {
+            var movements = this.Movements.ToList();
+            foreach (var movement in movements.Where(m => !defaultMovementNames.Contains(m.Movement.Name)))
+            {
+                var movementToRemove = this.Movements.FirstOrDefault(a => a.Movement.Name == movement.Movement.Name);
+                this.Movements.RemoveAction(movementToRemove);
+            }
+        }
     }
 
     public class CharacterMovementImpl : CharacterActionImpl, CharacterMovement
@@ -219,7 +249,14 @@ namespace HeroVirtualTabletop.Movement
         }
         public override CharacterAction Clone()
         {
-            throw new NotImplementedException();
+            var clonedCharacterMovemnt = new CharacterMovementImpl();
+            clonedCharacterMovemnt.Name = this.Character.GetNewValidCharacterMovementName(this.Name);
+            clonedCharacterMovemnt.Owner = this.Owner;
+            clonedCharacterMovemnt.Movement = this.Movement?.Clone();
+            clonedCharacterMovemnt.Speed = this.Speed;
+            clonedCharacterMovemnt.KeyboardShortcut = this.KeyboardShortcut;
+
+            return clonedCharacterMovemnt;
         }
         public override void Play(bool completeEvent = true)
         {
@@ -267,6 +304,17 @@ namespace HeroVirtualTabletop.Movement
         {
             Movement?.TurnTowardDestination(Character, destination);
         }
+
+        public void CopyMovementsTo(MovableCharacter targetCharacter)
+        {
+            this.Character?.CopyMovementsTo(targetCharacter);
+        }
+
+        public void RemoveMovements()
+        {
+            this.Character?.RemoveMovements();
+        }
+
         private bool isActive;
         public bool IsActive
         {
@@ -444,6 +492,20 @@ namespace HeroVirtualTabletop.Movement
         public void Rename(string updatedName)
         {
             this.Name = updatedName;
+        }
+
+        public Movement Clone()
+        {
+            Movement clonedMovement = new MovementImpl(this.Name);
+            clonedMovement.HasGravity = this.HasGravity;
+            clonedMovement.MovementMembers.Clear();
+            foreach (MovementMember member in this.MovementMembers)
+            {
+                MovementMember clonedMember = member.Clone();
+                clonedMovement.MovementMembers.Add(clonedMember);
+            }
+
+            return clonedMovement;
         }
         public async Task MoveByKeyPress(MovableCharacter characterToMove, Key key, double speed = 0f)
         {
@@ -874,7 +936,16 @@ namespace HeroVirtualTabletop.Movement
                 return key;
             }
         }
+        public MovementMember Clone()
+        {
+            MovementMember clonedMember = new MovementMemberImpl();
+            clonedMember.Name = this.Name;
+            clonedMember.Ability = this.Ability;
+            clonedMember.Direction = this.Direction;
+            clonedMember.AbilityReference = this.AbilityReference;
 
+            return clonedMember;
+        }
     }
     public class MovementDirectionToIconTextConverter : IValueConverter
     {
