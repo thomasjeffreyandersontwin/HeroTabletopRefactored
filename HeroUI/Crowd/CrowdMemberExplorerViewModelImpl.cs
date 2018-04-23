@@ -76,6 +76,20 @@ namespace HeroVirtualTabletop.Crowd
             if (ExpansionUpdateNeeded != null)
                 ExpansionUpdateNeeded(sender, e);
         }
+        public event EventHandler FlattenNumberRequired;
+        public void OnFlattenNumberRequired(object sender, EventArgs e)
+        {
+            if (FlattenNumberRequired != null)
+                FlattenNumberRequired(sender, e);
+        }
+
+        public event EventHandler FlattenNumberEntryFinished;
+        public void OnFlattenNumberEntryFinished(object sender, EventArgs e)
+        {
+            if (FlattenNumberEntryFinished != null)
+                FlattenNumberEntryFinished(sender, e);
+        }
+
         #endregion
 
         #region Properties
@@ -146,6 +160,8 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanPasteCrowdMember);
                 NotifyOfPropertyChange(() => CanAddToRoster);
                 NotifyOfPropertyChange(() => CanRemoveAllActions);
+                NotifyOfPropertyChange(() => CanEnterFlattenNumber);
+                NotifyOfPropertyChange(() => CanFlattenCopyCrowd);
             }
         }
 
@@ -196,6 +212,20 @@ namespace HeroVirtualTabletop.Crowd
                 filter = value;
                 NotifyOfPropertyChange(() => Filter);
                 ApplyFilter(value);
+            }
+        }
+
+        private int flattenNumber;
+        public int FlattenNumber
+        {
+            get
+            {
+                return flattenNumber;
+            }
+            set
+            {
+                flattenNumber = value;
+                NotifyOfPropertyChange(() => FlattenNumber);
             }
         }
 
@@ -419,15 +449,6 @@ namespace HeroVirtualTabletop.Crowd
             }
         }
 
-
-        #endregion
-
-        #region Create Crowd From Models
-
-        public void CreateCrowdFromModels()
-        {
-            this.EventAggregator.Publish(new CreateCrowdFromModelsEvent(), null);
-        }
 
         #endregion
 
@@ -685,6 +706,43 @@ namespace HeroVirtualTabletop.Crowd
 
         #endregion
 
+        #region Flatten Copy (Numbered/Classic)
+
+        public bool CanFlattenCopyCrowd
+        {
+            get
+            {
+                return this.SelectedCrowdMember != null;
+            }
+        }
+
+        public void FlattenCopyCrowd()
+        {
+            this.CrowdClipboard.FlattenCopyToClipboard(this.SelectedCrowdMember);
+            this.FlattenNumber = -1;
+            NotifyOfPropertyChange(() => CanPasteCrowdMember);
+        }
+        public bool CanEnterFlattenNumber
+        {
+            get
+            {
+                return this.SelectedCrowdMember != null;
+            }
+        }
+
+        public void EnterFlattenNumber()
+        {
+            OnFlattenNumberRequired(this, null);
+        }
+        public void NumberedFlattenCopyCrowd()
+        {
+            this.CrowdClipboard.NumberedFlattenCopyToClipboard(this.SelectedCrowdMember, this.FlattenNumber);
+            NotifyOfPropertyChange(() => CanPasteCrowdMember);
+        }
+
+
+        #endregion
+
         #region Paste Character/Crowd
         public bool CanPasteCrowdMember
         {
@@ -698,6 +756,8 @@ namespace HeroVirtualTabletop.Crowd
         {
             // Lock character crowd Tree from updating;
             this.LockTreeUpdate(true);
+            if (this.CrowdClipboard.CurrentClipboardAction == ClipboardAction.NumberedFlatenCopy)
+                OnFlattenNumberEntryFinished(this, null);
             var clipboardObjName = (this.CrowdClipboard.GetClipboardCrowdMember()).Name;
             CrowdMember pastedMember = this.CrowdClipboard.PasteFromClipboard(this.SelectedCrowdMember);
             if (pastedMember.Name != clipboardObjName) // cloned

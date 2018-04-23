@@ -250,8 +250,7 @@ namespace HeroVirtualTabletop.Movement
         public override CharacterAction Clone()
         {
             var clonedCharacterMovemnt = new CharacterMovementImpl();
-            clonedCharacterMovemnt.Name = this.Character.GetNewValidCharacterMovementName(this.Name);
-            clonedCharacterMovemnt.Owner = this.Owner;
+            clonedCharacterMovemnt.Name = this.Name;
             clonedCharacterMovemnt.Movement = this.Movement?.Clone();
             clonedCharacterMovemnt.Speed = this.Speed;
             clonedCharacterMovemnt.KeyboardShortcut = this.KeyboardShortcut;

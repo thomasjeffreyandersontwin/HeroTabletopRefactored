@@ -98,6 +98,8 @@ namespace HeroVirtualTabletop.Crowd
         void LinkToClipboard(CrowdMember member);
         void CutToClipboard(CrowdMember member, Crowd sourceParent = null);
         void CloneLinkToClipboard(CrowdMember member);
+        void FlattenCopyToClipboard(CrowdMember member);
+        void NumberedFlattenCopyToClipboard(CrowdMember member, int skipNumber);
         CrowdMember PasteFromClipboard(CrowdMember member);
         CrowdMember GetClipboardCrowdMember();
         bool CheckPasteEligibilityFromClipboard(Crowd destinationCrowd);

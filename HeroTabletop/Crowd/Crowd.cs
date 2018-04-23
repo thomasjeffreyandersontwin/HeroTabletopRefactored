@@ -27,10 +27,11 @@ namespace HeroVirtualTabletop.Crowd
         Clone,
         Cut,
         Link,
-        CloneLink
+        CloneLink,
+        FlattenCopy,
+        NumberedFlatenCopy
     }
-
-    public class CreateCrowdFromModelsEvent { }
+    
     public class CrowdRepositoryImpl : AnimatedCharacterRepositoryImpl, CrowdRepository
     {
         Crowd allMembersCrowd;
@@ -1058,6 +1059,7 @@ namespace HeroVirtualTabletop.Crowd
     public class CrowdClipboardImpl : CrowdClipboard
     {
         private object currentClipboardObject;
+        private int skipNumber;
         public ClipboardAction CurrentClipboardAction
         {
             get; set;
@@ -1091,6 +1093,18 @@ namespace HeroVirtualTabletop.Crowd
         {
             CurrentClipboardAction = ClipboardAction.CloneLink;
             currentClipboardObject = member;
+        }
+        public void FlattenCopyToClipboard(CrowdMember member)
+        {
+            CurrentClipboardAction = ClipboardAction.FlattenCopy;
+            currentClipboardObject = member;
+        }
+
+        public void NumberedFlattenCopyToClipboard(CrowdMember member, int skipNumber)
+        {
+            CurrentClipboardAction = ClipboardAction.NumberedFlatenCopy;
+            currentClipboardObject = member;
+            this.skipNumber = skipNumber;
         }
 
         public bool CheckPasteEligibilityFromClipboard(Crowd destinationCrowd)
@@ -1151,12 +1165,18 @@ namespace HeroVirtualTabletop.Crowd
                     if (clipboardObject != null)
                         canPaste = true;
                     break;
+                case ClipboardAction.FlattenCopy:
+                case ClipboardAction.NumberedFlatenCopy:
+                    if (clipboardObject != null && clipboardObject is Crowd)
+                        canPaste = true;
+                    break;
             }
             return canPaste;
         }
 
         public CrowdMember PasteFromClipboard(CrowdMember destinationMember)
         {
+
             CrowdMember pastedMember = null;
             switch (this.CurrentClipboardAction)
             {
@@ -1172,6 +1192,10 @@ namespace HeroVirtualTabletop.Crowd
                 case ClipboardAction.CloneLink:
                     pastedMember = cloneLinkAndPaste(destinationMember);
                     break;
+                case ClipboardAction.FlattenCopy:
+                case ClipboardAction.NumberedFlatenCopy:
+                    pastedMember = flattenCopyAndPaste(destinationMember);
+                    break;
             }
             this.CurrentClipboardAction = ClipboardAction.None;
             this.currentClipboardObject = null;
@@ -1186,6 +1210,8 @@ namespace HeroVirtualTabletop.Crowd
                 case ClipboardAction.Clone:
                 case ClipboardAction.CloneLink:
                 case ClipboardAction.Link:
+                case ClipboardAction.FlattenCopy:
+                case ClipboardAction.NumberedFlatenCopy:
                     return this.currentClipboardObject as CrowdMember;
                 case ClipboardAction.Cut:
                     {
@@ -1245,6 +1271,33 @@ namespace HeroVirtualTabletop.Crowd
                 linkAndPaste(member);
             }
             return clinkingMember;
+        }
+
+        private CrowdMember flattenCopyAndPaste(CrowdMember member)
+        {
+            var destCrowd = getDestinationCrowdForPaste(member);
+            Crowd memberToCopy = currentClipboardObject as Crowd;
+            var newCrowd = _repository.NewCrowd(destCrowd, memberToCopy.Name + " Flattened");
+
+            List<CrowdMember> flattenedMembers = _repository.GetFlattenedMemberList(memberToCopy.Members.ToList()).Distinct().ToList();
+            int currentNumberToSkip = this.skipNumber;
+            for(int i = 0; i < flattenedMembers.Count; i++)
+            {
+                if(currentNumberToSkip > 0)
+                {
+                    if (i > 0 && i < currentNumberToSkip)
+                        continue;
+                    else
+                    {
+                        newCrowd.AddCrowdMember(flattenedMembers[i]);
+                        currentNumberToSkip += i > 0 ? this.skipNumber : i;
+                    }
+                }
+                else
+                    newCrowd.AddCrowdMember(flattenedMembers[i]);
+            }
+
+            return destCrowd;
         }
 
         private Crowd getDestinationCrowdForPaste(CrowdMember member)

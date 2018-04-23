@@ -286,16 +286,6 @@ namespace HeroVirtualTabletop.Crowd
         }
         [TestMethod]
         [TestCategory("CrowdMemberExplorer")]
-        public void AddCrowdFromModels_FiresCreateCrowdFromModelsEvent()
-        {
-            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
-
-            charExpVM.CreateCrowdFromModels();
-
-            Mock.Get<IEventAggregator>(charExpVM.EventAggregator).Verify(e => e.Publish(It.IsAny<CreateCrowdFromModelsEvent>(), null));
-        }
-        [TestMethod]
-        [TestCategory("CrowdMemberExplorer")]
         public void ApplyFilter_InvokesApplyFilterForAllCrowdMembers()
         {
             var charExpVM = CrowdMemberExplorerViewModelUnderTest;
@@ -384,6 +374,40 @@ namespace HeroVirtualTabletop.Crowd
             charExpVM.RemoveAllActions();
 
             Mock.Get<Crowd>(crowd0).Verify(c => c.RemoveAllActions());
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void NumberedFlattenCopyCrowd_InvokesClipboardNumberedFlattenCopy()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var crowdClipboard = TestObjectsFactory.MockCrowdClipboard;
+            charExpVM.CrowdClipboard = crowdClipboard;
+
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var crowd1 = TestObjectsFactory.MockCrowd;
+            int flattenNumber = 3;
+            charExpVM.SelectedCrowdMember = crowd0;
+            charExpVM.FlattenNumber = flattenNumber;
+
+            charExpVM.NumberedFlattenCopyCrowd();
+
+            Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.NumberedFlattenCopyToClipboard(crowd0, flattenNumber));
+        }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void FlattenCopyCrowd_InvokesClipboardFlattenCopy()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var crowdClipboard = TestObjectsFactory.MockCrowdClipboard;
+            charExpVM.CrowdClipboard = crowdClipboard;
+
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var crowd1 = TestObjectsFactory.MockCrowd;
+            charExpVM.SelectedCrowdMember = crowd0;
+
+            charExpVM.FlattenCopyCrowd();
+
+            Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.FlattenCopyToClipboard(crowd0));
         }
     }
 }

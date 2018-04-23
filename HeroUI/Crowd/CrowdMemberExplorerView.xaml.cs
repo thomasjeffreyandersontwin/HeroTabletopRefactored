@@ -38,10 +38,14 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.EditModeLeave -= viewModel_EditModeLeave;
             this.viewModel.EditNeeded -= viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded -= viewModel_ExpansionUpdateNeeded;
+            this.viewModel.FlattenNumberRequired -= viewModel_FlattenNumberRequired;
+            this.viewModel.FlattenNumberEntryFinished -= viewModel_FlattenNumberEntryFinished;
             this.viewModel.EditModeEnter += viewModel_EditModeEnter;
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
+            this.viewModel.FlattenNumberRequired += viewModel_FlattenNumberRequired;
+            this.viewModel.FlattenNumberEntryFinished += viewModel_FlattenNumberEntryFinished;
             await this.viewModel.LoadCrowdCollection();
         }
 
@@ -186,6 +190,16 @@ namespace HeroVirtualTabletop.Crowd
                 var tvi = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
                 UpdateItemsRecursivelyToUpdateNodeText(tvi, item);
             }
+        }
+        private void viewModel_FlattenNumberRequired(object sender, EventArgs e)
+        {
+            gridFlattenNumber.Visibility = Visibility.Visible;
+            intUpDownFlattenNum.Focus();
+        }
+
+        private void viewModel_FlattenNumberEntryFinished(object sender, EventArgs e)
+        {
+            gridFlattenNumber.Visibility = Visibility.Collapsed;
         }
         private void treeViewCrowd_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -343,6 +357,7 @@ namespace HeroVirtualTabletop.Crowd
             }
             return treeViewItemRet;
         }
+
         #region TreeView Expansion Management
 
         private void viewModel_ExpansionUpdateNeeded(object sender, CustomEventArgs<ExpansionUpdateEvent> e)

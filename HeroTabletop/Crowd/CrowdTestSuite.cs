@@ -13,6 +13,7 @@ using Caliburn.Micro;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Collections;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -364,17 +365,98 @@ namespace HeroVirtualTabletop.Crowd
         {
             TestObjectsFactory = new CrowdTestObjectsFactory();
         }
-
         [TestMethod]
         [TestCategory("CharacterCrowdMember")]
-        public void SaveCurrentTableTopPosition_savesCurrentMemoryInstancePositionToCrowdMembershipOfCrowdParent()
+        public void CopyAllActionsToAnotherCharacter_CopiesAllIActions()
         {
+            var characterUnderTest = TestObjectsFactory.CharacterCrowdMemberWithAllActionGroups;
+            var characterToCopyTo = TestObjectsFactory.MockCharacterCrowdMemberWithMockAllActionGroups;
+            Mock.Get<CharacterCrowdMember>(characterToCopyTo).Setup(c => c.GetNewValidIdentityName(It.IsAny<string>())).Returns((string name) => { return name; });
+            Mock.Get<CharacterCrowdMember>(characterToCopyTo).Setup(c => c.GetNewValidAbilityName(It.IsAny<string>())).Returns((string name) => { return name; });
+            Mock.Get<CharacterCrowdMember>(characterToCopyTo).Setup(c => c.GetNewValidCharacterMovementName(It.IsAny<string>())).Returns((string name) => { return name; });
+
+            characterUnderTest.CopyActionsTo(characterToCopyTo);
+
+            foreach (var identity in characterUnderTest.Identities.Where(i => i.Name != characterUnderTest.Name))
+                Mock.Get<CharacterActionList<Identity>>(characterToCopyTo.Identities).Verify(i => i.InsertAction(It.Is<Identity>(id => id.Name == identity.Name)));
+            foreach (var ability in characterUnderTest.Abilities)
+                Mock.Get<CharacterActionList<AnimatedAbility.AnimatedAbility>>(characterToCopyTo.Abilities).Verify(a => a.InsertAction(It.Is<AnimatedAbility.AnimatedAbility>(ab => ab.Name == ability.Name)));
+            foreach(var movement in characterUnderTest.Movements.Where(m => m.Name != DefaultMovements.Walk.ToString() && m.Name == DefaultMovements.Run.ToString() && m.Name != DefaultMovements.Swim.ToString()))
+                Mock.Get<CharacterActionList<CharacterMovement>>(characterToCopyTo.Movements).Verify(m => m.InsertAction(It.Is<CharacterMovement>(cm => cm.Name == movement.Name)));
         }
         [TestMethod]
         [TestCategory("CharacterCrowdMember")]
-        public void
-            PlaceOnTableTop_SetsurrentMemoryInstancePositionFromSavedPositionOfCrowdMembershipBelongingToCrowdParent()
+        public void CopyAllActionsToCrowd_CopiesActionsToAllNestedCharacters()
         {
+            var characterUnderTest = TestObjectsFactory.CharacterCrowdMemberWithAllActionGroups;
+            var crowdToCopyTo = TestObjectsFactory.CrowdUnderTest;
+            var mockCharcter1 = TestObjectsFactory.MockCharacterCrowdMemberWithMockAllActionGroups;
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Setup(c => c.GetNewValidIdentityName(It.IsAny<string>())).Returns((string name) => { return name; });
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Setup(c => c.GetNewValidAbilityName(It.IsAny<string>())).Returns((string name) => { return name; });
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Setup(c => c.GetNewValidCharacterMovementName(It.IsAny<string>())).Returns((string name) => { return name; });
+            var nestedCrowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
+            foreach (CharacterCrowdMember mockCharacterX in nestedCrowd.Members)
+            {
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.GetNewValidIdentityName(It.IsAny<string>())).Returns((string name) => { return name; });
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.GetNewValidAbilityName(It.IsAny<string>())).Returns((string name) => { return name; });
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.GetNewValidCharacterMovementName(It.IsAny<string>())).Returns((string name) => { return name; });
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.Identities).Returns(TestObjectsFactory.MockIdentities);
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.Abilities).Returns(TestObjectsFactory.MockAbilities);
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Setup(c => c.Movements).Returns(new MovableCharacterTestObjectFactory().MockMovements);
+            }
+            crowdToCopyTo.AddCrowdMember(mockCharcter1);
+            crowdToCopyTo.AddCrowdMember(nestedCrowd);
+
+            characterUnderTest.CopyActionsTo(crowdToCopyTo);
+
+            foreach (var identity in characterUnderTest.Identities)
+            {
+                Mock.Get<CharacterActionList<Identity>>(mockCharcter1.Identities).Verify(i => i.InsertAction(It.Is<Identity>(id => id.Name == identity.Name)));
+                foreach(CharacterCrowdMember mockCharacterX in nestedCrowd.Members)
+                {
+                    Mock.Get<CharacterActionList<Identity>>(mockCharacterX.Identities).Verify(i => i.InsertAction(It.Is<Identity>(id => id.Name == identity.Name)));
+                }
+            }
+            foreach (var ability in characterUnderTest.Abilities)
+            {
+                Mock.Get<CharacterActionList<AnimatedAbility.AnimatedAbility>>(mockCharcter1.Abilities)
+                    .Verify(a => a.InsertAction(It.Is<AnimatedAbility.AnimatedAbility>(ab => ab.Name == ability.Name)));
+                foreach (CharacterCrowdMember mockCharacterX in nestedCrowd.Members)
+                {
+                    Mock.Get<CharacterActionList<AnimatedAbility.AnimatedAbility>>(mockCharacterX.Abilities)
+                    .Verify(a => a.InsertAction(It.Is<AnimatedAbility.AnimatedAbility>(ab => ab.Name == ability.Name)));
+                }
+            }
+            foreach (var movement in characterUnderTest.Movements)
+            {
+                Mock.Get<CharacterActionList<CharacterMovement>>(mockCharcter1.Movements).Verify(m => m.InsertAction(It.Is<CharacterMovement>(cm => cm.Name == movement.Name)));
+                foreach (CharacterCrowdMember mockCharacterX in nestedCrowd.Members)
+                {
+                    Mock.Get<CharacterActionList<CharacterMovement>>(mockCharacterX.Movements).Verify(m => m.InsertAction(It.Is<CharacterMovement>(cm => cm.Name == movement.Name)));
+                }
+            }
+        }
+        [TestMethod]
+        [TestCategory("CharacterCrowdMember")]
+        public void RemoveAllActionsFromCrowd_RemovesAllActionsFromNestedCharacters()
+        {
+            var crowdUnderTest = TestObjectsFactory.CrowdUnderTest;
+            var mockCharcter1 = TestObjectsFactory.MockCharacterCrowdMemberWithMockAllActionGroups;
+            var nestedCrowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
+            crowdUnderTest.AddCrowdMember(mockCharcter1);
+            crowdUnderTest.AddCrowdMember(nestedCrowd);
+
+            crowdUnderTest.RemoveAllActions();
+
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Verify(c => c.RemoveIdentities());
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Verify(c => c.RemoveAbilities());
+            Mock.Get<CharacterCrowdMember>(mockCharcter1).Verify(c => c.RemoveMovements());
+            foreach (CharacterCrowdMember mockCharacterX in nestedCrowd.Members)
+            {
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Verify(c => c.RemoveIdentities());
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Verify(c => c.RemoveAbilities());
+                Mock.Get<CharacterCrowdMember>(mockCharacterX).Verify(c => c.RemoveMovements());
+            }
         }
     }
 
@@ -523,6 +605,53 @@ namespace HeroVirtualTabletop.Crowd
             //assert
             Mock.Get<Crowd>(crowd2).Verify(c => c.AddCrowdMember(crowd1));
         }
+        [TestMethod]
+        [TestCategory("CrowdClipboard")]
+        public void FlattenCopyAndPasteCrowd_CreatesANewCrowdAndAddsAllTheUnderlyingMembersByFlatteningThem()
+        {
+            // arrange
+            var repo = TestObjectsFactory.RepositoryUnderTest;
+            var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
+
+            var crowdUnderTest = TestObjectsFactory.CrowdUnderTest;
+            var crowdToCopyTo = TestObjectsFactory.MockCrowd;
+            Mock.Get<Crowd>(crowdToCopyTo).Setup(c => c.Clone()).Returns(crowdToCopyTo);
+            var mockCharcter1 = TestObjectsFactory.MockCharacterCrowdMember;
+            var nestedCrowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
+            crowdUnderTest.AddCrowdMember(mockCharcter1);
+            crowdUnderTest.AddCrowdMember(nestedCrowd);
+            repo.Crowds = new ObservableCollection<Crowd> { crowdUnderTest, crowdToCopyTo };
+            var flattenedList = repo.GetFlattenedMemberList(crowdUnderTest.Members.ToList());
+
+            crowdClipboard.FlattenCopyToClipboard(crowdUnderTest);
+            crowdClipboard.PasteFromClipboard(crowdToCopyTo);
+
+            Mock.Get<Crowd>(crowdToCopyTo).Verify(c => c.AddCrowdMember(It.Is<Crowd>(t => t.Members.All(x => flattenedList.Contains(x)))));           
+        }
+        [TestMethod]
+        [TestCategory("CrowdClipboard")]
+        public void NumberedFlattenCopyAndPasteCrowd_SkipsSpecificfCharactersBasedOnNumberWhenCopying()
+        {
+            // arrange
+            var repo = TestObjectsFactory.RepositoryUnderTest;
+            var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
+
+            var crowdUnderTest = TestObjectsFactory.CrowdUnderTest;
+            var crowdToCopyTo = TestObjectsFactory.MockCrowd;
+            Mock.Get<Crowd>(crowdToCopyTo).Setup(c => c.Clone()).Returns(crowdToCopyTo);
+            var mockCharcter1 = TestObjectsFactory.MockCharacterCrowdMember;
+            var nestedCrowd = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
+            crowdUnderTest.AddCrowdMember(mockCharcter1);
+            crowdUnderTest.AddCrowdMember(nestedCrowd);
+            repo.Crowds = new ObservableCollection<Crowd> { crowdUnderTest, crowdToCopyTo };
+            var flattenedList = repo.GetFlattenedMemberList(crowdUnderTest.Members.ToList());
+
+            crowdClipboard.NumberedFlattenCopyToClipboard(crowdUnderTest, 2);
+            crowdClipboard.PasteFromClipboard(crowdToCopyTo);
+
+            Mock.Get<Crowd>(crowdToCopyTo).Verify(c => c.AddCrowdMember(It.Is<Crowd>(t => t.Members.Contains(flattenedList[0]) && !t.Members.Contains(flattenedList[1])
+            && t.Members.Contains(flattenedList[2]) && !t.Members.Contains(flattenedList[3]))));
+        }
     }
 
     public class CrowdTestObjectsFactory : AttackTestObjectsFactory
@@ -635,7 +764,40 @@ namespace HeroVirtualTabletop.Crowd
                 return moqCharacter.Object;
             }
         }
+        public CharacterCrowdMember MockCharacterCrowdMemberWithMockAllActionGroups
+        {
+            get
+            {
+                var moqCharacter = new Mock<CharacterCrowdMember>();
+                moqCharacter.Setup(c => c.Identities).Returns(MockIdentities);
+                moqCharacter.Setup(c => c.IsSpawned).Returns(true);
+                moqCharacter.Setup(c => c.ActiveIdentity).Returns(
+                    () =>
+                    {
+                        return moqCharacter.Object.Identities.Active;
+                    }
+                    );
+                moqCharacter.Setup(c => c.Abilities).Returns(MockAbilities);
+                moqCharacter.Setup(c => c.Movements).Returns(new MovableCharacterTestObjectFactory().MockMovements);
+                return moqCharacter.Object;
+            }
+        }
 
+        public CharacterCrowdMember CharacterCrowdMemberWithAllActionGroups
+        {
+            get
+            {
+                var characterCrowdMember = StandardizedFixture.Create<CharacterCrowdMember>();
+                characterCrowdMember.CharacterActionGroups = GetStandardCharacterActionGroup(characterCrowdMember);
+                var ids = StandardizedFixture.CreateMany<Identity>().ToList();
+                characterCrowdMember.Identities.InsertMany(ids);
+                var abs = StandardizedFixture.CreateMany<AnimatedAbility.AnimatedAbility>().ToList();
+                characterCrowdMember.Abilities.InsertMany(abs);
+                var mvs = StandardizedFixture.CreateMany<CharacterMovement>().ToList();
+                characterCrowdMember.Movements.InsertMany(mvs);
+                return characterCrowdMember;
+            }
+        }
         public Crowd MockCrowd => CustomizedMockFixture.Create<Crowd>();
         public Crowd CrowdUnderTest => StandardizedFixture.Create<CrowdImpl>();
 
@@ -733,7 +895,18 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(IEventAggregator),
                     typeof(EventAggregator)));
-            
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(CharacterMovement),
+                    typeof(CharacterMovementImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(Movement.Movement),
+                    typeof(MovementImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(MovementMember),
+                    typeof(MovementMemberImpl)));
             setupFixtureToBuildCrowdRepositories();
         }
         private void setupFixtureToBuildCrowdRepositories()

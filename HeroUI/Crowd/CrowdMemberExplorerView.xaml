@@ -11,6 +11,7 @@
              xmlns:local="clr-namespace:HeroUI"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:cal="http://www.caliburnproject.org"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Loaded="CrowdMemberExplorerView_Loaded">
     <UserControl.Resources>
@@ -29,6 +30,7 @@
     <Grid ContextMenu="{StaticResource ResourceKey=CrowdMemberExplorerMenu}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -44,7 +46,7 @@
                 <Button x:Name="CutCrowdMember" Content="&#xf0c4;" ToolTip="Cut (Ctrl+X)" />
                 <Button x:Name="LinkCrowdMember" Content="&#xf0c1;" ToolTip="Link (Ctrl+L)"/>
                 <Button x:Name="FlattenCopyCrowd" Content="&#xf0ca;" ToolTip="Flatten and Copy (Ctrl + F)"/>
-                <Button x:Name="NumberedFlattenCopyCrowd" Content="&#xf0cb;" ToolTip="Numbered Flatten and Copy (Ctrl + N)"/>
+                <Button x:Name="EnterFlattenNumber" Content="&#xf0cb;" ToolTip="Numbered Flatten and Copy (Ctrl + N)"/>
                 <Button x:Name="PasteCrowdMember" Content="&#xf0ea;" ToolTip="Paste (Ctrl+V)"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
@@ -56,7 +58,16 @@
                 <Button x:Name="Save" Content="&#xf0c7;" ToolTip="Save (Ctrl+S)" />
             </StackPanel>
         </Grid>
-        <TreeView x:Name="treeViewCrowd" Grid.Row="1" ItemsSource="{Binding CrowdRepository.Crowds}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
+        <Grid Grid.Row="1" x:Name="gridFlattenNumber" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Take every # character:" Foreground="White" Margin="3 2 0 0" />
+            <xctk:IntegerUpDown x:Name="intUpDownFlattenNum" Grid.Column="1" Increment="1" DefaultValue="0" Minimum="0"
+                            Value="{Binding FlattenNumber, UpdateSourceTrigger=PropertyChanged}" cal:Message.Attach="[Event ValueChanged] = [Action NumberedFlattenCopyCrowd()]"/>
+        </Grid>
+        <TreeView x:Name="treeViewCrowd" Grid.Row="2" ItemsSource="{Binding CrowdRepository.Crowds}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
                   Margin="0"  HorizontalAlignment="Stretch" cal:Message.Attach="[Event SelectedItemChanged] = [Action SetSelectedCrowdMember($source)]"
                   extensions:DragDropExtension.ScrollOnDragDrop="True" PreviewMouseDown="treeViewCrowd_OnPreviewMouseDown" PreviewKeyUp="treeViewCrowd_PreviewKeyUp" 
                   PreviewMouseMove="treeViewCrowd_PreviewMouseMove" PreviewDragEnter="treeViewCrowd_PreviewDragEnter" PreviewDrop="treeViewCrowd_PreviewDrop"
@@ -234,7 +245,7 @@
                 </local:InputBindingTrigger>
             </i:Interaction.Triggers>
         </TreeView>
-        <Border Grid.Row="1"  Style="{StaticResource SearchBox}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4 4 20 4">
+        <Border Grid.Row="2"  Style="{StaticResource SearchBox}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4 4 20 4">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

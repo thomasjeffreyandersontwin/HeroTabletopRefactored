@@ -15,6 +15,7 @@ namespace HeroVirtualTabletop.Crowd
         CharacterCrowdMember SelectedCharacterCrowdMember { get; set; }
         CrowdClipboard CrowdClipboard { get; set; }
         IEventAggregator EventAggregator { get; set; }
+        int FlattenNumber { get; set; }
         //KeyBoardHook keyBoardHook { get; set; } // To do under desktops
         void AddCrowd();
         void AddCharacterCrowdMember();
@@ -26,12 +27,13 @@ namespace HeroVirtualTabletop.Crowd
         void CloneLinkCharacter(CrowdMember crowdMember);
         void PasteCrowdMember();
         Task SyncCrowdMembersWithRoster();
-        void CreateCrowdFromModels();
         void ApplyFilter(string filter);
         Task LoadCrowdCollection();
         Task SaveCrowdCollection();
         void CopyAllActions();
         void PasteAllActions();
         void RemoveAllActions();
+        void FlattenCopyCrowd();
+        void NumberedFlattenCopyCrowd();
     }
 }
