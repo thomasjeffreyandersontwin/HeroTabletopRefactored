@@ -35,5 +35,6 @@ namespace HeroVirtualTabletop.Crowd
         void RemoveAllActions();
         void FlattenCopyCrowd();
         void NumberedFlattenCopyCrowd();
+        void CloneMemberships();
     }
 }

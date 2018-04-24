@@ -52,6 +52,7 @@ namespace HeroVirtualTabletop.Crowd
         void AddCrowdMember(CrowdMember member);
         void RemoveMember(CrowdMember member);
         void SortMembers();
+        Crowd CloneMemberships();
     }
     public interface CharacterCrowdMember : MovableCharacter, CrowdMember, RosterParticipant
     {
@@ -100,6 +101,7 @@ namespace HeroVirtualTabletop.Crowd
         void CloneLinkToClipboard(CrowdMember member);
         void FlattenCopyToClipboard(CrowdMember member);
         void NumberedFlattenCopyToClipboard(CrowdMember member, int skipNumber);
+        void CloneMembershipsToClipboard(CrowdMember member); 
         CrowdMember PasteFromClipboard(CrowdMember member);
         CrowdMember GetClipboardCrowdMember();
         bool CheckPasteEligibilityFromClipboard(Crowd destinationCrowd);

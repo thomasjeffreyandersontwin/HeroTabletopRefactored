@@ -45,6 +45,7 @@
                 <Button x:Name="CloneCrowdMember" Content="&#xf0c5;" ToolTip="Clone (Ctrl+C)"/>
                 <Button x:Name="CutCrowdMember" Content="&#xf0c4;" ToolTip="Cut (Ctrl+X)" />
                 <Button x:Name="LinkCrowdMember" Content="&#xf0c1;" ToolTip="Link (Ctrl+L)"/>
+                <Button x:Name="CloneMemberships" Content="&#xf24d;" ToolTip="Clone Memberships(Ctrl+M)"/>
                 <Button x:Name="FlattenCopyCrowd" Content="&#xf0ca;" ToolTip="Flatten and Copy (Ctrl + F)"/>
                 <Button x:Name="EnterFlattenNumber" Content="&#xf0cb;" ToolTip="Numbered Flatten and Copy (Ctrl + N)"/>
                 <Button x:Name="PasteCrowdMember" Content="&#xf0ea;" ToolTip="Paste (Ctrl+V)"/>

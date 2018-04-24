@@ -162,6 +162,7 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CanRemoveAllActions);
                 NotifyOfPropertyChange(() => CanEnterFlattenNumber);
                 NotifyOfPropertyChange(() => CanFlattenCopyCrowd);
+                NotifyOfPropertyChange(() => CanCloneMemberships);
             }
         }
 
@@ -741,6 +742,21 @@ namespace HeroVirtualTabletop.Crowd
         }
 
 
+        #endregion
+
+        #region Clone Memberships
+        public bool CanCloneMemberships
+        {
+            get
+            {
+                return this.SelectedCrowdMember != null;
+            }
+        }
+        public void CloneMemberships()
+        {
+            this.CrowdClipboard.CloneMembershipsToClipboard(this.SelectedCrowdMember);
+            NotifyOfPropertyChange(() => CanPasteCrowdMember);
+        }
         #endregion
 
         #region Paste Character/Crowd

@@ -409,5 +409,21 @@ namespace HeroVirtualTabletop.Crowd
 
             Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.FlattenCopyToClipboard(crowd0));
         }
+        [TestMethod]
+        [TestCategory("CrowdMemberExplorer")]
+        public void CloneMembershipsForCrowd_InvokesClipboardCloneMemberships()
+        {
+            var charExpVM = CrowdMemberExplorerViewModelUnderTest;
+            var crowdClipboard = TestObjectsFactory.MockCrowdClipboard;
+            charExpVM.CrowdClipboard = crowdClipboard;
+
+            var crowd0 = TestObjectsFactory.MockCrowd;
+            var crowd1 = TestObjectsFactory.MockCrowd;
+            charExpVM.SelectedCrowdMember = crowd0;
+
+            charExpVM.CloneMemberships();
+
+            Mock.Get<CrowdClipboard>(crowdClipboard).Verify(c => c.CloneMembershipsToClipboard(crowd0));
+        }
     }
 }

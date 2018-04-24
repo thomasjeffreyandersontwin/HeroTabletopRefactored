@@ -353,6 +353,29 @@ namespace HeroVirtualTabletop.Crowd
                 Assert.AreEqual(original.Members[i].Name + " (1)", clone.Members[i].Name);
             }
         }
+        [TestMethod]
+        [TestCategory("Crowd")]
+        public void CloneMemberships_CreatesNewChildCrowdsAndAddsCharactersAsReferences()
+        {
+            var crowdUnderTest = TestObjectsFactory.CrowdUnderTest;
+            var characterChild = TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            crowdUnderTest.AddCrowdMember(characterChild);
+            var nestedCrowd = TestObjectsFactory.CrowdUnderTest;
+            var characterGrandChild1 = TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            var characterGrandChild2 = TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            nestedCrowd.AddCrowdMember(characterGrandChild1);
+            nestedCrowd.AddCrowdMember(characterGrandChild2);
+            crowdUnderTest.AddCrowdMember(nestedCrowd);
+
+            var clonedCrowd = crowdUnderTest.CloneMemberships();
+
+            Assert.IsTrue(clonedCrowd.Members.Contains(characterChild));
+            Assert.IsFalse(clonedCrowd.Members.Contains(nestedCrowd));
+            Crowd newCrowdChild = clonedCrowd.Members.FirstOrDefault(c => c is Crowd) as Crowd;
+            Assert.IsNotNull(newCrowdChild);
+            Assert.IsTrue(newCrowdChild.Members.Contains(characterGrandChild1));
+            Assert.IsTrue(newCrowdChild.Members.Contains(characterGrandChild1));
+        }
     }
 
     [TestClass]
@@ -651,6 +674,23 @@ namespace HeroVirtualTabletop.Crowd
 
             Mock.Get<Crowd>(crowdToCopyTo).Verify(c => c.AddCrowdMember(It.Is<Crowd>(t => t.Members.Contains(flattenedList[0]) && !t.Members.Contains(flattenedList[1])
             && t.Members.Contains(flattenedList[2]) && !t.Members.Contains(flattenedList[3]))));
+        }
+        [TestMethod]
+        [TestCategory("CrowdClipboard")]
+        public void CloneMembershipsAndPasteCrowd_ClonesCrowdMembershipsAndAddsToDestinationCrowd()
+        {
+            var repo = TestObjectsFactory.RepositoryUnderTest;
+            var crowdClipboard = TestObjectsFactory.CrowdClipboardUnderTest;
+            var crowdToClone = TestObjectsFactory.MockCrowd;
+            var crowdToCopyTo = TestObjectsFactory.MockCrowd;
+            var crowdToReturn = TestObjectsFactory.CrowdUnderTest;
+            Mock.Get<Crowd>(crowdToClone).Setup(c => c.CloneMemberships()).Returns(crowdToReturn);
+
+            crowdClipboard.CloneMembershipsToClipboard(crowdToClone);
+            crowdClipboard.PasteFromClipboard(crowdToCopyTo);
+
+            Mock.Get<Crowd>(crowdToClone).Verify(c => c.CloneMemberships());
+            Mock.Get<Crowd>(crowdToCopyTo).Verify(c => c.AddCrowdMember(It.Is<Crowd>(cr => cr == crowdToReturn)));
         }
     }
 
