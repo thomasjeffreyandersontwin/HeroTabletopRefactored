@@ -21,6 +21,7 @@
                 <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
+            <local:DistanceCounterTextColorConverter x:Key="DistanceCounterTextColorConverter"/>
             <characters:CharacterComparer x:Key="characterComparer"/>
             <attacks:AttackInstructionsDefenderWithTargetCharacterComparer x:Key="AttackInstructionsDefenderWithTargetCharacterComparer"/>
             <attacks:UnderAttackAnimatableCharacterStateToVisibilityConverter x:Key="UnderAttackAnimatableCharacterStateToVisibilityConverter"/>
@@ -56,7 +57,8 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition />
         </Grid.RowDefinitions>
         <Grid>
@@ -64,6 +66,7 @@
                 <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
             </Grid.Resources>
             <Grid.RowDefinitions>
+                <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -87,16 +90,137 @@
                         </Style>
                     </Button.Style>
                 </Button>
+                <Button x:Name="ScanAndFixMemory" Content="&#xf26c;" ToolTip="Scan and Fix Memory (Ctrl+K)"/>
             </WrapPanel>
             <WrapPanel Grid.Row="1">
                 <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
                 <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
+                <Button x:Name="Teleport" Content="&#xf122;" ToolTip="Teleport Target to Camera (Ctrl+L)"/>
                 <Button x:Name="Activate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
                 <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>
-                <Button x:Name="btResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
+                <Button x:Name="ResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
+            </WrapPanel>
+            <WrapPanel Grid.Row="2">
+                <Button x:Name="ToggleTargetOnMouseHover" Content="&#xf140;" ToolTip="Toggle Target on Hover (Ctrl+H)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=TargetOnHover}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=TargetOnHover}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="ToggleGangMode" Content="&#xf1a0;" ToolTip="Toggle Gang Mode (Ctrl+U)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsGangModeActive}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=IsGangModeActive}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="ToggleRelativePositioning" Content="&#xf021;" ToolTip="Toggle Relative Positioning (Ctrl+R)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=UseRelativePositioning}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=UseRelativePositioning}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="ToggleSpawnOnClick" Content="&#xf25a;" ToolTip="Toggle Spawn on Click (Ctrl+J)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=SpawnOnClick}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=SpawnOnClick}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="ToggleCloneSpawn" Content="&#xf0c5;" ToolTip="Toggle Clone and Spawn (Ctrl+C)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=CloneAndSpawn}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=CloneAndSpawn}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="ToggleOverheadMode" Content="&#xf03d;" ToolTip="Toggle Overhead Mode (Ctrl+B)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=OverheadMode}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=OverheadMode}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button x:Name="SequenceView" Content="&#xf28a;" ToolTip="Toggle Sequence View(Ctrl+>)">
+                    <Button.Style >
+                        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSequenceViewActive}" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding Path=IsSequenceViewActive}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </WrapPanel>
         </Grid>
-        <library:MultiSelectListBox x:Name="RosterViewListBox" Grid.Row="1" ItemsSource="{Binding Source={StaticResource ResourceKey=ParticipantsView}}"
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Style="{StaticResource IconButton}" HorizontalAlignment="Left" Content="&#xf0e4;" ToolTip="Reset Counter (Ctrl+K)" />
+            <TextBlock Name="txtDistanceCounter"  Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                  
+                         Text="{Binding Path=CurrentDistanceCountingCharacter.CurrentDistanceCount}">
+                <TextBlock.Foreground>
+                    <MultiBinding Converter="{StaticResource DistanceCounterTextColorConverter}">
+                        <Binding Path="CurrentDistanceCountingCharacter.CurrentDistanceCount"/>
+                        <Binding Path="CurrentDistanceCountingCharacter.CurrentDistanceLimit"/>
+                    </MultiBinding>
+                </TextBlock.Foreground>
+            </TextBlock>
+            <TextBlock Name="txtCurrentPhase"  Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White"                    
+                         Text="{Binding Path=CurrentPhase}" Visibility="{Binding IsSequenceViewActive, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Grid>
+        <library:MultiSelectListBox x:Name="RosterViewListBox" Grid.Row="2" ItemsSource="{Binding Source={StaticResource ResourceKey=ParticipantsView}}"
                     AllowDrop="True" SelectionMode="Extended" Background="Transparent" TextElement.Foreground="White" Drop="RosterViewListBox_Drop" DragOver="RosterViewListBox_DragOver"
                      SelectedItemsList="{Binding SelectedParticipants, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderBrush="Transparent" BorderThickness="0"
                                     extensions:DragDropExtension.ScrollOnDragDrop="True">

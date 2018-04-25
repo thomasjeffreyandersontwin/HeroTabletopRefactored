@@ -1197,7 +1197,6 @@ namespace HeroVirtualTabletop.Crowd
 
         public CrowdMember PasteFromClipboard(CrowdMember destinationMember)
         {
-
             CrowdMember pastedMember = null;
             switch (this.CurrentClipboardAction)
             {

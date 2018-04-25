@@ -156,7 +156,7 @@ namespace HeroVirtualTabletop.Common
             string pattern = @"^(.*?)(\d+)(\D*)$";
             string h1 = Regex.Match(s1, pattern).Groups[1].Value;
             string h2 = Regex.Match(s2, pattern).Groups[1].Value;
-            if (h1 != h2)
+            if (h1 != h2 && !(string.IsNullOrEmpty(h1) || string.IsNullOrEmpty(h2)))
                 return h1.CompareTo(h2);
             string t1 = Regex.Match(s1, pattern).Groups[2].Value;
             string t2 = Regex.Match(s2, pattern).Groups[2].Value;

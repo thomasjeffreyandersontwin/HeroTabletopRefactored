@@ -110,15 +110,22 @@ namespace HeroVirtualTabletop.Roster
             //StartListeningForTargetChanged();
         }
 
+        public void Sort()
+        {
+            this.Participants = new ObservableCollection<CharacterCrowdMember>(this.Participants.OrderBy(t => t, new RosterMemberComparer()));
+        }
+
         public void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant)
         {
-            var group = createRosterGroup(participant.Parent);
-            group.InsertElement(participant);
-            participant.RosterParent = getRosterParentFromGroup(group);
-            participant.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
-            Participants.Add(participant);
-            NotifyOfPropertyChange(() => Participants);
-
+            if (!Participants.Contains(participant))
+            {
+                var group = createRosterGroup(participant.Parent);
+                group.InsertElement(participant);
+                participant.RosterParent = getRosterParentFromGroup(group);
+                participant.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                Participants.Add(participant);
+                NotifyOfPropertyChange(() => Participants);
+            }
         }
 
         public void AddCrowdMemberToRoster(CharacterCrowdMember characterCrowdMember, Crowd.Crowd parentCrowd)
@@ -1231,7 +1238,7 @@ namespace HeroVirtualTabletop.Roster
             Attacker.ActiveAttack.Cancel(instructions);
         }
     }
-    class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions
+    public class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions
     {
         public RosterSelectionAttackInstructionsImpl(List<CharacterAction> attacks)
         {
@@ -1253,5 +1260,21 @@ namespace HeroVirtualTabletop.Roster
 
         public List<AnimatedCharacter> Attackers { get; }
         public Dictionary<AnimatedCharacter, AttackInstructions> AttackerSpecificInstructions { get; }
+    }
+
+    public class RosterMemberComparer : IComparer<CharacterCrowdMember>
+    {
+        public int Compare(CharacterCrowdMember ccm1, CharacterCrowdMember ccm2)
+        {
+            string s1 = ccm1.RosterParent.Name;
+            string s2 = ccm2.RosterParent.Name;
+            if (ccm1.RosterParent.Name == ccm2.RosterParent.Name)
+            {
+                s1 = ccm1.Name;
+                s2 = ccm2.Name;
+            }
+
+            return CommonLibrary.CompareStrings(s1, s2);
+        }
     }
 }

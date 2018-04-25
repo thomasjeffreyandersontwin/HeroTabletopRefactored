@@ -37,7 +37,7 @@ namespace HeroVirtualTabletop.Roster
 
         void ClearAllSelections();
         void SelectAllParticipants();
-
+        void Sort();
         Crowd.Crowd SaveAsCrowd();
 
         CharacterCrowdMember ActiveCharacter { get; }

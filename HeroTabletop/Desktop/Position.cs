@@ -4,6 +4,7 @@ using System.Threading;
 //using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace HeroVirtualTabletop.Desktop
 
@@ -567,6 +568,61 @@ namespace HeroVirtualTabletop.Desktop
                     break;
             }
             return turnAxisDirection;
+        }
+        private Vector3 GetNextTargetPositionVector(Vector3 locationVector, Vector3 lastReferenceVector, out Vector3 nextReferenceVector, ref List<Vector3> usedUpPositions)
+        {
+            lastReferenceVector.Normalize();
+
+            float x = lastReferenceVector.X;
+            float y = lastReferenceVector.Z;
+            float top1 = (float)(2 * .9 * (Math.Sqrt(x * x + y * y)) * x);
+            float top2 = (float)Math.Sqrt(4 * 0.9 * 0.9 * x * x * (x * x + y * y) - 4 * (x * x + y * y) * (0.9 * 0.9 * (x * x + y * y) - y * y));
+            float bottom = (2 * (y * y + x * x));
+            float resultX1 = (top1 + top2) / bottom;
+            float resultX2 = (top1 - top2) / bottom;
+            float resultY1 = (float)Math.Sqrt(1 - (resultX1 * resultX1));
+            float resultY2 = (float)Math.Sqrt(1 - (resultX2 * resultX2));
+
+            var nextRef1 = new Vector3(resultX1, lastReferenceVector.Y, resultY1);
+            nextRef1.Normalize();
+            var nextRef2 = new Vector3(resultX1, lastReferenceVector.Y, -1 * resultY1);
+            nextRef2.Normalize();
+            var nextRef3 = new Vector3(resultX2, lastReferenceVector.Y, resultY2);
+            nextRef3.Normalize();
+            var nextRef4 = new Vector3(resultX2, lastReferenceVector.Y, -1 * resultY2);
+            nextRef4.Normalize();
+
+            Vector3 nextTargetVector1 = locationVector + nextRef1 * 8;
+            Vector3 nextTargetVector2 = locationVector + nextRef2 * 8;
+            Vector3 nextTargetVector3 = locationVector + nextRef3 * 8;
+            Vector3 nextTargetVector4 = locationVector + nextRef4 * 8;
+
+            Vector3[] targetVectors = new Vector3[] { nextTargetVector1, nextTargetVector2, nextTargetVector3, nextTargetVector4 };
+            Vector3[] refVectors = new Vector3[] { nextRef1, nextRef2, nextRef3, nextRef4 };
+
+            int i = 0;
+            bool foundNothing = false;
+            while (usedUpPositions.Any(p => Vector3.Distance(p, targetVectors[i]) < 3))
+            {
+                i++;
+                if (i == 3)
+                {
+                    foundNothing = true;
+                    break;
+                }
+            }
+
+            Vector3 nextTargetVector = locationVector + refVectors[i] * 8;
+            if (foundNothing)
+            {
+                nextTargetVector.X += 2;
+                nextTargetVector.Z += 2;
+            }
+
+            usedUpPositions.Add(nextTargetVector);
+            nextReferenceVector = refVectors[i];
+
+            return nextTargetVector;
         }
         public Vector3 GetRoundedVector(Vector3 vector, int decimalPlaces)
         {

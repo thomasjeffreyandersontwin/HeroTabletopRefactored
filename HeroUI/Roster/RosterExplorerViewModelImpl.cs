@@ -152,7 +152,7 @@ namespace HeroVirtualTabletop.Roster
         public void Handle(AddToRosterEvent message)
         {
             this.Roster.AddCrowdMemberToRoster(message.AddedCharacterCrowdMember, message.ParentCrowd);
-            //Participants.Sort(ListSortDirection.Ascending, new RosterCrowdMemberModelComparer());
+            Roster.Sort();
             OnRosterUpdated(null, null);
             this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
@@ -164,13 +164,10 @@ namespace HeroVirtualTabletop.Roster
         {
             foreach (var crowdMember in message.MembersToSync)
             {
-                if (!Roster.Participants.Contains(crowdMember))
-                {
-                    Roster.AddCharacterCrowdMemberAsParticipant(crowdMember);
-                    Roster.SyncParticipantWithGame(crowdMember);
-                }
+                Roster.AddCharacterCrowdMemberAsParticipant(crowdMember);
+                Roster.SyncParticipantWithGame(crowdMember);
             }
-            //Participants.Sort(ListSortDirection.Ascending, new RosterCrowdMemberModelComparer());
+            Roster.Sort();
             OnRosterUpdated(null, null);
             //this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }

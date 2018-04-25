@@ -296,6 +296,34 @@ namespace HeroVirtualTabletop.Roster
             //assert
             Assert.IsFalse(r.Selected.Participants.Contains(c));
         }
+
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void Sort_SortsParticipantsAlphanumericallyByParentNameThenParticipantName()
+        {
+            Roster rosterUnderTest = TestObjectsFactory.RosterUnderTestWithSixParticipantsUnderTestWithRosterParents;
+            rosterUnderTest.Participants[0].RosterParent.Name = "Police";
+            rosterUnderTest.Participants[0].Name = "P 10";
+            rosterUnderTest.Participants[1].RosterParent.Name = "Agents 10";
+            rosterUnderTest.Participants[1].Name = "A";
+            rosterUnderTest.Participants[2].RosterParent.Name = "Agents 1";
+            rosterUnderTest.Participants[2].Name = "Z";
+            rosterUnderTest.Participants[3].RosterParent.Name = "Police";
+            rosterUnderTest.Participants[3].Name = "P 2";
+            rosterUnderTest.Participants[4].RosterParent.Name = "Agents 10";
+            rosterUnderTest.Participants[4].Name = "B";
+            rosterUnderTest.Participants[5].RosterParent.Name = "Agents 1";
+            rosterUnderTest.Participants[5].Name = "X";
+            //act
+            rosterUnderTest.Sort();
+            //assert
+            Assert.AreEqual(rosterUnderTest.Participants[0].Name, "X");
+            Assert.AreEqual(rosterUnderTest.Participants[1].Name, "Z");
+            Assert.AreEqual(rosterUnderTest.Participants[2].Name, "A");
+            Assert.AreEqual(rosterUnderTest.Participants[3].Name, "B");
+            Assert.AreEqual(rosterUnderTest.Participants[4].Name, "P 2");
+            Assert.AreEqual(rosterUnderTest.Participants[5].Name, "P 10");
+        }
     }
 
     [TestClass]
@@ -609,6 +637,27 @@ namespace HeroVirtualTabletop.Roster
                 {
                     p.CharacterActionGroups = GetStandardCharacterActionGroup(p);
                 }
+                return rosterUnderTest;
+            }
+        }
+
+        public Roster RosterUnderTestWithSixParticipantsUnderTestWithRosterParents
+        {
+            get
+            {
+                Roster rosterUnderTest = RosterUnderTest;
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(CharacterCrowdMemberUnderTest);
+                foreach (var p in rosterUnderTest.Participants)
+                {
+                    p.RosterParent = new RosterParentImpl();
+                    p.CharacterActionGroups = GetStandardCharacterActionGroup(p);
+                }
+                
                 return rosterUnderTest;
             }
         }
