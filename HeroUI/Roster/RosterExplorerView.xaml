@@ -252,19 +252,13 @@
                                                     </Grid.ColumnDefinitions>
 
                                                     <Expander Name="ExpanderOptionGroup" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource ExpanderWithoutToggleButtonStyle}"
-                                                      OverridesDefaultStyle="True" IsExpanded="True" VerticalAlignment="Top"
+                                                      OverridesDefaultStyle="True" VerticalAlignment="Top" Expanded="ExpanderOptionGroup_ExpansionChanged" Collapsed="ExpanderOptionGroup_ExpansionChanged"
                                                       >
                                                         <ItemsPresenter PreviewMouseDown="ListViewItem_PreviewMouseDown"></ItemsPresenter>
                                                     </Expander>
                                                 </Grid>
                                             </GroupBox>
                                         </Grid>
-                                        <!--<Expander IsExpanded="True" Background="Transparent" TextElement.Foreground="White" Style="{StaticResource ExpanderDefaultStyle}">
-                                            <Expander.Header>
-                                                <TextBlock Text="{Binding Name, Converter={StaticResource CrowdNameConverter}}" FontWeight="Bold" PreviewMouseDown="TextBlock_PreviewMouseDown"/>
-                                            </Expander.Header>
-                                            <ItemsPresenter PreviewMouseDown="ListViewItem_PreviewMouseDown"></ItemsPresenter>
-                                        </Expander>-->
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>

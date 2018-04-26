@@ -37,7 +37,6 @@ namespace HeroVirtualTabletop.Desktop
         LoadMap,
         BindLoadFile,
         Macro,
-        NOP,
         PopMenu
     }
     public interface KeyBindCommandGenerator

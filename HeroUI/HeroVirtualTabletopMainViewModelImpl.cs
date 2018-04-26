@@ -391,10 +391,9 @@ namespace HeroUI
             }
         }
 
-        private void SetGamePathForAnimationElements()
+        private void SetHeroVirtualTabletopGameRunningDirectory()
         {
-            FXElementImpl.COSTUME_DIR = Path.Combine(Properties.Settings.Default.GameDirectory, "Costumes");
-            SoundElementImpl.SOUND_DIR = Path.Combine(Properties.Settings.Default.GameDirectory, "Sound");
+            HeroVirtualTabletop.Common.HeroVirtualTabletopGame.RunningDirectory = Properties.Settings.Default.GameDirectory;
         }
 
         private void gameInitializeTimer_Callback(object state)
@@ -432,7 +431,7 @@ namespace HeroUI
                 // Load camera on start
                 camera.ActivateCameraIdentity();
 
-                SetGamePathForAnimationElements();
+                SetHeroVirtualTabletopGameRunningDirectory();
 
                 ConfigureDesktopContextMenu();
                 //LoadMainView();

@@ -154,7 +154,6 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.AddCrowdMemberToRoster(message.AddedCharacterCrowdMember, message.ParentCrowd);
             Roster.Sort();
             OnRosterUpdated(null, null);
-            this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
 
         #endregion
@@ -169,7 +168,6 @@ namespace HeroVirtualTabletop.Roster
             }
             Roster.Sort();
             OnRosterUpdated(null, null);
-            //this.EventAggregator.PublishOnUIThread(new CrowdCollectionModifiedEvent());
         }
         #endregion
 

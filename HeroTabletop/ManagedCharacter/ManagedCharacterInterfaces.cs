@@ -32,7 +32,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveActionGroup(CharacterActionGroup actionGroup);
         void RemoveActionGroupAt(int index);
         string GetnewValidActionGroupName();
+        void CreateGhostShadow();
+        void SyncGhostWithGame();
         void AlignGhost();
+        void RemoveGhost();
         void CopyIdentitiesTo(ManagedCharacter targetCharacter);
         void RemoveIdentities();
     }
@@ -42,6 +45,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         DesktopCharacterTargeter Targeter { get; set; }
         string DesktopLabel { get; }
         Position Position { get; }
+        ManagedCharacter GhostShadow { get; }
         bool IsTargeted { get; set; }
         bool IsFollowed { get; set; }
         bool IsManueveringWithCamera { get; set; }

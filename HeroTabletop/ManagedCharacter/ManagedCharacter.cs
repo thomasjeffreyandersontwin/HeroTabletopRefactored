@@ -11,13 +11,15 @@ using System;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework;
 using HeroVirtualTabletop.Movement;
+using System.IO;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class ManagedCharacterImpl : PropertyChangedBase, ManagedCharacter, CharacterActionContainer
     {
         private bool _maneuveringWithCamera;
-
+        private const string GAME_COSTUMES_EXT = ".costume";
+        private const string GAME_GHOST_COSTUMENAME = "ghost";
         private const string IDENTITY_ACTION_GROUP_NAME = "Identities";
         public ManagedCharacterImpl(DesktopCharacterTargeter targeter, KeyBindCommandGenerator generator, Camera camera,
             CharacterActionList<Identity> identities)
@@ -45,7 +47,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var identitiesGroup = new CharacterActionListImpl<Identity>(CharacterActionType.Identity, Generator, this);
             identitiesGroup.Name = IDENTITY_ACTION_GROUP_NAME;
             
-            IdentityImpl newId = new IdentityImpl();
+            Identity newId = new IdentityImpl();
             newId.Owner = this;
             newId.Name = Name;
             newId.Type = SurfaceType.Costume;
@@ -56,7 +58,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             this.CharacterActionGroups.Add(identitiesGroup);
         }
-
+        [JsonIgnore]
+        public ManagedCharacter GhostShadow
+        {
+            get; set;
+        }
         public DesktopMemoryCharacter MemoryInstance
         {
             get;
@@ -145,8 +151,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
         public virtual void Target(bool completeEvent = true)
         {
-            
-            if (MemoryInstance != null)
+            if (MemoryInstance != null && MemoryInstance.IsReal)
             {
                 if (completeEvent)
                 {
@@ -252,7 +257,59 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void AlignGhost()
         {
+            if (this.ActiveIdentity.Type == SurfaceType.Model)
+            {
+                if (this.GhostShadow == null)
+                {
+                    CreateGhostShadow();
+                }
+                if (!this.GhostShadow.IsSpawned)
+                    this.GhostShadow.SpawnToDesktop();
+                this.Target();
+                this.GhostShadow.Position.Vector = this.Position.Vector;
+                this.GhostShadow.Position.RotationMatrix = this.Position.RotationMatrix;
+            }
+        }
 
+        public  virtual void CreateGhostShadow()
+        {
+            this.GhostShadow = new ManagedCharacterImpl(this.Targeter, this.Generator, this.Camera);
+            this.GhostShadow.Name = "ghost_" + this.Name;
+            this.GhostShadow.InitializeActionGroups();
+            SetGhostIdentity();
+        }
+        public void SetGhostIdentity()
+        {
+            //CreateGhostCostumeFile("Director Solair");
+            CreateGhostCostumeFile();
+        }
+
+        private void CreateGhostCostumeFile(string costumeName = null)
+        {
+            string costumePath = HeroVirtualTabletopGame.CostumeDirectory;
+            string ghostShadowCostumeFileName = ("ghost_" + this.Name) + GAME_COSTUMES_EXT;
+            string ghostShadowCostumeFile = Path.Combine(costumePath, ghostShadowCostumeFileName);
+            string originalGhostCostumeFileName = (costumeName != null ? costumeName + "_original" : "ghost_original") + GAME_COSTUMES_EXT;
+            string ghostCostumeFileName = (costumeName ?? GAME_GHOST_COSTUMENAME) + GAME_COSTUMES_EXT;
+            string originalGhostCostumeFile = Path.Combine(costumePath, originalGhostCostumeFileName);
+            string ghostCostumeFile = Path.Combine(costumePath, ghostCostumeFileName);
+            if (File.Exists(originalGhostCostumeFile))
+            {
+                File.Copy(originalGhostCostumeFile, ghostShadowCostumeFile, true);
+            }
+            else if (File.Exists(ghostCostumeFile))
+            {
+                File.Copy(ghostCostumeFile, ghostShadowCostumeFile, true);
+            }
+
+        }
+        public void RemoveGhost()
+        {
+            if (this.GhostShadow != null)
+            {
+                this.GhostShadow.ClearFromDesktop();
+                this.GhostShadow = null;
+            }
         }
         
         public CharacterActionList<Identity> Identities
@@ -317,10 +374,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (IsSpawned)
                 ClearFromDesktop();
 
-            Generator.GenerateDesktopCommandText(DesktopCommand.TargetEnemyNear);
-            Generator.GenerateDesktopCommandText(DesktopCommand.NOP);
-                //No operation, let the game untarget whatever it has targeted
-
             IsSpawned = true;
             var spawnText = Name;
             if (DesktopLabel != null && DesktopLabel != "")
@@ -361,12 +414,26 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var oldTarget = Targeter.TargetedInstance;
             Target();
             if (this.IsTargeted)
+            {
                 this.IsSpawned = true;
+                this.SyncGhostWithGame();
+            }
             try
             {
                 oldTarget.Target();
             }
             catch { }
+        }
+        public void SyncGhostWithGame()
+        {
+            if(this.ActiveIdentity.Type == SurfaceType.Model)
+            {
+                if (this.GhostShadow == null)
+                    this.CreateGhostShadow();
+                this.GhostShadow.SyncWithGame();
+                if (!this.GhostShadow.IsSpawned)
+                    this.AlignGhost();
+            }
         }
         public void AlignFacingWith(ManagedCharacter character)
         {

@@ -149,18 +149,12 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else if (characterCrowdMember.RosterParent.Name != parentCrowd.Name)
                 {
-                    // This character is already added to roster under another parent, so need to make a clone first
-                    this.CrowdClipboard.CopyToClipboard(characterCrowdMember);
-                    CrowdMember clonedMember = this.CrowdClipboard.PasteFromClipboard(parentCrowd);
-                    // Now send to roster the cloned character
-                    clonedMember.Parent = parentCrowd;
-                    rosterCharacters.Add(clonedMember as CharacterCrowdMember);
+                    //// DO Nothing, as this character is already added
                 }
             }
             else
             {
                 // Need to check every character inside this crowd whether they are already added or not
-                // If a character is already added, we need to make clone of it and pass only the cloned copy to the roster, not the original copy
                 List<Tuple<string, string>> rosterCrowdCharacterMembershipKeys = new List<Tuple<string, string>>();
                 ConstructRosterCrowdCharacterMembershipKeys(parentCrowd, rosterCrowdCharacterMembershipKeys);
                 foreach (Tuple<string, string> tuple in rosterCrowdCharacterMembershipKeys)
@@ -178,12 +172,7 @@ namespace HeroVirtualTabletop.Roster
                     }
                     else
                     {
-                        // This character is already added to roster under another crowd, so need to make a clone first
-                        this.CrowdClipboard.CopyToClipboard(character);
-                        CrowdMember clonedMember = this.CrowdClipboard.PasteFromClipboard(crowd);
-                        // Now send to roster the cloned character
-                        clonedMember.Parent = crowd;
-                        rosterCharacters.Add(clonedMember as CharacterCrowdMember);
+                        //// DO Nothing, as this character is already added
                     }
                 }
             }
@@ -1015,6 +1004,21 @@ namespace HeroVirtualTabletop.Roster
         }
 
         public void RemoveAllActions()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateGhostShadow()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SyncGhostWithGame()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveGhost()
         {
             throw new NotImplementedException();
         }

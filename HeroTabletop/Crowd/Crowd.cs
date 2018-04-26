@@ -769,7 +769,6 @@ namespace HeroVirtualTabletop.Crowd
     {
         private CrowdMemberShip _loadedParentMembership;
 
-
         private bool _matchedFilter;
         private string _name;
 
@@ -940,12 +939,21 @@ namespace HeroVirtualTabletop.Crowd
             var destPosition = position ?? _loadedParentMembership.SavedPosition;
             if (destPosition != null)
                 Position.MoveTo(destPosition);
+            this.AlignGhost();
         }
 
         public void PlaceOnTableTopUsingRelativePos()
         {
         }
-
+        public override void CreateGhostShadow()
+        {
+            this.GhostShadow = new CharacterCrowdMemberImpl();
+            this.GhostShadow.Name = "ghost_" + this.Name;
+            this.GhostShadow.InitializeActionGroups();
+            CreateGhostMovements();
+            SetGhostIdentity();
+        }
+        
         public override string DesktopLabel
         {
             get

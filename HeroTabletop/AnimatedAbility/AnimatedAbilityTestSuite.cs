@@ -139,7 +139,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         [TestMethod]
         [TestCategory("AnimationElement")]
         [TestCategory("FXElement")]
-        public void FXElement_CreatesCostumeForOwnerBasedOnFXResource()
+        public void FXElement_DoesNotPlayIfPlayingWithNext()
         {
             //arrange
             var element = TestObjectsFactory.FxElementUnderTestWithMockAnimatedCharacter;
@@ -148,6 +148,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
             element.Play();
             //assert
             Mock.Get(generator).Verify(x => x.CompleteEvent(), Times.Never);
+        }
+        [TestMethod]
+        [TestCategory("AnimationElement")]
+        [TestCategory("FXElement")]
+        public void FXElement_CreatesCostumeForGhostIfOwnerIsModel()
+        {
+            var fxElement = TestObjectsFactory.FxElementUnderTestWithAnimatedCharacterWithModelIdentityAndGhostShadow;
+            var generator = fxElement.Target.Generator;
+            var ghostGenerator = fxElement.Target.GhostShadow.Generator;
+            File.Create(fxElement.CostumeFilePath).Close();
+
+            fxElement.Play();
+
+            string[] para = { Path.GetFileNameWithoutExtension(fxElement.ModifiedCostumeFilePath) };
+            Mock.Get(generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para), Times.Never);
+            Mock.Get(ghostGenerator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
         }
 
         [TestMethod]
@@ -842,6 +858,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return a;
             }
         }
+        public AnimatedCharacter AnimatedCharacterUndertestWithIdentitiesAndGhost
+        {
+            get
+            {
+                StandardizedFixture.Customize<AnimatedCharacterImpl>(x => x
+                    .Without(y => y.ActiveAttack)
+                    .With(y => y.GhostShadow, MockAnimatedCharacter));
+                AnimatedCharacter a = StandardizedFixture.Create<AnimatedCharacterImpl>();
+                a.CharacterActionGroups = GetStandardCharacterActionGroup(a);
+                var i = StandardizedFixture.CreateMany<Identity>().ToList();
+                a.Identities.InsertMany(i);
+                a.ActiveIdentity.Type = SurfaceType.Model;
+                Mock.Get<ManagedCharacter.ManagedCharacter>(a.GhostShadow).SetupGet(x => x.Identities).Returns(MockIdentities);
+                return a;
+            }
+        }
         public AnimatedCharacter AnimatedCharacterUnderTest
         {
             get
@@ -915,12 +947,32 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return fx;
             }
         }
+
         public FXElement FxElementUnderTestWithAnimatedCharacter
         {
             get
             {
                 FXElement fx = StandardizedFixture.Build<FXElementImpl>()
                     .With(x => x.Target, AnimatedCharacterUndertestWithIdentities)
+                    .With(x => x.FX, MockFxResource)
+                    .With(x => x.ParentSequence, MockAnimatedAbility)
+                    .Without(x => x.Color1)
+                    .Without(x => x.Color2)
+                    .Without(x => x.Color3)
+                    .Without(x => x.Color4)
+                    .Without(x => x.AttackDirection)
+                    .Create();
+                fx.IsDirectional = false;
+                return fx;
+            }
+        }
+
+        public FXElement FxElementUnderTestWithAnimatedCharacterWithModelIdentityAndGhostShadow
+        {
+            get
+            {
+                FXElement fx = StandardizedFixture.Build<FXElementImpl>()
+                    .With(x => x.Target, AnimatedCharacterUndertestWithIdentitiesAndGhost)
                     .With(x => x.FX, MockFxResource)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
                     .Without(x => x.Color1)

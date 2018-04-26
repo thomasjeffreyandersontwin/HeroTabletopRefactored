@@ -23,6 +23,7 @@ namespace HeroVirtualTabletop.Roster
     {
         private RosterExplorerViewModelImpl viewModel;
         private const string CROWD_MEMBER_DRAG_FROM_CROWD_XPLORER_KEY = "CrowdMemberDragFromCrowdExplorer";
+        Dictionary<string, bool> rosterGroupExpansionStates = new Dictionary<string, bool>();
 
         public RosterExplorerView()
         {
@@ -92,10 +93,40 @@ namespace HeroVirtualTabletop.Roster
         {
             CollectionViewSource source = (CollectionViewSource)(this.Resources["ParticipantsView"]);
             ListCollectionView view = (ListCollectionView)source.View;
-            if (view != null && view.Groups != null && view.Groups.Count > 0)
+            if (view != null && view.Groups != null && view.Groups.Count > 1)
             {
                 view.Refresh();
+                foreach (CollectionViewGroup cvg in view.Groups)
+                {
+                    if (rosterGroupExpansionStates.ContainsKey(cvg.Name.ToString()))
+                    {
+                        bool isExpanded = rosterGroupExpansionStates[cvg.Name.ToString()];
+                        if (isExpanded)
+                        {
+                            GroupItem groupItem = this.RosterViewListBox.ItemContainerGenerator.ContainerFromItem(cvg) as GroupItem;
+                            if (groupItem != null)
+                            {
+                                groupItem.UpdateLayout();
+                                Expander expander = ControlUtilities.GetDescendantByType(groupItem, typeof(Expander)) as Expander;
+                                if (expander != null)
+                                {
+                                    expander.IsExpanded = true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        private void ExpanderOptionGroup_ExpansionChanged(object sender, RoutedEventArgs e)
+        {
+            Expander expander = sender as Expander;
+            CollectionViewGroup cvg = expander.DataContext as CollectionViewGroup;
+            if (rosterGroupExpansionStates.ContainsKey(cvg.Name.ToString()))
+                rosterGroupExpansionStates[cvg.Name.ToString()] = expander.IsExpanded;
+            else
+                rosterGroupExpansionStates.Add(cvg.Name.ToString(), expander.IsExpanded);
+        }  
     }
 }

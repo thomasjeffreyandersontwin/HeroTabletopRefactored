@@ -354,6 +354,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.SpawnAndTargetOwnerCharacter();
             if(value is Identity)
             {
+                this.CharacterActionList.Active = value;
                 if (this.CharacterActionList.Active == null)
                     this.CharacterActionList.Active = this.CharacterActionList.Default;
                 this.CharacterActionList.Active?.Play();

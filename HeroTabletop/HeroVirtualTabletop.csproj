@@ -145,6 +145,7 @@
     <Compile Include="Attack\AttackInterfaces.cs" />
     <Compile Include="Attack\AttackTestsuite.cs" />
     <Compile Include="Common\AsyncDelegateExecuter.cs" />
+    <Compile Include="Common\HeroVirtualTabletopGame.cs" />
     <Compile Include="Desktop\DesktopContextMenu.cs" />
     <Compile Include="Desktop\DesktopKeyEventHandler.cs" />
     <Compile Include="Desktop\DesktopMouseEventHandler.cs" />

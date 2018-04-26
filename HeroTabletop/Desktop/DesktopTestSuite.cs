@@ -1022,13 +1022,14 @@ namespace HeroVirtualTabletop.Desktop
            .Without(r => r.Start));
         }
         public DesktopCharacterTargeter MockDesktopCharacterTargeter => CustomizedMockFixture.Create<DesktopCharacterTargeter>();
-
+        
         public DesktopMemoryCharacter MockMemoryInstance
         {
             get
             {
                 var instance = CustomizedMockFixture.Create<DesktopMemoryCharacter>();
                 instance.Position.JustMissedPosition = MockPosition;
+                Mock.Get<DesktopMemoryCharacter>(instance).SetupGet(x => x.IsReal).Returns(true);
                 return instance;
             }
         }

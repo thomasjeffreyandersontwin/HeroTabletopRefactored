@@ -61,7 +61,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        public override void Play(bool completeEvent)
+        public override void Play(bool completeEvent = true)
         {
             switch (Type)
             {
@@ -77,7 +77,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 }
             }
             if (completeEvent)
+            {
                 Generator.CompleteEvent();
+                ((ManagedCharacter)Owner)?.AlignGhost();
+            }
             ((ManagedCharacter)Owner)?.Target(completeEvent);
         }
 

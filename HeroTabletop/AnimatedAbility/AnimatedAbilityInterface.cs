@@ -191,7 +191,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
         string CostumeText { get; }
         Position Destination { get; set; }
         bool IsDirectional { get; set; }
-        void BuildCostumeFileThatWillPlayFX();
     }
     public interface ColorElement : AnimationElement
     {

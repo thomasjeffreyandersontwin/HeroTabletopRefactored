@@ -251,17 +251,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class FXElementImpl : AnimationElementImpl, FXElement
     {
-        public static string COSTUME_DIR = "";
-
-        public FXElementImpl(AnimatedCharacter owner, FXResource resource, string gameDirectory = "") : base(owner)
+        public FXElementImpl(AnimatedCharacter owner, FXResource resource) : base(owner)
         {
             FX = resource;
-            if (!string.IsNullOrEmpty(gameDirectory))
-                COSTUME_DIR = Path.Combine(gameDirectory, "costumes");
             this.AnimationElementType = AnimationElementType.FX;
         }
 
-        public FXElementImpl() : this(null, null, "")
+        public FXElementImpl() : this(null, null)
         {
         }
 
@@ -374,9 +370,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 string costumeName;
                 if (Target.Identities?.Active != null)
-                    costumeName = Target.Name + "_" + Target.Identities.Active.Surface + "_Modified.costume";
-                else costumeName = Target.Name + "_Modified.costume";
-                return Path.Combine(COSTUME_DIR, costumeName);
+                {
+                    if(Target.Identities.Active.Type == ManagedCharacter.SurfaceType.Model && Target.GhostShadow != null)
+                        costumeName = Target.GhostShadow.Name + "_" + Target.GhostShadow.Identities.Active.Surface + "_Modified.costume";
+                    else
+                        costumeName = Target.Name + "_" + Target.Identities.Active.Surface + "_Modified.costume";
+                }
+                else
+                    costumeName = Target.Name + "_Modified.costume";
+                return Path.Combine(HeroVirtualTabletopGame.CostumeDirectory, costumeName);
             }
         }
 
@@ -386,9 +388,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 string costume_name;
                 if (Target.Identities?.Active != null)
-                    costume_name = Target.Identities.Active.Surface + ".costume";
+                {
+                    if (Target.Identities.Active.Type == ManagedCharacter.SurfaceType.Model && Target.GhostShadow != null)
+                        costume_name = Target.GhostShadow.Identities.Active.Surface + ".costume";
+                    else
+                        costume_name = Target.Identities.Active.Surface + ".costume";
+
+                }
                 else costume_name = Target.Name + ".costume";
-                return Path.Combine(COSTUME_DIR, costume_name);
+                return Path.Combine(HeroVirtualTabletopGame.CostumeDirectory, costume_name);
             }
         }
 
@@ -419,11 +427,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             completeEvent = true;
             targets.FirstOrDefault()?.Generator.CompleteEvent();
             Target = originalTarget;
-        }
-
-        public void BuildCostumeFileThatWillPlayFX()
-        {
-            throw new NotImplementedException();
         }
 
         public override void StopResource(AnimatedCharacter target)
@@ -472,10 +475,19 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
-            if (!File.Exists(CostumeFilePath))
-                return;
             var originalTarget = Target;
             Target = target;
+            bool playingOnGhost = false;
+            if(target.ActiveIdentity.Type == ManagedCharacter.SurfaceType.Model)
+            {
+                Target = target.GhostShadow as AnimatedCharacter;
+                playingOnGhost = true;
+                if (Target == null)
+                    return;
+            }
+            Target.Target(false);
+            if (!File.Exists(CostumeFilePath))
+                return;
             if (File.Exists(ModifiedCostumeFilePath) && (Target.LoadedFXs == null || Target.LoadedFXs.Count == 0))
                 File.Delete(ModifiedCostumeFilePath);
             if (!File.Exists(ModifiedCostumeFilePath))
@@ -491,6 +503,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             loadCostumeWithFxInIt(Target);
             if (Target.LoadedFXs != null && !Target.LoadedFXs.Contains(this))
                 Target.LoadedFXs.Add(this);
+            if (playingOnGhost)
+                target.Target(false);
             Target = originalTarget;
         }
 
@@ -619,20 +633,16 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
     public class SoundElementImpl : AnimationElementImpl, SoundElement
     {
-        public static string SOUND_DIR = "";
-
         private bool _active;
         private Timer UpdateSoundPlayingPositionTimer;
 
-        public SoundElementImpl(AnimatedCharacter owner, SoundResource resource, string gameDirectory = "") : base(owner)
+        public SoundElementImpl(AnimatedCharacter owner, SoundResource resource) : base(owner)
         {
             Sound = resource;
-            if (!string.IsNullOrEmpty(gameDirectory))
-                SOUND_DIR = Path.Combine(gameDirectory, "sound");
             this.AnimationElementType = AnimationElementType.Sound;
         }
 
-        public SoundElementImpl() : this(null, null, "")
+        public SoundElementImpl() : this(null, null)
         {
         }
 
@@ -677,7 +687,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set { }
         }
 
-        public string SoundFileName => SOUND_DIR + Sound.FullResourcePath;
+        public string SoundFileName => HeroVirtualTabletopGame.SoundDirectory + Sound.FullResourcePath;
 
         private SoundEngineWrapper soundEngine;
         public SoundEngineWrapper SoundEngine

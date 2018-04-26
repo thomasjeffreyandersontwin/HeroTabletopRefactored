@@ -184,6 +184,5 @@ namespace HeroVirtualTabletop.Common
     {
         public T Value { get; set; }
     }
-
     #endregion
 }

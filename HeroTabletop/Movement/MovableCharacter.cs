@@ -84,6 +84,15 @@ namespace HeroVirtualTabletop.Movement
                 Movements.Active = DefaultMovement;
             await ActiveMovement?.ExecuteKnockback(charactersBeingKnockedback, distance);
         }
+        public void CreateGhostMovements()
+        {
+            foreach (CharacterMovement cm in this.Movements)
+            {
+                CharacterMovement cmClone = cm.Clone() as CharacterMovement;
+                cmClone.Owner = this.GhostShadow;
+                (this.GhostShadow as MovableCharacter).Movements.InsertAction(cmClone);
+            }
+        }
         CharacterActionList<CharacterMovement> _movements;
         public CharacterActionList<CharacterMovement> Movements
         {

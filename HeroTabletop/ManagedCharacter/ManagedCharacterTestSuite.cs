@@ -254,6 +254,50 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Assert.IsTrue(characterUnderTest.Identities.Count() == 1);
             Assert.AreEqual(characterUnderTest.Identities[0].Name, characterUnderTest.Name);
         }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void CreateGhostShadow_CreatesGhostCostume()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithActiveModelIdentity;
+            characterUnderTest.Identities[0].Name = characterUnderTest.Name;
+            Assert.IsNull(characterUnderTest.GhostShadow);
+
+            characterUnderTest.CreateGhostShadow();
+
+            Assert.IsNotNull(characterUnderTest.GhostShadow);
+            Assert.AreEqual(characterUnderTest.GhostShadow.Name, "ghost_" + characterUnderTest.Name);
+            Assert.IsTrue(characterUnderTest.GhostShadow.ActiveIdentity.Type == SurfaceType.Costume);
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void AlignGhost_SuperImposesGhostOnModel()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
+
+            characterUnderTest.AlignGhost();
+            
+            Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void RemoveGhost_ClearsGhostFromDesktop()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
+            var mockGhost = characterUnderTest.GhostShadow;
+            characterUnderTest.RemoveGhost();
+            Mock.Get<ManagedCharacter>(mockGhost).Verify(x => x.ClearFromDesktop(It.IsAny<bool>(), It.IsAny<bool>()));
+            Assert.IsNull(characterUnderTest.GhostShadow);
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void SyncGhostWithGame_SyncsGhostWithGameAndThenAlignsIt()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
+            var mockGhost = characterUnderTest.GhostShadow;
+            characterUnderTest.SyncGhostWithGame();
+            Mock.Get<ManagedCharacter>(mockGhost).Verify(x => x.SyncWithGame());
+            Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
+        }
     }
 
     [TestClass]
@@ -542,6 +586,37 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        public ManagedCharacter CharacterUnderTestWithActiveModelIdentity
+        {
+            get
+            {
+                var managedChar = StandardizedFixture.Create<ManagedCharacter>();
+                managedChar.CharacterActionGroups = GetStandardCharacterActionGroup(managedChar);
+                var ids = StandardizedFixture.CreateMany<Identity>().ToList();
+                managedChar.Identities.Active.Type = SurfaceType.Model;
+                managedChar.Identities.InsertMany(ids);
+
+                return managedChar;
+            }
+        }
+
+        public ManagedCharacter CharacterUnderTestWithMockGhost
+        {
+            get
+            {
+                StandardizedFixture.Customize<ManagedCharacterImpl>(x => x
+                .With(y => y.GhostShadow, MockCharacter));
+                
+                var managedChar = StandardizedFixture.Create<ManagedCharacter>();
+                managedChar.CharacterActionGroups = GetStandardCharacterActionGroup(managedChar);
+                var ids = StandardizedFixture.CreateMany<Identity>().ToList();
+                managedChar.Identities.Active.Type = SurfaceType.Model;
+                managedChar.Identities.InsertMany(ids);
+                Mock.Get<ManagedCharacter>(managedChar.GhostShadow).SetupGet(x => x.Position).Returns(MockPosition);
+                return managedChar;
+            }
+        }
+
         public IEventAggregator MockEventAggregator => CustomizedMockFixture.Create<IEventAggregator>();
 
         public ObservableCollection<CharacterActionGroup> GetStandardCharacterActionGroup(ManagedCharacter character)
@@ -738,6 +813,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             StandardizedFixture.Customize<IdentityImpl>(i => i
             .Without(x => x.AnimationOnLoad));
+            StandardizedFixture.Customize<ManagedCharacterImpl>(i => i
+            .Without(x => x.GhostShadow));
             //handle recursion
             StandardizedFixture.Behaviors.Add(new OmitOnRecursionBehavior());
         }
