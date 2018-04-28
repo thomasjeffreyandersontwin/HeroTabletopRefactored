@@ -81,7 +81,7 @@ namespace HeroVirtualTabletop.Desktop
         void TurnTowards(Position lookingAt);
         Matrix RotationMatrix { get; set; }
         Vector3 FacingVector { get; set; }
-        
+        void ResetOrientation();
         float Calculate2DAngleBetweenVectors(Vector3 v1, Vector3 v2, out bool isClockwiseTurn);
         
         double GetRadianAngle(double rotaionAngle);

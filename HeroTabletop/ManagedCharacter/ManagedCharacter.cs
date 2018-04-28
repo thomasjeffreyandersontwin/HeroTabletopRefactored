@@ -255,6 +255,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        #region Ghost
         public void AlignGhost()
         {
             if (this.ActiveIdentity.Type == SurfaceType.Model)
@@ -311,7 +312,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.GhostShadow = null;
             }
         }
-        
+        #endregion
         public CharacterActionList<Identity> Identities
         {
             get
@@ -485,7 +486,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 targetCharacter.Identities.InsertAction(identity);
             }
         }
+        #region Reset Orientation
 
+        public void ResetOrientation()
+        {
+            this.Position.ResetOrientation();
+            AlignGhost();
+        }
+
+        #endregion
         public CharacterProgressBarStats ProgressBar { get; set; }
         public string GetNewValidIdentityName(string name = "Identity")
         {

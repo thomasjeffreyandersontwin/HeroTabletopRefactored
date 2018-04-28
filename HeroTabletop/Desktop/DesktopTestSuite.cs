@@ -385,6 +385,43 @@ namespace HeroVirtualTabletop.Desktop
             Assert.AreEqual(move.Z, test.Z);
             Assert.AreEqual(move.Y, test.Y);
         }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void ResetOrientation_StraightensUpCharacter()
+        {
+            var position = TestObjectsFactory.PositionUnderTest;
+            Matrix defaultMatrix = new Microsoft.Xna.Framework.Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            Matrix currentMatrix = new Microsoft.Xna.Framework.Matrix(1, 2, 2, 2,2, 1, 3, 3, 3, 3, 1, 3, 100, 10, 100, 1);
+            position.RotationMatrix = currentMatrix;
+
+            position.ResetOrientation();
+
+            Assert.AreEqual(position.RotationMatrix.M11, defaultMatrix.M11);
+            Assert.AreEqual(position.RotationMatrix.M12, defaultMatrix.M12);
+            Assert.AreEqual(position.RotationMatrix.M13, defaultMatrix.M13);
+            Assert.AreEqual(position.RotationMatrix.M13, defaultMatrix.M14);
+            Assert.AreEqual(position.RotationMatrix.M21, defaultMatrix.M21);
+            Assert.AreEqual(position.RotationMatrix.M22, defaultMatrix.M22);
+            Assert.AreEqual(position.RotationMatrix.M23, defaultMatrix.M23);
+            Assert.AreEqual(position.RotationMatrix.M24, defaultMatrix.M24);
+            // The rest of the matrix members are for location and facing
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void ResetOrientation_PreservesLocationAndFacing()
+        {
+            var position = TestObjectsFactory.PositionUnderTest;
+            Matrix defaultMatrix = new Microsoft.Xna.Framework.Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            Matrix currentMatrix = new Microsoft.Xna.Framework.Matrix(1, 2, 2, 2, 2, 1, 3, 3, 3, 3, 1, 3, 100, 10, 100, 1);
+            position.RotationMatrix = currentMatrix;
+            var locationBeforeReset = position.Vector;
+            var facingBeforeReset = position.FacingVector;
+
+            position.ResetOrientation();
+
+            Assert.AreEqual(position.Vector, locationBeforeReset);
+            Assert.AreEqual(position.FacingVector, facingBeforeReset);
+        }
     }
     /// <summary>
     /// RUN THE TESTS IN THIS CLASS WITHOUT CITY OF HEROES RUNNING. OTHERWISE TESTS WOULD FAIL

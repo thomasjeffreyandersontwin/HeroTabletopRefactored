@@ -1022,6 +1022,12 @@ namespace HeroVirtualTabletop.Roster
         {
             throw new NotImplementedException();
         }
+
+        public void ResetOrientation()
+        {
+            foreach (var crowdMember in Participants)
+                crowdMember.ResetOrientation();
+        }
     }
     class RosterSelectionCharacterActionsWrapper : CharacterActionImpl
     {

@@ -484,8 +484,8 @@ namespace HeroVirtualTabletop.Roster
 
         public void ResetOrientation()
         {
-            //this.Roster.Selected.Participants[0].ResetOrientation();
-            //SelectNextCharacterInCrowdCycle();
+            this.Roster.Selected?.ResetOrientation();
+            SelectNextCharacterInCrowdCycle();
         }
 
         #endregion

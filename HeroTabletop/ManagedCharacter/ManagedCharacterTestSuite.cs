@@ -298,6 +298,19 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Mock.Get<ManagedCharacter>(mockGhost).Verify(x => x.SyncWithGame());
             Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
         }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void ResetOrientation_ResetsPositionOrientationAndAlignsGhost()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
+            var mockGhost = characterUnderTest.GhostShadow;
+            var mockPosition = characterUnderTest.Position;
+
+            characterUnderTest.ResetOrientation();
+
+            Mock.Get<Position>(mockPosition).Verify(p => p.ResetOrientation());
+            Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
+        }
     }
 
     [TestClass]

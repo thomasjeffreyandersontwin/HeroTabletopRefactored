@@ -944,6 +944,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     .Without(x => x.Color4)
                     .Without(x => x.AttackDirection)
                     .Create();
+                Mock.Get<AnimatedCharacter>(fx.Target).SetupGet(x => x.Identities).Returns(MockIdentities);
+                Mock.Get<AnimatedCharacter>(fx.Target).SetupGet(x => x.ActiveIdentity).Returns(Mockidentity);
                 return fx;
             }
         }

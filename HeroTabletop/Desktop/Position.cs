@@ -238,15 +238,26 @@ namespace HeroVirtualTabletop.Desktop
             }
             set
             {
-                Matrix matrix = RotationMatrix;
-                matrix.M31 = value.X;
-                matrix.M32 = value.Y;
-                matrix.M33 = value.Z;
-                RotationMatrix = matrix;
-
+                SetFacing(value);
             }
         }
-      
+        private void SetFacing(Vector3 facingVector)
+        {
+            Vector3 currentPositionVector = this.Vector;
+            if (facingVector != currentPositionVector)
+            {
+                Matrix newRotationMatrix = Matrix.CreateLookAt(currentPositionVector, facingVector, Vector3.Up);
+                if (!float.IsNaN(newRotationMatrix.M11) && !float.IsNaN(newRotationMatrix.M13) && !float.IsNaN(newRotationMatrix.M31) && !float.IsNaN(newRotationMatrix.M33))
+                {
+                    Matrix matrix = RotationMatrix;
+                    matrix.M11 = -1 * newRotationMatrix.M11;
+                    matrix.M13 = newRotationMatrix.M13;
+                    matrix.M31 = newRotationMatrix.M31;
+                    matrix.M33 = -1 * newRotationMatrix.M33;
+                    RotationMatrix = matrix;
+                }
+            }
+        }
         public void Move(Direction direction, float unit=0f)
         {
             if (unit != 0f)
@@ -660,6 +671,16 @@ namespace HeroVirtualTabletop.Desktop
             return rotationAngle;
         }
 
+        public void ResetOrientation()
+        {
+            Vector3 currentPositionVector = this.Vector;
+            Vector3 currentFacing = this.FacingVector;
+
+            Microsoft.Xna.Framework.Matrix defaultMatrix = new Microsoft.Xna.Framework.Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            this.RotationMatrix = defaultMatrix;
+            this.FacingVector = currentFacing;
+            this.Vector = currentPositionVector;
+        }
         public override bool Equals(Object other)
         {
             Position otherPosition = other as Position;
