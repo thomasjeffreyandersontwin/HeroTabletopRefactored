@@ -22,7 +22,8 @@ namespace HeroUI
 {
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
         IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>, IHandle<EditCharacterMovementEvent>,
-        IHandle<ActivateCharacterEvent>, IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>
+        IHandle<ActivateCharacterEvent>, IHandle<ActivateGangEvent>, IHandle<DeActivateCharacterEvent>, IHandle<DeactivateGangEvent>,
+        IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
@@ -631,6 +632,11 @@ namespace HeroUI
             ShowActivateCharacterWidgetPopup(message.ActivatedCharacter, message.SelectedActionGroupName, message.SelectedActionName);
         }
 
+        public void Handle(ActivateGangEvent message)
+        {
+            ShowActivateGangWidgetPopup(message.GangMembers);
+        }
+
         public void Handle(ConfigureAttackEvent message)
         {
             ShowAttackConfigurationWidgetPopup();
@@ -646,29 +652,19 @@ namespace HeroUI
             this.CloseAttackConfigurationWidgetPopup();
         }
 
-        private void ShowActivateCharacterWidgetPopup(AnimatedCharacter character, string optionGroupName, string optionName)
+        public void Handle(DeActivateCharacterEvent message)
+        {
+            this.CloseActiveCharacterWidgetPopup(message.DeActivatedCharacter);
+        }
+        public void Handle(DeactivateGangEvent message)
+        {
+            this.CloseActiveCharacterWidgetPopup(message.DeactivatedGangLeader);
+        }
+        private void ShowActivateCharacterWidgetPopup(ManagedCharacter character, string optionGroupName, string optionName)
         {
             if (character != null && character.IsActive)
             {
-                if (!popupService.IsOpen("ActiveCharacterWidgetView"))
-                {
-                    System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
-                    double minwidth = 80;
-                    style.Setters.Add(new Setter(Window.MinWidthProperty, minwidth));
-                    var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
-                    double left = desktopWorkingArea.Right - 500;
-                    double top = desktopWorkingArea.Bottom - 80 * character.CharacterActionGroups.Count;
-                    object savedPos = popupService.GetPosition("ActiveCharacterWidgetView", character.Name);
-                    if (savedPos != null)
-                    {
-                        double[] posArray = (double[])savedPos;
-                        left = posArray[0];
-                        top = posArray[1];
-                    }
-                    style.Setters.Add(new Setter(Window.LeftProperty, left));
-                    style.Setters.Add(new Setter(Window.TopProperty, top));
-                    popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual); 
-                }
+                OpenActivateCharacterWidgetPopup(character);
                 this.eventAggregator.PublishOnUIThread(new ShowActivateCharacterWidgetEvent(character, optionGroupName, optionName));
             }
             else if ((character != null && !character.IsActive) && popupService.IsOpen("ActiveCharacterWidgetView"))
@@ -677,6 +673,34 @@ namespace HeroUI
             }
         }
 
+        private void OpenActivateCharacterWidgetPopup(ManagedCharacter activatedCharacter)
+        {
+            if (!popupService.IsOpen("ActiveCharacterWidgetView"))
+            {
+                System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
+                double minwidth = 80;
+                style.Setters.Add(new Setter(Window.MinWidthProperty, minwidth));
+                var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+                double left = desktopWorkingArea.Right - 500;
+                double top = desktopWorkingArea.Bottom - 80 * activatedCharacter.CharacterActionGroups.Count;
+                object savedPos = popupService.GetPosition("ActiveCharacterWidgetView", activatedCharacter.Name);
+                if (savedPos != null)
+                {
+                    double[] posArray = (double[])savedPos;
+                    left = posArray[0];
+                    top = posArray[1];
+                }
+                style.Setters.Add(new Setter(Window.LeftProperty, left));
+                style.Setters.Add(new Setter(Window.TopProperty, top));
+                popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual);
+            }
+        }
+        private void ShowActivateGangWidgetPopup(List<ManagedCharacter> gangMembers)
+        {
+            ManagedCharacter gangLeader = gangMembers.FirstOrDefault(gm => gm.IsGangLeader);
+            OpenActivateCharacterWidgetPopup(gangLeader);
+            this.eventAggregator.PublishOnUIThread(new ShowActivateGangWidgetEvent(gangMembers));
+        }
         private void ShowAttackConfigurationWidgetPopup()
         {
             if (!popupService.IsOpen("AttackConfigurationWidgetView"))
@@ -686,7 +710,7 @@ namespace HeroUI
             }
         }
 
-        private void CloseActiveCharacterWidgetPopup(AnimatedCharacter character)
+        private void CloseActiveCharacterWidgetPopup(ManagedCharacter character)
         {
             popupService.SavePosition("ActiveCharacterWidgetView", character != null ? character.Name : null);
             popupService.CloseDialog("ActiveCharacterWidgetView");

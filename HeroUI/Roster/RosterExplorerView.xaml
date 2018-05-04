@@ -37,7 +37,10 @@
             </CollectionViewSource>
             <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}, Path=DataContext}"/>
             <ContextMenu x:Key="RosterExplorerMenu">
-                <MenuItem Header="Activate Character" cal:Message.Attach="Activate" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Activate Character" cal:Message.Attach="ActivateCharacter" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Activate Crowd as Gang" cal:Message.Attach="ActivateCrowdAsGang" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Activate as Gang" cal:Message.Attach="ActivateSelectedCharactersAsGang" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Abort" cal:Message.Attach="Abort" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Edit Character" cal:Message.Attach="EditRosterMember" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Save Position" cal:Message.Attach="SavePosition" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Place" cal:Message.Attach="Place" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
@@ -49,9 +52,12 @@
                 <MenuItem Header="Clear From Desktop" cal:Message.Attach="ClearFromDesktop" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Reset Orientation" cal:Message.Attach="ResetOrientation" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
             </ContextMenu>
-            <ContextMenu x:Key="AreaAttackMenu">
+            <ContextMenu x:Key="AttackMenu">
                 <MenuItem Header="Target" cal:Message.Attach="AddSelectedAsAttackTarget" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
                 <MenuItem Header="Target and Execute" cal:Message.Attach="AddSelectedAsAttackTargetAndExecute" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Target and Execute Crowd" cal:Message.Attach="AddSelectedCrowdAsAttackTargetAndExecute" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Execute Sweep" cal:Message.Attach="ExecuteSweepAttack" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
+                <MenuItem Header="Abort" cal:Message.Attach="Abort" cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"></MenuItem>
             </ContextMenu>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -96,7 +102,7 @@
                 <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
                 <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
                 <Button x:Name="Teleport" Content="&#xf122;" ToolTip="Teleport Target to Camera (Ctrl+L)"/>
-                <Button x:Name="Activate" Content="&#xf00c;" ToolTip="Activate Character (Ctrl+Enter)"/>
+                <Button x:Name="ToggleActivate" Content="&#xf00c;" ToolTip="Toggle Activate Character (Ctrl+Enter)"/>
                 <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>
                 <Button x:Name="ResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
             </WrapPanel>
@@ -119,10 +125,10 @@
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=IsGangModeActive}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.SelectedParticipantsInGangMode}" Value="False">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=IsGangModeActive}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.SelectedParticipantsInGangMode}" Value="True">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -273,7 +279,7 @@
                             <Style TargetType="{x:Type Grid}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="True">
-                                        <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=AreaAttackMenu}" />
+                                        <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=AttackMenu}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="False">
                                         <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=RosterExplorerMenu}" />
@@ -288,10 +294,23 @@
                             <ColumnDefinition Width="auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Name="txtBlockCharacterName" Text="{Binding Name}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-                        <TextBlock Grid.Column="1" Foreground="Green"
-                               FontFamily="{StaticResource ResourceKey=FontFamily_FontAwesome}"
-                               Text="&#xf00c;" VerticalAlignment="Center" Visibility="{Binding IsActive, Converter={StaticResource BooleanToVisibilityConverter}}"
-                               >
+                        <TextBlock Grid.Column="1" FontFamily="{StaticResource ResourceKey=FontFamily_FontAwesome}" Text="&#xf00c;" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Value="True" Binding="{Binding Path=IsActive}">
+                                            <Setter Property="Visibility" Value="Visible"></Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Value="True" Binding="{Binding Path=IsGangLeader}">
+                                            <Setter Property="Foreground" Value="Red"/>
+                                        </DataTrigger>
+                                        <DataTrigger Value="False" Binding="{Binding Path=IsGangLeader}">
+                                            <Setter Property="Foreground" Value="Green"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
                         </TextBlock>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <TextBlock Grid.Column="2" FontFamily="{StaticResource FontFamily_FontAwesome}" 

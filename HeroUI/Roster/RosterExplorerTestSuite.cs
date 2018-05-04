@@ -21,9 +21,21 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                var rostExpVM = TestObjectsFactory.StandardizedFixture.Create<RosterExplorerViewModelImpl>();
-                rostExpVM.EventAggregator = TestObjectsFactory.MockEventAggregator;
-                rostExpVM.Roster = TestObjectsFactory.MockRoster;
+                TestObjectsFactory.StandardizedFixture.Customize<RosterImpl>(y => y
+                    .Without(x => x.TargetedCharacter)
+                    .Without(x => x.AttackingCharacter)
+                    .Without(x => x.LastSelectedCharacter)
+                    .Without(x => x.Participants)
+                    .Without(x => x.Selected)
+                    .Without(x => x.CurrentAttackInstructions)
+                    .Without(x => x.SelectedParticipantsInGangMode)
+                    .With(x => x.IsGangInOperation, false));
+                var rostExpVM = TestObjectsFactory.StandardizedFixture.Build<RosterExplorerViewModelImpl>()
+                    .With(x => x.Roster, TestObjectsFactory.MockRoster)
+                    .With(x => x.EventAggregator, TestObjectsFactory.MockEventAggregator)
+                    .Create();
+                //rostExpVM.EventAggregator = TestObjectsFactory.MockEventAggregator;
+                //rostExpVM.Roster = TestObjectsFactory.MockRoster;
                 return rostExpVM;
             }
         }
@@ -38,6 +50,13 @@ namespace HeroVirtualTabletop.Roster
         {
             var selectedMemList = new List<CharacterCrowdMember>();
             selectedMemList.Add(TestObjectsFactory.MockCharacterCrowdMember);
+            selectedMemList.Add(TestObjectsFactory.MockCharacterCrowdMember);
+            rosterVM.SelectedParticipants = selectedMemList;
+        }
+
+        private void SelectOneMockParticipant(RosterExplorerViewModel rosterVM)
+        {
+            var selectedMemList = new List<CharacterCrowdMember>();
             selectedMemList.Add(TestObjectsFactory.MockCharacterCrowdMember);
             rosterVM.SelectedParticipants = selectedMemList;
         }
@@ -73,17 +92,17 @@ namespace HeroVirtualTabletop.Roster
 
             rosterVM.Target();
 
-            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.Target(true));
+            Mock.Get<CharacterCrowdMember>(rosterVM.SelectedParticipants[0] as CharacterCrowdMember).Verify(s => s.Target(true));
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
-        public void ClearFromDesktop_InvokesRosterRemoveRosterMember()
+        public void ClearFromDesktop_InvokesRosterSelectedClearFromDesktop()
         {
             var rosterVM = RosterExplorerViewModelUnderTest;
             SelectTwoMockParticipants(rosterVM);
 
             rosterVM.ClearFromDesktop();
-            Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.RemoveRosterMember(It.IsAny<CharacterCrowdMember>()), Times.Exactly(2));
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(r => r.ClearFromDesktop(It.IsAny<bool>(), It.IsAny<bool>()));
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
@@ -137,7 +156,7 @@ namespace HeroVirtualTabletop.Roster
 
             rosterVM.ToggleTargeted();
 
-            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ToggleTargeted());
+            Mock.Get<CharacterCrowdMember>(rosterVM.SelectedParticipants[0] as CharacterCrowdMember).Verify(s => s.ToggleTargeted());
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
@@ -148,7 +167,7 @@ namespace HeroVirtualTabletop.Roster
 
             rosterVM.ToggleManeuverWithCamera();
 
-            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ToggleManeuveringWithCamera());
+            Mock.Get<CharacterCrowdMember>(rosterVM.SelectedParticipants[0] as CharacterCrowdMember).Verify(s => s.ToggleManeuveringWithCamera());
         }
         [TestMethod]
         [TestCategory("RosterExplorer")]
@@ -160,6 +179,64 @@ namespace HeroVirtualTabletop.Roster
             rosterVM.MoveCameraToTarget();
 
             Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.TargetAndMoveCameraToCharacter(true));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleGangMode_TogglesRosterGangMode()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectOneMockParticipant(rosterVM);
+
+            rosterVM.ToggleGangMode();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.SelectedParticipantsInGangMode = !r.SelectedParticipantsInGangMode);
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ActivateCharacter_InvokesRosterActivateCharacter()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectOneMockParticipant(rosterVM);
+
+            rosterVM.ActivateCharacter();
+
+            Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.ActivateCharacter(rosterVM.SelectedParticipants[0] as CharacterCrowdMember));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ActivateGang_InvokesRosterActivateGang()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+            var list = new List<CharacterCrowdMember> { rosterVM.SelectedParticipants[0] as CharacterCrowdMember, rosterVM.SelectedParticipants[1] as CharacterCrowdMember};
+
+            rosterVM.ActivateGang(list);
+
+            Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.ActivateGang(list));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ActivateSelectedCharactersAsGang_InvokesRosterActivateGang()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+            var selected1 = rosterVM.SelectedParticipants[0] as CharacterCrowdMember;
+            var selected2 = rosterVM.SelectedParticipants[1] as CharacterCrowdMember;
+
+            rosterVM.ActivateSelectedCharactersAsGang();
+
+            Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.ActivateGang(It.Is<List<CharacterCrowdMember>>(x => x.Contains(selected1) && x.Contains(selected2))));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ActivateCrowdAsGang_InvokesRosterActivateCrowdAsGang()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectOneMockParticipant(rosterVM);
+
+            rosterVM.ActivateCrowdAsGang();
+
+            Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.ActivateCrowdAsGang(null));
         }
     }
 }

@@ -28,7 +28,7 @@ namespace HeroVirtualTabletop.Roster
             Roster r = TestObjectsFactory.RosterUnderTest;
             Crowd.Crowd c = TestObjectsFactory.CrowdUnderTestWithThreeMockCharacters;
             r.CreateGroupFromCrowd(c);
-            foreach(var member in c.Members)
+            foreach (var member in c.Members)
             {
                 Assert.IsTrue(r.Participants.Contains(member));
             }
@@ -103,9 +103,9 @@ namespace HeroVirtualTabletop.Roster
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             AnimatedAttack a = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
-            a.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            a.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
-            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) a.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)a.Attacker);
 
             a.StartAttackCycle();
             Assert.AreEqual(a.Target, r.AttackingCharacter);
@@ -118,17 +118,17 @@ namespace HeroVirtualTabletop.Roster
             //arrange
             Roster r = TestObjectsFactory.RosterUnderTest;
             AnimatedAttack first = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
-            first.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            first.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
-            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) first.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)first.Attacker);
             first.StartAttackCycle();
 
             //arrange
             AnimatedAttack second = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
-            second.Attacker = (AnimatedCharacter) TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            second.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
 
             //act
-            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember) second.Attacker);
+            r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)second.Attacker);
             second.StartAttackCycle();
 
             //Assert
@@ -218,19 +218,17 @@ namespace HeroVirtualTabletop.Roster
             r.SelectAllParticipants();
             foreach (var p in r.Participants)
             {
-                if(p is CharacterCrowdMember)
+                if (p is CharacterCrowdMember)
                     Assert.IsTrue(r.Selected.Participants.Contains(p));
             }
         }
 
         [TestMethod]
         [TestCategory("Roster")]
-        public void
-            SaveRoster_RosterIsSavedAsNestedCrowdMadeUpOfClonedCrowdMembershipsWithSameCharactersInSameOrderAsParticipantsInRosterGroups
-            ()
+        public void SaveRoster_RosterIsSavedAsNestedCrowdMadeUpOfClonedCrowdMembershipsWithSameCharactersInSameOrderAsParticipantsInRosterGroups()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
-            
+
             Crowd.Crowd crowd = r.SaveAsCrowd();
             int crowdCounter = 0;
             foreach (var g in r.Groups.Values)
@@ -324,6 +322,180 @@ namespace HeroVirtualTabletop.Roster
             Assert.AreEqual(rosterUnderTest.Participants[4].Name, "P 2");
             Assert.AreEqual(rosterUnderTest.Participants[5].Name, "P 10");
         }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void SetGangMode_UpdatesSelectionToSelectWholeCrowd()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            roster.SelectParticipant(roster.Participants[0]);
+
+            roster.SelectedParticipantsInGangMode = true;
+
+            Assert.IsTrue(roster.Selected.Participants.Count == 3);
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
+                Assert.IsTrue(roster.Selected.Participants.Contains(p));
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ActivateInGangMode_ActivatesWholeCrowdAsGang()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            roster.SelectParticipant(roster.Participants[0]);
+            roster.SelectedParticipantsInGangMode = true;
+
+            roster.Activate();
+
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate());
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ExecuteRosterCommandsInGangMode_OperatesOnWholeGang()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            roster.SelectParticipant(roster.Participants[0]);
+            roster.SelectedParticipantsInGangMode = true;
+
+            roster.Selected.SpawnToDesktop();
+            roster.Selected.MoveCharacterToCamera();
+            roster.Selected.SaveCurrentTableTopPosition();
+            roster.Selected.PlaceOnTableTop();
+            roster.Selected.ClearFromDesktop();
+
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.SpawnToDesktop(true));
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.MoveCharacterToCamera(true));
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.SaveCurrentTableTopPosition());
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.PlaceOnTableTop(null));
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.ClearFromDesktop(true, true));
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ActivateCrowdAsGang_ActivatesParentCrowdAsGang()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant = roster.Participants[0];
+            roster.SelectParticipant(participant);
+            participant.Parent.Name = "Crowd 1";
+
+            roster.ActivateCrowdAsGang(participant.Parent);
+
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate());
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ActivateGang_ActivatesSpecifiedCharactersAsGang()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            CharacterCrowdMember participant2 = roster.Participants[4];
+
+            roster.ActivateGang(new List<CharacterCrowdMember> { participant1, participant2 });
+
+            Mock.Get<CharacterCrowdMember>(participant1).Verify(x => x.Activate());
+            Mock.Get<CharacterCrowdMember>(participant2).Verify(x => x.Activate());
+            foreach (var p in roster.Participants.Where(p => p != participant1 && p != participant2))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate(), Times.Never);
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ActivateCharacter_ActivatesOnlyCharacterIrrespectiveOfGangMode()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.SelectedParticipantsInGangMode = true;
+            foreach (var p in roster.Participants)
+            {
+                Mock.Get<CharacterCrowdMember>(p).ResetCalls();
+            }
+
+            roster.ActivateCharacter(participant1);
+
+            Mock.Get<CharacterCrowdMember>(participant1).Verify(x => x.Activate());
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1" && p != participant1))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate(), Times.Never);
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void Activate_ActivatesCharacterIfGangModeIsOff()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+
+            roster.Activate();
+
+            Mock.Get<CharacterCrowdMember>(participant1).Verify(x => x.Activate());
+            foreach (var p in roster.Participants.Where(p => p != participant1))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate(), Times.Never);
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void Activate_ActivatesGangIfGangModeIsOn()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.SelectedParticipantsInGangMode = true;
+
+            roster.Activate();
+
+            Assert.IsTrue(roster.IsGangInOperation);
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.Activate());
+            }
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ActivatingInGangMode_SetsGangLeader()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.SelectedParticipantsInGangMode = true;
+
+            roster.Activate();
+
+            Assert.IsTrue(roster.IsGangInOperation);
+            Assert.IsTrue(roster.Participants.Any(p => p.RosterParent.Name == "Crowd 1" && p.IsGangLeader));
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ResetGangMode_DeactivatesGangIfSelectedGangWasActive()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.SelectedParticipantsInGangMode = true;
+
+            roster.Activate();
+
+            Assert.IsTrue(roster.IsGangInOperation);
+
+            roster.TargetedCharacter = participant1;
+            roster.SelectedParticipantsInGangMode = false;
+
+            Assert.IsFalse(roster.IsGangInOperation);
+            foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1" && p != participant1))
+            {
+                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.DeActivate());
+            }
+        }
     }
 
     [TestClass]
@@ -378,11 +550,6 @@ namespace HeroVirtualTabletop.Roster
                 }
             }
         }
-        public void SelectionWithMultipleCharacters_CanInvokeMovementsWhereSelectedHasMovementswithCommonName()
-        {
-
-
-        }
         [TestMethod]
         [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_CanInvokeManagedCharacterCommandsOnAllSelected()
@@ -395,23 +562,21 @@ namespace HeroVirtualTabletop.Roster
             r.Selected.Participants.ForEach(
                 participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.SpawnToDesktop(true)));
 
-            r.Selected.ClearFromDesktop();
-            r.Selected.Participants.ForEach(
-                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(true, true)));
-
             r.Selected.MoveCharacterToCamera();
             r.Selected.Participants.ForEach(
                 participant =>
                     Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.MoveCharacterToCamera(true)));
-
-            Assert.AreEqual(r.Selected.Participants.Count, 3);
+            var selectedList = r.Selected.Participants.ToList();
+            r.Selected.ClearFromDesktop();
+            selectedList.ForEach(
+                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(true, true)));
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
         public void SelectionWithMultipleCharacters_ActivatesOrDeactivatesFirstSelectedOnly()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
-            foreach(var p in r.Participants)
+            foreach (var p in r.Participants)
             {
                 p.IsActive = false;
             }
@@ -420,10 +585,10 @@ namespace HeroVirtualTabletop.Roster
 
             r.Selected.Activate();
             var participant = r.Selected.Participants[0];
-            Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.Activate());
+            Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.Activate());
             participant.IsActive = true;
             r.Selected.DeActivate();
-            Mock.Get<AnimatedCharacterCommands>(participant).Verify(x => x.DeActivate());
+            Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.DeActivate());
             Assert.AreEqual(r.Selected.Participants.Count, 3);
         }
         [TestMethod]
@@ -507,7 +672,7 @@ namespace HeroVirtualTabletop.Roster
 
             r.Selected.Participants.ForEach(
                 participant =>
-                    Mock.Get<CharacterCrowdMember> (participant).Verify(x => x.RemoveStateFromActiveStates(stateName)));
+                    Mock.Get<CharacterCrowdMember>(participant).Verify(x => x.RemoveStateFromActiveStates(stateName)));
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
@@ -518,13 +683,13 @@ namespace HeroVirtualTabletop.Roster
             r.ClearAllSelections();
             r.SelectAllParticipants();
             //act
-            AnimatedAttack attack = (AnimatedAttack) r.Selected.AbilitiesList.FirstOrDefault().Value;
-            RosterSelectionAttackInstructions instructions = (RosterSelectionAttackInstructions) attack.StartAttackCycle();
+            AnimatedAttack attack = (AnimatedAttack)r.Selected.AbilitiesList.FirstOrDefault().Value;
+            RosterSelectionAttackInstructions instructions = (RosterSelectionAttackInstructions)attack.StartAttackCycle();
             instructions.Defender = TestObjectsFactory.MockAnimatedCharacter;
 
-            AnimatedCharacter attacker = (AnimatedCharacter) r.Selected.Participants[0];
+            AnimatedCharacter attacker = (AnimatedCharacter)r.Selected.Participants[0];
             AttackInstructions individualInstructions = instructions.AttackerSpecificInstructions[attacker];
-            individualInstructions.AttackHit =true;
+            individualInstructions.AttackHit = true;
 
             attacker = (AnimatedCharacter)r.Selected.Participants[1];
             individualInstructions = instructions.AttackerSpecificInstructions[attacker];
@@ -541,10 +706,8 @@ namespace HeroVirtualTabletop.Roster
             {
                 var a = (AnimatedAttack)selectedParticipant.AbilitiesList.FirstOrDefault().Value;
                 var instruction = instructions.AttackerSpecificInstructions[(AnimatedCharacter)selectedParticipant];
-                Mock.Get(a).Verify(x=>x.CompleteTheAttackCycle(instruction));
+                Mock.Get(a).Verify(x => x.CompleteTheAttackCycle(instruction));
             }
-
-
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
@@ -555,7 +718,7 @@ namespace HeroVirtualTabletop.Roster
             r.SelectAllParticipants();
             string stateName = r.Selected.Participants.FirstOrDefault().ActiveStates.FirstOrDefault().StateName;
 
-            Assert.AreEqual(stateName , r.Selected.ActiveStates.FirstOrDefault().StateName);       
+            Assert.AreEqual(stateName, r.Selected.ActiveStates.FirstOrDefault().StateName);
         }
     }
 
@@ -577,13 +740,14 @@ namespace HeroVirtualTabletop.Roster
             .Without(r => r.Selected));
         }
         public Roster RosterUnderTest => StandardizedFixture.Build<RosterImpl>()
-            .Without(x => x.ActiveCharacter)
             .Without(x => x.TargetedCharacter)
             .Without(x => x.AttackingCharacter)
             .Without(x => x.LastSelectedCharacter)
             .Without(x => x.Participants)
             .Without(x => x.Selected)
             .Without(x => x.CurrentAttackInstructions)
+            .Without(x => x.SelectedParticipantsInGangMode)
+            .With(x => x.IsGangInOperation, false)
             .Create();
 
         public Roster MockRoster => CustomizedMockFixture.Create<Roster>();
@@ -619,7 +783,7 @@ namespace HeroVirtualTabletop.Roster
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
-                
+
                 return rosterUnderTest;
 
             }
@@ -657,7 +821,58 @@ namespace HeroVirtualTabletop.Roster
                     p.RosterParent = new RosterParentImpl();
                     p.CharacterActionGroups = GetStandardCharacterActionGroup(p);
                 }
-                
+
+                return rosterUnderTest;
+            }
+        }
+
+        public Roster RosterUnderTestWithSixMockParticipantsInTwoGroups
+        {
+            get
+            {
+                Roster rosterUnderTest = RosterUnderTest;
+
+                CrowdRepository repo = RepositoryUnderTest;
+
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+
+                RosterGroup g = rosterUnderTest.Groups.FirstOrDefault().Value;
+                g.Name = "Crowd 1";
+                Crowd.Crowd crowd = rosterUnderTest.Participants[0].Parent;
+                crowd.Name = "Crowd 1";
+                RosterParent parent1 = new RosterParentImpl { Name = g.Name, Order = g.Order, RosterGroup = g };
+                //rosterUnderTest.Participants.ForEach(x => x.RosterParent = g);
+                foreach (var x in rosterUnderTest.Participants)
+                {
+                    x.RosterParent = parent1;
+                    x.Parent = crowd;
+                    x.IsActive = false;
+                    x.CharacterActionGroups = GetStandardCharacterActionGroup(x);
+                    repo.AddCrowd(x.Parent);
+                    x.CrowdRepository = repo;
+                }
+
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+                rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
+
+                RosterGroup g2 = rosterUnderTest.Groups.LastOrDefault().Value;
+                g2.Name = "Crowd 2";
+                Crowd.Crowd crowd2 = rosterUnderTest.Participants[3].Parent;
+                crowd2.Name = "Crowd 2";
+                RosterParent parent2 = new RosterParentImpl { Name = g2.Name, Order = g2.Order, RosterGroup = g2 };
+                foreach (var x in rosterUnderTest.Participants.Where(p => p.RosterParent == null || p.RosterParent.Name != "Crowd 1"))
+                {
+                    x.RosterParent = parent2;
+                    x.Parent = crowd2;
+                    x.IsActive = false;
+                    x.CharacterActionGroups = GetStandardCharacterActionGroup(x);
+                    repo.AddCrowd(x.Parent);
+                    x.CrowdRepository = repo;
+                }
+
                 return rosterUnderTest;
             }
         }
@@ -712,7 +927,7 @@ namespace HeroVirtualTabletop.Roster
 
                 RosterGroup g = rosterUnderTest.Groups.FirstOrDefault().Value;
                 //rosterUnderTest.Participants.ForEach(x => x.RosterParent = g);
-                foreach(var x in rosterUnderTest.Participants)
+                foreach (var x in rosterUnderTest.Participants)
                 {
                     x.RosterParent = new RosterParentImpl { Name = g.Name, Order = g.Order, RosterGroup = g };
                 }
@@ -727,7 +942,7 @@ namespace HeroVirtualTabletop.Roster
                 Roster rosterUnderTest = RosterUnderTestWithThreeParticipantsUnderTest;
                 foreach (var rosterParticipant in rosterUnderTest.Participants)
                 {
-                    CharacterCrowdMember c = (CharacterCrowdMember) rosterParticipant;
+                    CharacterCrowdMember c = (CharacterCrowdMember)rosterParticipant;
                     c.Abilities.InsertAction(MockAnimatedAbility);
                     c.Abilities.Default = c.Abilities.FirstOrDefault();
 
@@ -745,7 +960,7 @@ namespace HeroVirtualTabletop.Roster
                 Roster rosterUnderTest = RosterUnderTestWithThreeParticipantsUnderTest;
                 foreach (var rosterParticipant in rosterUnderTest.Participants)
                 {
-                    AnimatedCharacter ac = (AnimatedCharacter) rosterParticipant;
+                    AnimatedCharacter ac = (AnimatedCharacter)rosterParticipant;
                     ac.AddState(MockAnimatableCharacterState);
                     ac.ActiveStates.FirstOrDefault().StateName = "CommonState";
                 }
@@ -761,10 +976,10 @@ namespace HeroVirtualTabletop.Roster
                 foreach (var rosterParticipant in rosterUnderTest.Participants)
                 {
                     AnimatedAttack tak = MockAttack;
-                    
+
                     tak.Name = "CommonAbility";
-                    ((AnimatedCharacter) rosterParticipant).Abilities.AddNew(tak);
- 
+                    ((AnimatedCharacter)rosterParticipant).Abilities.AddNew(tak);
+
                 }
                 return rosterUnderTest;
             }

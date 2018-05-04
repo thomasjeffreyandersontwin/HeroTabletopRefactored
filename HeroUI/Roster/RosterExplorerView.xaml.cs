@@ -88,7 +88,6 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-
         private void viewModel_RosterUpdated(object sender, EventArgs e)
         {
             CollectionViewSource source = (CollectionViewSource)(this.Resources["ParticipantsView"]);

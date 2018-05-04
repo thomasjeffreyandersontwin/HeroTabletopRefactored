@@ -14,8 +14,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
 {
     public interface AnimatedCharacterCommands
     {
-        void Activate();
-        void DeActivate();
         Dictionary<string, AnimatedAbility> AbilitiesList { get; }
         AnimatedAbility DefaultAbility { get; }
 
@@ -61,8 +59,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
         CharacterActionList<AnimatedAbility> Abilities { get; }
         List<AnimatedAbility> ActivePersistentAbilities { get; }
         //ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
-
-        bool IsActive { get; set; }
         bool IsSelected { get; set; }
         AnimatedAttack ActiveAttack { get; set; }
         bool CheckIfAbilityNameIsDuplicate(string updatedName);

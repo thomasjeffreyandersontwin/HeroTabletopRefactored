@@ -131,11 +131,11 @@
     </Compile>
     <Compile Include="AnimatedAbility\AbilityEditorViewModel.cs" />
     <Compile Include="AnimatedAbility\AbilityEditorViewModelImpl.cs" />
-    <Compile Include="AnimatedAbility\ActiveCharacterWidgetView.xaml.cs">
+    <Compile Include="ManagedCharacter\ActiveCharacterWidgetView.xaml.cs">
       <DependentUpon>ActiveCharacterWidgetView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModel.cs" />
-    <Compile Include="AnimatedAbility\ActiveCharacterWidgetViewModelImpl.cs" />
+    <Compile Include="ManagedCharacter\ActiveCharacterWidgetViewModel.cs" />
+    <Compile Include="ManagedCharacter\ActiveCharacterWidgetViewModelImpl.cs" />
     <Compile Include="AnimatedAbility\AnimatedAbilityEvents.cs" />
     <Compile Include="Attack\AttackConfigurationWidgetView.xaml.cs">
       <DependentUpon>AttackConfigurationWidgetView.xaml</DependentUpon>
@@ -180,7 +180,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="AnimatedAbility\ActiveCharacterWidgetView.xaml">
+    <Page Include="ManagedCharacter\ActiveCharacterWidgetView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

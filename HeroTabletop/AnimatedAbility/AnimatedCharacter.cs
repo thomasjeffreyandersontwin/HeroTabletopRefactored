@@ -174,26 +174,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        private bool isActive;
-        public bool IsActive
-        {
-            get { return isActive; }
-            set
-            {
-                isActive = value;
-                NotifyPropertyChanged();
-            }
-
-        }
-        public void Activate()
-        {
-            IsActive = true;
-        }
-        public void DeActivate()
-        {
-            IsActive = false;
-        }
-
         private ObservableCollection<AnimatableCharacterState> _activeStates;
         public List<FXElement> LoadedFXs => _loadedFXs ?? (_loadedFXs = new List<FXElement>());
         public ObservableCollection<AnimatableCharacterState> ActiveStates => _activeStates ?? (_activeStates = new ObservableCollection<AnimatableCharacterState>());

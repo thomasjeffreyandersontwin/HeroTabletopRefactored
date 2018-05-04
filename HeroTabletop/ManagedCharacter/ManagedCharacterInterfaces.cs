@@ -39,6 +39,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveGhost();
         void CopyIdentitiesTo(ManagedCharacter targetCharacter);
         void RemoveIdentities();
+        void Activate();
+        void DeActivate();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
@@ -47,6 +49,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         string DesktopLabel { get; }
         Position Position { get; }
         ManagedCharacter GhostShadow { get; }
+        bool IsActive { get; set; }
         bool IsTargeted { get; set; }
         bool IsFollowed { get; set; }
         bool IsManueveringWithCamera { get; set; }

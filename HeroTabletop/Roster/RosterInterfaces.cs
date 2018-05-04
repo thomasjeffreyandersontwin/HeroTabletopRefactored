@@ -34,16 +34,22 @@ namespace HeroVirtualTabletop.Roster
         void RemoveGroup(RosterGroup crowd);
         void SelectGroup(RosterGroup crowd);
         void UnSelectGroup(RosterGroup crowd);
-
+        void Activate();
+        void Deactivate();
+        void ActivateCharacter(CharacterCrowdMember characterToActivate);
+        void DeactivateCharacter(CharacterCrowdMember characterToDeactivate);
+        void ActivateCrowdAsGang(Crowd.Crowd crowd = null);
+        void ActivateGang(List<CharacterCrowdMember> gangMembers);
+        void DeactivateGang();
         void ClearAllSelections();
         void SelectAllParticipants();
         void Sort();
         Crowd.Crowd SaveAsCrowd();
-
         CharacterCrowdMember ActiveCharacter { get; }
         CharacterCrowdMember AttackingCharacter { get; }
         CharacterCrowdMember LastSelectedCharacter { get; }
-
+        bool SelectedParticipantsInGangMode { get; set; }
+        bool IsGangInOperation { get; set; }
         CharacterCrowdMember TargetedCharacter { get; set; }
 
         void GroupSelectedParticpants();

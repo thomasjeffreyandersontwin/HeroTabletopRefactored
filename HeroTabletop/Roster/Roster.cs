@@ -92,15 +92,128 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        private bool isGangInOperation;
+        public bool IsGangInOperation
+        {
+            get
+            {
+                return isGangInOperation;
+            }
+            set
+            {
+                isGangInOperation = value;
+                NotifyOfPropertyChange(() => IsGangInOperation);
+            }
+        }
+
+        private bool selectedParticipantsInGangMode;
+        public bool SelectedParticipantsInGangMode
+        {
+            get
+            {
+                if (Selected.Participants != null && Selected.Participants.Count > 0)
+                {
+                    selectedParticipantsInGangMode = true;
+                    foreach (CharacterCrowdMember ccm in this.Selected.Participants)
+                    {
+                        Crowd.Crowd crowd = ccm.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == ccm.RosterParent.Name) as Crowd.Crowd;
+                        if (crowd != null)
+                            selectedParticipantsInGangMode &= crowd.IsGang;
+                    }
+                }
+                else
+                    selectedParticipantsInGangMode = false;
+                return selectedParticipantsInGangMode;
+            }
+            set
+            {
+                selectedParticipantsInGangMode = value;
+                if (Selected.Participants != null && Selected.Participants.Count > 0)
+                {
+                    foreach (CharacterCrowdMember ccm in this.Selected.Participants)
+                    {
+                        Crowd.Crowd crowd = ccm.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == ccm.RosterParent.Name) as Crowd.Crowd;
+                        if (crowd != null)
+                            crowd.IsGang = value;
+                    }
+                }
+                this.UpdateSelectionsForGangMode(value);
+                if (this.ActiveCharacter != null)
+                {
+                    this.SetActivationsForGangMode(value);
+                }
+                NotifyOfPropertyChange(() => SelectedParticipantsInGangMode);
+            }
+        }
+
         public RosterSelection Selected { get; set; }
         public void SelectParticipant(CharacterCrowdMember participant)
         {
-            if (!Selected.Participants.Contains(participant))
-                Selected.Participants.Add(participant);
+            List<CharacterCrowdMember> rosterSelections = GetCharactersToOperateOn(participant);
+            foreach (var selection in rosterSelections)
+            {
+                AddToSelection(selection);
+            }
+            NotifyOfPropertyChange(() => SelectedParticipantsInGangMode);
+        }
+        private void AddToSelection(CharacterCrowdMember member)
+        {
+            if (!Selected.Participants.Contains(member))
+                Selected.Participants.Add(member);
         }
         public void UnSelectParticipant(CharacterCrowdMember participant)
         {
             Selected.Participants.Remove(participant);
+        }
+        private void UpdateSelectionsForGangMode(bool isGangMode)
+        {
+            var currentSelected = this.Selected.Participants.ToList();
+            this.ClearAllSelections();
+            if (isGangMode)
+            {
+                foreach (var selected in currentSelected)
+                    SelectParticipant(selected);
+            }
+            else
+            {
+                if (this.TargetedCharacter != null)
+                    SelectParticipant(this.TargetedCharacter);
+            }
+        }
+        private void SetActivationsForGangMode(bool gangModeOn)
+        {
+            CharacterCrowdMember firstSelected = this.Selected.Participants.FirstOrDefault();
+            Crowd.Crowd gangCrowd = firstSelected.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == firstSelected.RosterParent.Name) as Crowd.Crowd;
+            if (this.ActiveCharacter.RosterParent.Name == gangCrowd.Name)
+            {
+                if (gangModeOn)
+                    ActivateCrowdAsGang(gangCrowd);
+                else
+                {
+                    CharacterCrowdMember characterToRemainActivated = this.TargetedCharacter ?? this.ActiveCharacter;
+                    foreach (CharacterCrowdMember characterCrowdMember in this.Participants.Where(c => c.RosterParent.Name == gangCrowd.Name && c != characterToRemainActivated))
+                    {
+                        characterCrowdMember.DeActivate();
+                        characterCrowdMember.IsGangLeader = false;
+                    }
+                    characterToRemainActivated.IsGangLeader = false;
+                    this.IsGangInOperation = false;
+                }
+            }
+        }
+        private List<CharacterCrowdMember> GetCharactersToOperateOn(CharacterCrowdMember ccm)
+        {
+            List<CharacterCrowdMember> characters = new List<CharacterCrowdMember>();
+
+            Crowd.Crowd crowd = ccm.CrowdRepository?.AllMembersCrowd?.Members?.FirstOrDefault(c => c is Crowd.Crowd && c.Name == ccm.RosterParent.Name) as Crowd.Crowd;
+            if (crowd != null && crowd.IsGang)
+            {
+                foreach (CharacterCrowdMember gangmember in this.Participants.Where(p => ccm != p && ccm.RosterParent == p.RosterParent))
+                    characters.Add(gangmember);
+            }
+            characters.Add(ccm);
+
+            return characters.Distinct().ToList();
         }
 
         public void SyncParticipantWithGame(CharacterCrowdMember participant)
@@ -115,6 +228,101 @@ namespace HeroVirtualTabletop.Roster
             this.Participants = new ObservableCollection<CharacterCrowdMember>(this.Participants.OrderBy(t => t, new RosterMemberComparer()));
         }
 
+        #region Activate/Deactivate character/gang
+        public void Activate()
+        {
+            this.Selected.Activate();
+            if (this.Selected.Participants.Count > 1)
+            {
+                this.IsGangInOperation = true;
+                if (this.Selected.Participants.Any(p => p == TargetedCharacter))
+                    this.TargetedCharacter.IsGangLeader = true;
+                else
+                    this.Selected.Participants.First().IsGangLeader = true;
+            }
+            else
+                this.IsGangInOperation = false;
+        }
+
+        public void Deactivate()
+        {
+            this.Selected.DeActivate();
+            this.IsGangInOperation = false;
+            this.UpdateSelectionsForGangMode(false);
+        }
+
+        public void ActivateCharacter(CharacterCrowdMember characterToActivate)
+        {
+            if (this.Selected?.Participants?.Count > 0)
+            {
+                this.ClearAllSelections();
+                characterToActivate.IsGangLeader = false;
+                this.AddToSelection(characterToActivate);
+                this.Selected.Activate();
+            }
+        }
+
+        public void DeactivateCharacter(CharacterCrowdMember characterToDeactivate)
+        {
+            if (this.Selected?.Participants?.Count > 0)
+            {
+                if (this.Selected.Participants[0] != characterToDeactivate)
+                {
+                    this.ClearAllSelections();
+                    this.SelectParticipant(characterToDeactivate);
+                }
+                this.Selected.DeActivate();
+            }
+        }
+        public void ActivateCrowdAsGang(Crowd.Crowd crowd = null)
+        {
+            List<CharacterCrowdMember> gangMembers = new List<CharacterCrowdMember>();
+            if (crowd != null)
+            {
+                foreach (CharacterCrowdMember c in Participants.Where(p => p.RosterParent.Name == crowd.Name))
+                {
+                    gangMembers.Add(c);
+                }
+            }
+            else if (Selected.Participants.Contains(TargetedCharacter))
+            {
+                foreach (CharacterCrowdMember c in Participants.Where(p => p.RosterParent.Name == targetedCharacter.RosterParent.Name))
+                {
+                    gangMembers.Add(c);
+                }
+            }
+            ActivateGang(gangMembers);
+        }
+
+        public void ActivateGang(List<CharacterCrowdMember> gangMembers)
+        {
+            if (this.Selected?.Participants?.Count > 0)
+            {
+                this.ClearAllSelections();
+            }
+            foreach (var gm in gangMembers)
+            {
+                this.AddToSelection(gm);
+                if (gm == TargetedCharacter)
+                {
+                    gm.IsGangLeader = true;
+                }
+            }
+            if (!gangMembers.Any(c => c.IsGangLeader))
+            {
+                gangMembers[0].IsGangLeader = true;
+            }
+            this.Selected.Activate();
+            this.IsGangInOperation = true;
+        }
+
+        public void DeactivateGang()
+        {
+            this.Selected.DeActivate();
+            this.IsGangInOperation = false;
+        }
+
+        #endregion
         public void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant)
         {
             if (!Participants.Contains(participant))
@@ -122,7 +330,7 @@ namespace HeroVirtualTabletop.Roster
                 var group = createRosterGroup(participant.Parent);
                 group.InsertElement(participant);
                 participant.RosterParent = getRosterParentFromGroup(group);
-                participant.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                //participant.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
                 Participants.Add(participant);
                 NotifyOfPropertyChange(() => Participants);
             }
@@ -214,8 +422,9 @@ namespace HeroVirtualTabletop.Roster
                 var group = Groups[groupName];
                 group.RemoveElement(participant);
                 Participants.Remove(participant);
-                participant.PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                //participant.PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
                 participant.RosterParent = null;
+                participant.DeActivate();
             }
         }
 
@@ -245,7 +454,7 @@ namespace HeroVirtualTabletop.Roster
                 {
                     group.InsertElement((CharacterCrowdMember)member);
                     (member as CharacterCrowdMember).RosterParent = getRosterParentFromGroup(group);
-                    member.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                    //member.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
                     Participants.Add((CharacterCrowdMember)member);
                 }
             }
@@ -324,7 +533,7 @@ namespace HeroVirtualTabletop.Roster
                 }
             }
         }
-
+        
         public Crowd.Crowd SaveAsCrowd()
         {
             CrowdRepository repo = new CrowdRepositoryImpl();
@@ -345,7 +554,7 @@ namespace HeroVirtualTabletop.Roster
         private void EnsureOnlyOneActiveOrAttackingCharacterInRoster(object sender, PropertyChangedEventArgs e)
         {
             AnimatedCharacter characterThatChanged = sender as AnimatedCharacter;
-            updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "ActiveCharacter", "IsActive");
+            //updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "ActiveCharacter", "IsActive");
             updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "TargetedCharacter", "IsTargeted");
             updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "LastSelectedCharacter", "IsSelected");
             if (e.PropertyName == "ActiveAttack")
@@ -396,11 +605,11 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (rosterStateToChange == characterThatChanged)
                 {
-                    (characterThatChanged as CrowdMember).PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                    //(characterThatChanged as CrowdMember).PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
                     propertyInfoForCharacterThatchanged.SetValue(characterThatChanged, false);
                     // characterThatChanged.IsActive = false;
                     propertyInfoforStateToChange.SetValue(this, null);
-                    (characterThatChanged as CrowdMember).PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                    //(characterThatChanged as CrowdMember).PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
                 }
             }
 
@@ -410,17 +619,14 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                if (activeCharacter == null)
-                    activeCharacter = Participants.FirstOrDefault(p => p.IsActive);
+                if (Participants.Any(p => p.IsGangLeader))
+                    activeCharacter = this.Participants.First(p => p.IsGangLeader);
+                else
+                    activeCharacter = this.Participants.FirstOrDefault(p => p.IsActive);
                 return activeCharacter;
             }
-            set
-            {
-                activeCharacter = value;
-                NotifyOfPropertyChange(() => ActiveCharacter);
-            }
         }
-
+        
         private CharacterCrowdMember attackingCharacter;
         public CharacterCrowdMember AttackingCharacter
         {
@@ -441,10 +647,10 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                if(targetedCharacter != null)
+                DesktopMemoryCharacter memoryInstance = new DesktopMemoryCharacterImpl();
+                if (targetedCharacter == null || targetedCharacter.Name != memoryInstance.Name)
                 {
-                    DesktopMemoryCharacter memoryInstance = new DesktopMemoryCharacterImpl();
-                    if (memoryInstance.IsReal && targetedCharacter.Name != memoryInstance.Name)
+                    if (memoryInstance.IsReal)
                         targetedCharacter = Participants.FirstOrDefault(p => p.Name == memoryInstance.Name);
                 }
                 
@@ -715,10 +921,21 @@ namespace HeroVirtualTabletop.Roster
                 part.SpawnToDesktop(completeEvent);
             }
         }
+
         public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
         {
-            foreach (var crowdMember in Participants)
-                crowdMember.ClearFromDesktop(completeEvent, clearManueveringWithCamera);
+            List<CharacterCrowdMember> membersToDelete = new List<CharacterCrowdMember>();
+            foreach (var selectedParticipant in this.Participants)
+            {
+                CharacterCrowdMember member = selectedParticipant as CharacterCrowdMember;
+                membersToDelete.Add(member);
+            }
+            if (membersToDelete.Any(m => m.IsActive))
+                this.Roster.Deactivate();
+            foreach (var member in membersToDelete)
+            {
+                this.Roster.RemoveRosterMember(member);
+            }
         }
         public void MoveCharacterToCamera(bool completeEvent = true)
         {
@@ -728,70 +945,38 @@ namespace HeroVirtualTabletop.Roster
 
         public void Activate()
         {
-            var currentActiveCharacter = Roster.Participants.FirstOrDefault(p => p.IsActive);
-            CharacterCrowdMember firstCharacter = this.Participants[0] as CharacterCrowdMember;
-            if (currentActiveCharacter != null && currentActiveCharacter == firstCharacter)
+            foreach (var character in this.Roster.Participants.Where(p => p.IsActive && !this.Participants.Contains(p)))
             {
-                DeactivateCharacter(firstCharacter);
+                DeactivateCharacter(character);
+                character.IsGangLeader = false;
             }
-            else
+            foreach (var character in this.Participants)
             {
-                if (currentActiveCharacter != null)
-                    DeactivateCharacter(currentActiveCharacter);
-                ActivateCharacter(firstCharacter);
+                ActivateCharacter(character);
             }
         }
 
         public void DeActivate()
         {
-            CharacterCrowdMember firstCharacter = Participants[0] as CharacterCrowdMember;
-            DeactivateCharacter(firstCharacter);
+            foreach (var character in this.Roster.Participants.Where(p => p.IsActive))
+            {
+                DeactivateCharacter(character);
+                character.IsGangLeader = false;
+            }
         }
 
         private void ActivateCharacter(CharacterCrowdMember character)
         {
             if (!character.IsSpawned)
                 character.SpawnToDesktop();
-            //// Pause movements from other characters that were active
-            //if (Helper.GlobalVariables_CharacterMovement != null && Helper.GlobalVariables_CharacterMovement.Character == this.ActiveCharacter)
-            //{
-            //    Helper.GlobalVariables_CharacterMovement.IsPaused = true;
-            //    Helper.GlobalVariables_FormerActiveCharacterMovement = Helper.GlobalVariables_CharacterMovement;
-            //}
-            //// Deactivate movements from other characters that are not active
-            //if (Helper.GlobalVariables_CharacterMovement != null && Helper.GlobalVariables_CharacterMovement.Character != this.ActiveCharacter)
-            //{
-            //    var otherCharacter = Helper.GlobalVariables_CharacterMovement.Character;
-            //    if (otherCharacter != Helper.GlobalVariables_ActiveCharacter)
-            //    {
-            //        Helper.GlobalVariables_CharacterMovement.DeactivateMovement();
-            //    }
-            //}
             character.Activate();
-            //// Now resume any paused movements for the activated character
-            //var pausedMovement = character.Movements.FirstOrDefault(cm => cm.IsPaused && Helper.GlobalVariables_FormerActiveCharacterMovement == cm);
-            //if (pausedMovement != null)
-            //{
-            //    pausedMovement.IsPaused = false;
-            //}
-            //this.eventAggregator.GetEvent<ActivateCharacterEvent>().Publish(new Tuple<Character, string, string>(character, selectedActionGroupName, selectedActionName));
-            //SelectNextCharacterInCrowdCycle();
         }
 
-        public void DeactivateCharacter(CharacterCrowdMember character)
+        private void DeactivateCharacter(CharacterCrowdMember character)
         {
             if (character.IsActive)
             {
                 character.DeActivate();
-                //// Resume movements from other characters that were paused
-                //if (Helper.GlobalVariables_FormerActiveCharacterMovement != null)
-                //{
-                //    Helper.GlobalVariables_FormerActiveCharacterMovement.IsPaused = false;
-                //    Helper.GlobalVariables_CharacterMovement = Helper.GlobalVariables_FormerActiveCharacterMovement;
-                //}
-                //this.ActiveCharacter = null;
-                //this.eventAggregator.GetEvent<DeactivateCharacterEvent>().Publish(character);
-                //SelectNextCharacterInCrowdCycle();
             }
         }
 

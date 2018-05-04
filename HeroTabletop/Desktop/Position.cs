@@ -233,7 +233,6 @@ namespace HeroVirtualTabletop.Desktop
             get
             {
                 Vector3 facingVector = new Vector3(RotationMatrix.M31, RotationMatrix.M32, RotationMatrix.M33);
-
                 return facingVector;
             }
             set

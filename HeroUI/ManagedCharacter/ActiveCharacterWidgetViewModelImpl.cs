@@ -9,22 +9,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace HeroVirtualTabletop.AnimatedAbility
+namespace HeroVirtualTabletop.ManagedCharacter
 {
-    public class ActiveCharacterWidgetViewModelImpl : PropertyChangedBase, ActiveCharacterWidgetViewModel, IHandle<ShowActivateCharacterWidgetEvent>
+    public class ActiveCharacterWidgetViewModelImpl : PropertyChangedBase, ActiveCharacterWidgetViewModel, IHandle<ShowActivateCharacterWidgetEvent>, IHandle<ShowActivateGangWidgetEvent>
     {
-        #region Private Fields
-        
-        private System.Timers.Timer clickTimer_AbilityPlay = new System.Timers.Timer();
-        private AnimatedAbility activeAbility;
-        #endregion
 
         #region Public Properties
 
         public IEventAggregator EventAggregator { get; set; }
 
-        private AnimatedCharacter activeCharacter;
-        public AnimatedCharacter ActiveCharacter
+        private ManagedCharacter activeCharacter;
+        public ManagedCharacter ActiveCharacter
         {
             get
             {
@@ -34,6 +29,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 activeCharacter = value;
                 NotifyOfPropertyChange(() => ActiveCharacter);
+                NotifyOfPropertyChange(() => ActiveCharacterName);
+            }
+        }
+        public string ActiveCharacterName
+        {
+            get
+            {
+                if (ActiveCharacter == null)
+                    return "";
+                if (ActiveCharacter.IsGangLeader)
+                    return ActiveCharacter.Name + " <Gang Leader>";
+                return ActiveCharacter.Name;
             }
         }
 
@@ -58,27 +65,25 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.EventAggregator = eventAggregator;
             this.EventAggregator.Subscribe(this);
 
-            clickTimer_AbilityPlay.AutoReset = false;
-            clickTimer_AbilityPlay.Interval = 2000;
-            clickTimer_AbilityPlay.Elapsed +=
-                new System.Timers.ElapsedEventHandler(clickTimer_AbilityPlay_Elapsed);
-
-            //this.PlayActiveAbilityCommand = new DelegateCommand<object>(delegate (object state) { this.PlayActiveAbility(); }, this.CanPlayActiveAbility);
-            //this.ToggleMovementCommand = new DelegateCommand<object>(delegate (object state) { this.ToggleMovement(); }, this.CanToggleMovement);
-
             //DesktopKeyEventHandler keyHandler = new DesktopKeyEventHandler(RetrieveEventFromKeyInput);
 
         }
         #endregion
 
-        #region Load/Unload Character
+        #region Load/Unload Character/Gang
 
         public void Handle(ShowActivateCharacterWidgetEvent message)
         {
             this.LoadActivatedCharacter(message.ActivatedCharacter, message.SelectedActionGroupName, message.SelectedActionName);
         }
 
-        private void LoadActivatedCharacter(AnimatedCharacter activatedCharacter, string actionGroupName, string actionName)
+        public void Handle(ShowActivateGangWidgetEvent message)
+        {
+            ManagedCharacter gangLeader = message.ActivatedGangMembers.FirstOrDefault(gm => gm.IsGangLeader);
+            LoadActivatedCharacter(gangLeader, null, null);
+        }
+
+        private void LoadActivatedCharacter(ManagedCharacter activatedCharacter, string actionGroupName, string actionName)
         {
             this.UnloadPreviousActivatedCharacter();
 
@@ -95,7 +100,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     switch (group.Type)
                     {
                         case CharacterActionType.Ability:
-                            var abilityActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<AnimatedAbility>>();
+                            var abilityActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<AnimatedAbility.AnimatedAbility>>();
                             abilityActionGroupViewModel.ActionGroup = group;
                             abilityActionGroupViewModel.ShowActions = showActionsInGroup;
                             abilityActionGroupViewModel.IsReadOnly = true;
@@ -145,21 +150,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #endregion
 
-
-        private void clickTimer_AbilityPlay_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            clickTimer_AbilityPlay.Stop();
-            //System.Action d = delegate ()
-            //{
-            //    if (activeAbility != null && !activeAbility.Persistent && !activeAbility.IsAttack)
-            //    {
-            //        activeAbility.DeActivate(ActiveCharacter);
-            //        //activeAbility.IsActive = false;
-            //        //OnPropertyChanged("IsActive");
-            //    }
-            //};
-            //System.Windows.Application.Current.Dispatcher.BeginInvoke(d);
-        }
         System.Windows.Forms.Keys vkCode;
 
         //internal DesktopKeyEventHandler.EventMethod RetrieveEventFromKeyInput(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
@@ -176,25 +166,5 @@ namespace HeroVirtualTabletop.AnimatedAbility
         //    }
         //    return null;
         //}
-
-        public bool CanToggleMovement(object state) { return true; }
-        public void ToggleMovement()
-        {
-            Keys vkCode = this.vkCode;
-            //CharacterMovement cm = (ActiveCharacter as MovableCharacter).Movements.First(m => m.ActivationKey == vkCode);
-            //if (!cm.IsActive)
-            //    cm.ActivateMovement();
-            //else
-            //    cm.DeactivateMovement();
-        }
-
-        public bool CanPlayActiveAbility(object state) { return true; }
-        public void PlayActiveAbility()
-        {
-            Keys vkCode = this.vkCode;
-            activeAbility = ActiveCharacter.Abilities.First(ab => ab.KeyboardShortcut == vkCode.ToString());
-            activeAbility.Play();
-            //CHANGEclickTimer_AbilityPlay.Start();
-        }
     }
 }

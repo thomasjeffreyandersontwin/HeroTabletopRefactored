@@ -42,7 +42,6 @@ namespace HeroVirtualTabletop.Roster
             if (RosterUpdated != null)
                 RosterUpdated(sender, e);
         }
-
         #endregion
 
         #region Public Properties
@@ -76,6 +75,9 @@ namespace HeroVirtualTabletop.Roster
                 Target();
                 NotifyOfPropertyChange(() => SelectedParticipants);
                 NotifyOfPropertyChange(() => ShowAttackContextMenu);
+                NotifyOfPropertyChange(() => CanToggleGangMode);
+                NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
+                NotifyActivationEligibilityChange();
                 RefreshRosterCommandsEligibility();
             }
         }
@@ -107,6 +109,8 @@ namespace HeroVirtualTabletop.Roster
             get;set;
         }
 
+        
+
         #endregion
 
         #region Refresh Commands
@@ -121,7 +125,7 @@ namespace HeroVirtualTabletop.Roster
             NotifyOfPropertyChange(() => CanToggleTargeted);
             NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
             NotifyOfPropertyChange(() => CanMoveCameraToTarget);
-            NotifyOfPropertyChange(() => CanActivate);
+            NotifyOfPropertyChange(() => CanToggleActivate);
         }
 
         #endregion
@@ -161,6 +165,7 @@ namespace HeroVirtualTabletop.Roster
         #region Sync with Roster
         public void Handle(SyncWithRosterEvent message)
         {
+            this.StopSyncingWithDesktop = true;
             foreach (var crowdMember in message.MembersToSync)
             {
                 Roster.AddCharacterCrowdMemberAsParticipant(crowdMember);
@@ -168,6 +173,7 @@ namespace HeroVirtualTabletop.Roster
             }
             Roster.Sort();
             OnRosterUpdated(null, null);
+            this.StopSyncingWithDesktop = true;
         }
         #endregion
 
@@ -279,13 +285,18 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+
         #endregion
 
         #region Target
 
         public void Target()
         {
-            this.Roster.Selected?.Target();
+            if(this.SelectedParticipants.Count > 0)
+            {
+                CharacterCrowdMember selected = this.SelectedParticipants[0] as CharacterCrowdMember;
+                selected?.Target();
+            }
         }
         #endregion
 
@@ -312,16 +323,7 @@ namespace HeroVirtualTabletop.Roster
         }
         public void ClearFromDesktop()
         {
-            List<CharacterCrowdMember> membersToDelete = new List<CharacterCrowdMember>();
-            foreach (var selectedParticipant in this.SelectedParticipants)
-            {
-                CharacterCrowdMember member = selectedParticipant as CharacterCrowdMember;
-                membersToDelete.Add(member);
-            }
-            foreach (var member in membersToDelete)
-            {
-                this.Roster.RemoveRosterMember(member);
-            }
+            this.Roster.Selected.ClearFromDesktop();
             this.SelectedParticipants.Clear();
             
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
@@ -393,7 +395,8 @@ namespace HeroVirtualTabletop.Roster
         }
         public void ToggleTargeted()
         {
-            this.Roster.Selected?.ToggleTargeted();
+            CharacterCrowdMember selected = this.SelectedParticipants[0] as CharacterCrowdMember;
+            selected?.ToggleTargeted();
             SelectNextCharacterInCrowdCycle();
         }
 
@@ -410,7 +413,8 @@ namespace HeroVirtualTabletop.Roster
         }
         public void ToggleManeuverWithCamera()
         {
-            this.Roster.Selected?.ToggleManeuveringWithCamera();
+            CharacterCrowdMember selected = this.SelectedParticipants[0] as CharacterCrowdMember;
+            selected?.ToggleManeuveringWithCamera();
             SelectNextCharacterInCrowdCycle();
         }
 
@@ -432,9 +436,16 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
-        #region Activate/Deactivate 
+        #region Activate/Deactivate
+        
+        private void NotifyActivationEligibilityChange()
+        {
+            NotifyOfPropertyChange(() => CanActivateCharacter);
+            NotifyOfPropertyChange(() => CanActivateCrowdAsGang);
+            NotifyOfPropertyChange(() => CanActivateSelectedCharactersAsGang);
+        } 
 
-        public bool CanActivate
+        public bool CanToggleActivate
         {
             get
             {
@@ -442,40 +453,125 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        public void Activate()
+        public void ToggleActivate()
         {
-            if (CanActivate)
-                ActivateCharacter(this.Roster.Selected?.Participants?[0]);
+            bool canActivate = false;
+            if (this.Roster.ActiveCharacter != null)
+            {
+                if (!this.Roster.Selected.Participants.Contains(this.Roster.ActiveCharacter) && !this.Roster.Selected.Participants.Any(p => p.IsActive))
+                {
+                    // Can make active
+                    canActivate = true;
+                }
+                else
+                {
+                    // Fire deactivation event
+                    this.FireDeactivationEvent();
+                    this.Roster.Deactivate();
+                }
+            }
+            else
+                canActivate = true;
+            if (canActivate)
+            {
+                this.Roster.Activate();
+                // Now throw character/gang activation events based on roster status
+                this.FireActivationEvent();
+            }
+            OnRosterUpdated(this, null);
+            SelectNextCharacterInCrowdCycle();
+            NotifyActivationEligibilityChange();
         }
 
-        private void ActivateCharacter(CharacterCrowdMember character, string selectedOptionGroupName = null, string selectedOptionName = null)
+        private void FireDeactivationEvent()
         {
-            if(this.Roster.Selected?.Participants?.Count > 0)
+            if (this.Roster.IsGangInOperation)
+                this.EventAggregator.Publish(new DeactivateGangEvent(this.Roster.Participants.FirstOrDefault(p => p.IsGangLeader)), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            else
+                this.EventAggregator.Publish(new DeActivateCharacterEvent(this.Roster.ActiveCharacter), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        }
+        private void FireActivationEvent()
+        {
+            if (this.Roster.Selected.Participants.Contains(this.Roster.ActiveCharacter))
             {
-                if(this.Roster.Selected.Participants[0] != character)
+                if (this.Roster.IsGangInOperation)
                 {
-                    this.Roster.ClearAllSelections();
-                    this.Roster.SelectParticipant(character);
+                    this.EventAggregator.Publish(new ActivateGangEvent(this.Roster.Selected.Participants.Cast<ManagedCharacter.ManagedCharacter>().ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 }
-                this.Roster.Selected.Activate();
+                else
+                {
+                    this.EventAggregator.Publish(new ActivateCharacterEvent(this.Roster.ActiveCharacter, null, null), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                }
             }
+        }
+
+        public void ActivateCharacter(CharacterCrowdMember character, string selectedOptionGroupName = null, string selectedOptionName = null)
+        {
+            this.Roster.ActivateCharacter(character);
             this.EventAggregator.Publish(new ActivateCharacterEvent(character, selectedOptionGroupName, selectedOptionName), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
-            SelectNextCharacterInCrowdCycle();
+            OnRosterUpdated(this, null);
+            NotifyActivationEligibilityChange();
         }
 
-        private void DeactivateCharacter(CharacterCrowdMember character = null)
+        public bool CanActivateCharacter
         {
-            if (this.Roster.Selected?.Participants?.Count > 0)
+            get
             {
-                if (this.Roster.Selected.Participants[0] != character)
-                {
-                    this.Roster.ClearAllSelections();
-                    this.Roster.SelectParticipant(character);
-                }
-                this.Roster.Selected.DeActivate();
+                return SelectedParticipants.Count == 1 && !(SelectedParticipants[0] as CharacterCrowdMember).IsActive;
             }
-            this.EventAggregator.Publish(new DeActivateCharacterEvent(character), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
-            SelectNextCharacterInCrowdCycle();
+        }
+
+        public void ActivateCharacter()
+        {
+            var character = this.SelectedParticipants[0] as CharacterCrowdMember;
+            this.ActivateCharacter(character, null, null);
+        }
+        public bool CanActivateSelectedCharactersAsGang
+        {
+            get
+            {
+                bool canActivate = true;
+                foreach (var selected in this.SelectedParticipants)
+                {
+                    if ((selected as CharacterCrowdMember).IsActive)
+                    {
+                        canActivate = false;
+                        break; 
+                    }
+                }
+                return SelectedParticipants.Count > 1 && canActivate;
+            }
+        }
+        public void ActivateSelectedCharactersAsGang()
+        {
+            List<CharacterCrowdMember> gangMembers = new List<CharacterCrowdMember>();
+            foreach (CharacterCrowdMember c in this.SelectedParticipants)
+            {
+                gangMembers.Add(c);
+            }
+            ActivateGang(gangMembers);
+        }
+        public bool CanActivateCrowdAsGang
+        {
+            get
+            {
+                return SelectedParticipants.Count == 1 && !(SelectedParticipants[0] as CharacterCrowdMember).IsActive;
+            }
+        }
+        public void ActivateCrowdAsGang()
+        {
+            this.Roster.ActivateCrowdAsGang();
+            this.EventAggregator.Publish(new ActivateGangEvent(this.Roster.Selected.Participants.Cast<ManagedCharacter.ManagedCharacter>().ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            OnRosterUpdated(this, null);
+            NotifyActivationEligibilityChange();
+        }
+
+        public void ActivateGang(List<CharacterCrowdMember> gangMembers)
+        {
+            this.Roster.ActivateGang(gangMembers);
+            this.EventAggregator.Publish(new ActivateGangEvent(gangMembers.Cast<ManagedCharacter.ManagedCharacter>().ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            OnRosterUpdated(this, null);
+            NotifyActivationEligibilityChange();
         }
 
         #endregion
@@ -595,9 +691,9 @@ namespace HeroVirtualTabletop.Roster
             desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
             //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
             desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
-            desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
-            desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
-            desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
+            //desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
+            //desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
+            //desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
         }
 
         private void DisplayCharacterPopupMenu()
@@ -806,6 +902,28 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
+        #region Gang Mode
 
+        public bool CanToggleGangMode
+        {
+            get
+            {
+                return this.SelectedParticipants != null && this.SelectedParticipants.Count > 0;
+            }
+        }
+
+        public void ToggleGangMode()
+        {
+            this.Roster.SelectedParticipantsInGangMode = !this.Roster.SelectedParticipantsInGangMode;
+            if (this.Roster.Selected.Participants.Count == 0)
+                this.UpdateRosterSelection();
+            if (this.Roster.ActiveCharacter != null)
+                FireActivationEvent();
+            else
+                FireDeactivationEvent();
+            OnRosterUpdated(this, null);
+        }
+
+        #endregion
     }
 }

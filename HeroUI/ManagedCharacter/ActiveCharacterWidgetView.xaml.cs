@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HeroVirtualTabletop.AnimatedAbility
+namespace HeroVirtualTabletop.ManagedCharacter
 {
     /// <summary>
     /// Interaction logic for ActiveCharacterWidget.xaml

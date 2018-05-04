@@ -119,6 +119,25 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 return Name;
             }
         }
+        private bool isActive;
+        public bool IsActive
+        {
+            get { return isActive; }
+            set
+            {
+                isActive = value;
+                NotifyOfPropertyChange(() => IsActive);
+            }
+
+        }
+        public void Activate()
+        {
+            IsActive = true;
+        }
+        public void DeActivate()
+        {
+            IsActive = false;
+        }
 
         public void ToggleTargeted()
         {
@@ -392,10 +411,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
         public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
         {
-            Target();
-            Generator.GenerateDesktopCommandText(DesktopCommand.DeleteNPC);
-            if (completeEvent)
-                Generator.CompleteEvent();
+            if (IsSpawned)
+            {
+                Target();
+                Generator.GenerateDesktopCommandText(DesktopCommand.DeleteNPC);
+                if (completeEvent)
+                    Generator.CompleteEvent();
+                this.GhostShadow?.ClearFromDesktop();
+            }
+            
             IsSpawned = false;
             IsTargeted = false;
             if(clearManueveringWithCamera)

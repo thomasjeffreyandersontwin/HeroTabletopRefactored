@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using HeroVirtualTabletop.Crowd;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +24,12 @@ namespace HeroVirtualTabletop.Roster
         void ToggleTargeted();
         void ToggleManeuverWithCamera();
         void MoveCameraToTarget();
-        void Activate();
+        void ToggleActivate();
         void ResetOrientation();
+        void ToggleGangMode();
+        void ActivateCharacter();
+        void ActivateSelectedCharactersAsGang();
+        void ActivateCrowdAsGang();
+        void ActivateGang(List<CharacterCrowdMember> gangMembers);
     }
 }

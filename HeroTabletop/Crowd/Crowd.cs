@@ -78,8 +78,13 @@ namespace HeroVirtualTabletop.Crowd
                 if (Crowds != null)
                     foreach (var crowd in Crowds)
                     {
-                        memDict.Add(crowd.Name, crowd);
-                        crowd.Parent = null;
+                        if (!memDict.ContainsKey(crowd.Name))
+                        {
+                            memDict.Add(crowd.Name, crowd);
+                            crowd.Parent = null;
+                        }
+                        else
+                            throw new DuplicateKeyException(crowd.Name);
                     }
                 return memDict;
             }
@@ -332,6 +337,21 @@ namespace HeroVirtualTabletop.Crowd
             {
                 _name = value;
                 NotifyOfPropertyChange(() => Name);
+            }
+        }
+
+        private bool isGang;
+        [JsonProperty]
+        public bool IsGang
+        {
+            get
+            {
+                return isGang;
+            }
+            set
+            {
+                isGang = value;
+                NotifyOfPropertyChange(() => IsGang);
             }
         }
 

@@ -316,6 +316,7 @@ namespace HeroVirtualTabletop.Crowd
                         }
                     );
                 this.rosterSyncNeeded = false;
+                this.EventAggregator.PublishOnUIThread(new ListenForDesktopTargetChangeEvent());
                 this.busyService.HideBusy();
             }
             
@@ -458,7 +459,6 @@ namespace HeroVirtualTabletop.Crowd
         public async void Handle(GameLaunchedEvent message)
         {
             await this.SyncCrowdMembersWithRoster();
-            this.EventAggregator.PublishOnUIThread(new ListenForDesktopTargetChangeEvent());
         }
 
         public async void Handle(CrowdCollectionModifiedEvent message)
