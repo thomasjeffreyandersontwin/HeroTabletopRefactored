@@ -76,7 +76,9 @@ namespace HeroVirtualTabletop.Roster
                 NotifyOfPropertyChange(() => SelectedParticipants);
                 NotifyOfPropertyChange(() => ShowAttackContextMenu);
                 NotifyOfPropertyChange(() => CanToggleGangMode);
-                NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
+                NotifyOfPropertyChange(() => CanToggleManeuverWithCamera);
+                NotifyOfPropertyChange(() => CanTeleport);
+                NotifyOfPropertyChange(() => CanEditRosterMember);
                 NotifyActivationEligibilityChange();
                 RefreshRosterCommandsEligibility();
             }
@@ -109,7 +111,20 @@ namespace HeroVirtualTabletop.Roster
             get;set;
         }
 
-        
+        public bool IsOperatingCrowd
+        {
+            get
+            {
+                List<CharacterCrowdMember> characters = this.Roster.Selected.Participants;
+                CharacterCrowdMember lastSelectedMember = this.GetLastSelectedCharacter();
+                if (!this.Roster.Participants.Any(p => p.RosterParent.Name == lastSelectedMember.RosterParent.Name && !characters.Contains(p)))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+        }
 
         #endregion
 
@@ -123,7 +138,7 @@ namespace HeroVirtualTabletop.Roster
             NotifyOfPropertyChange(() => CanSavePosition);
             NotifyOfPropertyChange(() => CanPlace);
             NotifyOfPropertyChange(() => CanToggleTargeted);
-            NotifyOfPropertyChange(() => CanToggleManueverWithCamera);
+            NotifyOfPropertyChange(() => CanToggleManeuverWithCamera);
             NotifyOfPropertyChange(() => CanMoveCameraToTarget);
             NotifyOfPropertyChange(() => CanToggleActivate);
         }
@@ -403,7 +418,7 @@ namespace HeroVirtualTabletop.Roster
         #endregion
 
         #region Toggle Maneuver With Camera
-        public bool CanToggleManueverWithCamera
+        public bool CanToggleManeuverWithCamera
         {
             get
             {
@@ -603,60 +618,107 @@ namespace HeroVirtualTabletop.Roster
                 CharacterCrowdMember cNext = this.Roster.Participants.FirstOrDefault() as CharacterCrowdMember;
                 if(cNext != null)
                 {
-                    SelectRosterCharacter(cNext);
+                    SelectRosterCharacter(new List<CharacterCrowdMember> { cNext });
                 }
             }
         }
 
         private void SelectNextCharacterInCrowdCycle()
         {
-            if (this.Roster.CommandMode == RosterCommandMode.CycleCharacter && this.SelectedParticipants != null && this.SelectedParticipants.Count == 1)
+            if (this.Roster.CommandMode == RosterCommandMode.CycleCharacter && this.SelectedParticipants != null && this.SelectedParticipants.Count > 0)
             {
                 this.StopSyncingWithDesktop = true;
-                CharacterCrowdMember cCurrent = null;
-                cCurrent = this.SelectedParticipants[0] as CharacterCrowdMember;
-                CharacterCrowdMember cNext = GetNextRosterMemberAfterSelectedMember();
-                if (cNext != null && cNext != cCurrent)
+                List<CharacterCrowdMember> cNext = new List<CharacterCrowdMember>();
+                CharacterCrowdMember cCurrent = this.GetLastSelectedCharacter();
+                if (!IsOperatingCrowd)
+                {
+                    var index = this.Roster.Participants.IndexOf(cCurrent);
+
+                    if (index + 1 == this.Roster.Participants.Count)
+                    {
+                        cNext.Add(this.Roster.Participants.FirstOrDefault());
+                    }
+                    else
+                    {
+                        cNext.Add(this.Roster.Participants[index + 1]);
+                    }
+                }
+                else
+                {
+                    Crowd.Crowd nextCrowd = GetNextCrowd();
+                    if (nextCrowd != null)
+                    {
+                        foreach (CharacterCrowdMember c in this.Roster.Participants.Where(p => p.RosterParent.Name == nextCrowd.Name))
+                            cNext.Add(c);
+                    }
+                }
+
+                if (cNext.Count > 0 && !cNext.Any(c => c == cCurrent))
                 {
                     SelectRosterCharacter(cNext);
+                    NotifyOfPropertyChange(() => SelectedParticipants);
                 }
             }
         }
 
-        private CharacterCrowdMember GetNextRosterMemberAfterSelectedMember()
-        {
-            CharacterCrowdMember cNext = null;
-            CharacterCrowdMember cCurrent = null;
-            cCurrent = this.SelectedParticipants[0] as CharacterCrowdMember;
-            var index = this.Roster.Participants.IndexOf(cCurrent as CharacterCrowdMember);
-
-            if (index + 1 == this.Roster.Participants.Count)
-            {
-                cNext = this.Roster.Participants.FirstOrDefault(p => p.RosterParent.Name == cCurrent.RosterParent.Name) as CharacterCrowdMember;
-            }
-            else
-            {
-                cNext = this.Roster.Participants[index + 1] as CharacterCrowdMember;
-                if (cNext != null && cNext.RosterParent.Name != cCurrent.RosterParent.Name)
-                {
-                    cNext = this.Roster.Participants.FirstOrDefault(p => p.RosterParent.Name == cCurrent.RosterParent.Name) as CharacterCrowdMember;
-                }
-            }
-
-            return cNext;
-        }
-
-        private void SelectRosterCharacter(CharacterCrowdMember cNext)
+        private void SelectRosterCharacter(List<CharacterCrowdMember> cNext)
         {
             SelectedParticipants.Clear();
-            SelectedParticipants.Add(cNext);
+            foreach(var c in cNext)
+                SelectedParticipants.Add(c);
             UpdateRosterSelection();
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 
+        private CharacterCrowdMember GetLastSelectedCharacter()
+        {
+            int highestIndex = 0;
+            foreach (CharacterCrowdMember c in this.SelectedParticipants)
+            {
+                int currentIndex = this.Roster.Participants.IndexOf(c);
+                if (currentIndex > highestIndex)
+                    highestIndex = currentIndex;
+            }
+            return this.Roster.Participants[highestIndex];
+        }
+        private Crowd.Crowd GetNextCrowd()
+        {
+            Crowd.Crowd nextCrowd = null;
+            var last = this.GetLastSelectedCharacter();
+            Crowd.Crowd crowd = last.CrowdRepository.AllMembersCrowd.
+                Members.Where(c => c is Crowd.Crowd && c.Name == last.RosterParent.Name).FirstOrDefault() as Crowd.Crowd;
+            int currIndex = this.Roster.Participants.IndexOf(last);
+            string nextCrowdName = "";
+            if (crowd != null)
+            {
+                var nextChar = Roster.Participants.FirstOrDefault(p => p.RosterParent.Name != crowd.Name && Roster.Participants.IndexOf(p) > currIndex);
+                if (nextChar != null)
+                    nextCrowdName = nextChar.RosterParent.Name;
+                else
+                {
+                    var firstPart = this.Roster.Participants.First();
+                    if (firstPart.RosterParent.Name != crowd.Name)
+                        nextCrowdName = firstPart.RosterParent.Name;
+                }
+                if(nextCrowdName != "")
+                {
+                    nextCrowd = last.CrowdRepository.AllMembersCrowd.
+                            Members.Where(c => c is Crowd.Crowd && c.Name == nextCrowdName).FirstOrDefault() as Crowd.Crowd;
+                }
+            }
+            return nextCrowd;
+        }
         #endregion
 
         #region Edit Roster Member
+
+        public bool CanEditRosterMember
+        {
+            get
+            {
+                return SelectedParticipants != null && SelectedParticipants.Count == 1;
+            }
+        }
 
         public void EditRosterMember()
         {
@@ -666,7 +728,7 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
-        #region Select Character
+        #region Select Character/Crowd
 
         private void SelectCharacter(CharacterCrowdMember character)
         {
@@ -674,13 +736,26 @@ namespace HeroVirtualTabletop.Roster
                 this.SelectedParticipants.Clear();
             this.SelectedParticipants.Add(character);
             this.UpdateRosterSelection();
-            if (!ShowAttackContextMenu && this.Roster.AttackingCharacter != null && character != this.Roster.AttackingCharacter && this.Roster.CurrentAttackInstructions.Defender == null)
+            if (!this.desktopContextMenu.IsDisplayed && this.Roster.AttackingCharacter != null && character != this.Roster.AttackingCharacter && this.Roster.CurrentAttackInstructions.Defender == null)
             {
                 this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
-                this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+                this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), 
+                    (act) => Application.Current.Dispatcher.Invoke(act));
             }
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
+
+        public void SelectCharactersByCrowdName(string crowdName)
+        {
+            this.SelectedParticipants.Clear();
+            foreach (CharacterCrowdMember c in this.Roster.Participants.Where(p => p.RosterParent != null && p.RosterParent.Name == crowdName))
+            {
+                this.SelectedParticipants.Add(c);
+            }
+            this.UpdateRosterSelection();
+            NotifyOfPropertyChange(() => SelectedParticipants);
+        }
+
 
         #endregion
 
@@ -716,11 +791,34 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else
                 {
-                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(this.mouseHoverElement.Position);
+                    PlayAttackCycle();
                 }
             }
             else
                 desktopContextMenu.IsDisplayed = false;
+        }
+
+        int numRetryHover = 3;
+        private void PlayAttackCycle()
+        {
+            var hoveredCharacter = GetHoveredCharacter();
+
+            if(hoveredCharacter == null && numRetryHover > 0)
+            {
+                numRetryHover--;
+                System.Action d = delegate ()
+                {
+                    PlayAttackCycle();
+                };
+                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 20);
+                adex.ExecuteAsyncDelegate();
+            }
+            else
+            {
+                numRetryHover = 3;
+                if(hoveredCharacter == this.Roster.AttackingCharacter || hoveredCharacter == null)
+                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(this.mouseHoverElement.Position);
+            }
         }
 
         private void PlayDefaultAbility()
@@ -737,13 +835,13 @@ namespace HeroVirtualTabletop.Roster
 
         private void TargetHoveredCharacter()
         {
-            CharacterCrowdMember hoveredCharacter = GetHoveredCharacter(null);
+            CharacterCrowdMember hoveredCharacter = GetHoveredCharacter();
             if (hoveredCharacter != null)
             {
                 this.SelectCharacter(hoveredCharacter);
             }
         }
-        private CharacterCrowdMember GetHoveredCharacter(object state)
+        private CharacterCrowdMember GetHoveredCharacter()
         {
             if (this.mouseHoverElement.CurrentHoveredInfo != "")
             {
@@ -760,9 +858,9 @@ namespace HeroVirtualTabletop.Roster
         {
             desktopContextMenu.ActivateCharacterOptionMenuItemSelected += desktopContextMenu_ActivateCharacterOptionMenuItemSelected;
             desktopContextMenu.ActivateMenuItemSelected += desktopContextMenu_ActivateMenuItemSelected;
-            desktopContextMenu.AreaAttackContextMenuDisplayed += desktopContextMenu_AreaAttackContextMenuDisplayed;
-            desktopContextMenu.AreaAttackTargetAndExecuteMenuItemSelected += desktopContextMenu_AreaAttackTargetAndExecuteMenuItemSelected;
-            desktopContextMenu.AreaAttackTargetMenuItemSelected += desktopContextMenu_AreaAttackTargetMenuItemSelected;
+            desktopContextMenu.AttackContextMenuDisplayed += desktopContextMenu_AttackContextMenuDisplayed;
+            desktopContextMenu.AttackTargetAndExecuteMenuItemSelected += desktopContextMenu_AttackTargetAndExecuteMenuItemSelected;
+            desktopContextMenu.AttackTargetMenuItemSelected += desktopContextMenu_AttackTargetMenuItemSelected;
             desktopContextMenu.ClearFromDesktopMenuItemSelected += desktopContextMenu_ClearFromDesktopMenuItemSelected;
             desktopContextMenu.CloneAndLinkMenuItemSelected += desktopContextMenu_CloneAndLinkMenuItemSelected;
             desktopContextMenu.DefaultContextMenuDisplayed += desktopContextMenu_DefaultContextMenuDisplayed;
@@ -774,6 +872,12 @@ namespace HeroVirtualTabletop.Roster
             desktopContextMenu.ResetOrientationMenuItemSelected += desktopContextMenu_ResetOrientationMenuItemSelected;
             desktopContextMenu.SavePositionMenuItemSelected += desktopContextMenu_SavePositionMenuItemSelected;
             desktopContextMenu.SpawnMenuItemSelected += desktopContextMenu_SpawnMenuItemSelected;
+            
+            desktopContextMenu.ActivateCrowdAsGangMenuItemSelected += desktopContextMenu_ActivateCrowdAsGangMenuItemSelected;
+            desktopContextMenu.AttackTargetAndExecuteCrowdMenuItemSelected += desktopContextMenu_AttackTargetAndExecuteCrowdMenuItemSelected;
+            desktopContextMenu.AttackExecuteSweepMenuItemSelected += desktopContextMenu_ExecuteSweepAttackMenuItemSelected;
+            desktopContextMenu.AbortMenuItemSelected += desktopContextMenu_AbortMenuItemSelected;
+            desktopContextMenu.SpreadNumberSelected += desktopContextMenu_SpreadNumberMenuItemSelected;
         }
 
         private void desktopContextMenu_ActivateCharacterOptionMenuItemSelected(object sender, CustomEventArgs<Object> e)
@@ -855,17 +959,17 @@ namespace HeroVirtualTabletop.Roster
             this.ClearFromDesktop();
         }
 
-        void desktopContextMenu_AreaAttackTargetMenuItemSelected(object sender, EventArgs e)
+        void desktopContextMenu_AttackTargetMenuItemSelected(object sender, EventArgs e)
         {
             this.AddSelectedAsAttackTarget();
         }
 
-        void desktopContextMenu_AreaAttackTargetAndExecuteMenuItemSelected(object sender, EventArgs e)
+        void desktopContextMenu_AttackTargetAndExecuteMenuItemSelected(object sender, EventArgs e)
         {
             this.AddSelectedAsAttackTargetAndExecute();
         }
 
-        private void desktopContextMenu_AreaAttackContextMenuDisplayed(object sender, CustomEventArgs<Object> e)
+        private void desktopContextMenu_AttackContextMenuDisplayed(object sender, CustomEventArgs<Object> e)
         {
             CharacterCrowdMember character = e.Value as CharacterCrowdMember;
             if (character != null)
@@ -877,6 +981,42 @@ namespace HeroVirtualTabletop.Roster
             CharacterCrowdMember character = e.Value as CharacterCrowdMember;
             if (character != null)
                 this.ActivateCharacter(character);
+        }
+        private void desktopContextMenu_ActivateCrowdAsGangMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null && SelectedParticipants.Contains(character))
+                this.ActivateCrowdAsGang();
+        }
+        private void desktopContextMenu_AttackTargetAndExecuteCrowdMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null && SelectedParticipants.Contains(character))
+                this.AddSelectedCrowdAsAttackTargetAndExecute();
+        }
+        private void desktopContextMenu_ExecuteSweepAttackMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+            {
+
+            }
+        }
+        private void desktopContextMenu_AbortMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+            {
+
+            }
+        }
+        private void desktopContextMenu_SpreadNumberMenuItemSelected(object sender, CustomEventArgs<Object> e)
+        {
+            CharacterCrowdMember character = e.Value as CharacterCrowdMember;
+            if (character != null)
+            {
+
+            }
         }
 
         #endregion
@@ -892,6 +1032,13 @@ namespace HeroVirtualTabletop.Roster
         {
             this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
             this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+        }
+
+        public void AddSelectedCrowdAsAttackTargetAndExecute()
+        {
+            var selectedCharacter = this.SelectedParticipants[0] as CharacterCrowdMember;
+            this.SelectCharactersByCrowdName(selectedCharacter.RosterParent.Name);
+            AddSelectedAsAttackTargetAndExecute();
         }
 
         public void UpdateCharacterState(CharacterCrowdMember character, string stateName)
@@ -922,6 +1069,38 @@ namespace HeroVirtualTabletop.Roster
             else
                 FireDeactivationEvent();
             OnRosterUpdated(this, null);
+        }
+
+        #endregion
+
+        #region Teleport
+
+        public bool CanTeleport
+        {
+            get
+            {
+                bool canTeleport = true;
+                foreach(CharacterCrowdMember selected in SelectedParticipants)
+                {
+                    canTeleport &= selected.IsSpawned;
+                }
+
+                return canTeleport;
+            }
+        }
+
+        public void Teleport()
+        {
+            this.Roster.Selected.Teleport();
+            SelectNextCharacterInCrowdCycle();
+        }
+
+        #endregion
+
+        #region Toggle Relative Positioning
+        public void ToggleRelativePositioning()
+        {
+            this.Roster.UseOptimalPositioning = !this.Roster.UseOptimalPositioning;
         }
 
         #endregion

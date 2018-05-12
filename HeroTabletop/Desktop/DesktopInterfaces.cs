@@ -72,7 +72,6 @@ namespace HeroVirtualTabletop.Desktop
         float Roll { get; set; }
         float Unit { get; set; }
         Vector3 Vector { get; set; }
-
         Position JustMissedPosition { get; set; }
         Position Duplicate(uint targetPointer = 0);
         bool IsWithin(float dist, Position position, out float calculatedDistance);
@@ -83,10 +82,8 @@ namespace HeroVirtualTabletop.Desktop
         Vector3 FacingVector { get; set; }
         void ResetOrientation();
         float Calculate2DAngleBetweenVectors(Vector3 v1, Vector3 v2, out bool isClockwiseTurn);
-        
         double GetRadianAngle(double rotaionAngle);
         Vector3 GetRoundedVector(Vector3 vector3, int i);        
-
         void Turn(TurnDirection turnDirection, double rotationAngle);
         void Move(Direction direction, float distance=0f);
         void MoveTo(Position destination);
@@ -95,11 +92,13 @@ namespace HeroVirtualTabletop.Desktop
         Vector3 CalculateDirectionVector(Direction direction);
         Vector3 CalculateDirectionVector(Vector3 directionVector);
         Vector3 CalculateDestinationVector(Vector3 directionVector);
-        
+        void AlignFacingWith(Position position);
         void Face(Position target);
         void Face(Vector3 facing);
         int Size { get; set; }
-
+        Dictionary<Position, Position> GetRelativeDestinationMapForPositions(List<Position> positions);
+        Dictionary<Position, Position> GetOptimalDestinationMapForPositions(List<Position> positions);
+        void PlacePositionsOptimallyAroundMe(List<Position> positionsToPlaceAround);
         Dictionary<PositionBodyLocation, PositionLocationPart> BodyLocations { get; }
     }
 

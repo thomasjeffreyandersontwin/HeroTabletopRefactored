@@ -42,10 +42,10 @@ namespace HeroVirtualTabletop.Movement
     {
         void MoveByKeyPress(Key key);
         void Move(Direction direction, Position destination = null);
-        void MoveForwardTo(Desktop.Position destination);
+        void MoveForwardTo(Position destination);
         void TurnByKeyPress(Key key);
         void Turn(TurnDirection direction, double angle = 5);
-        void TurnTowardDestination(Desktop.Position destination);
+        void TurnTowardDestination(Position destination);
         Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance);
         void CopyMovementsTo(MovableCharacter targetCharacter);
         void RemoveMovements();

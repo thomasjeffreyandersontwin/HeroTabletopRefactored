@@ -52,12 +52,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public override void Target(bool completeEvent = true)
         { 
-            base.Target();
+            base.Target(completeEvent);
             NotifyPropertyChanged();
         }
         public override void UnTarget(bool completeEvent = true)
         {
-            base.UnTarget();
+            base.UnTarget(completeEvent);
             NotifyPropertyChanged();
         }
 

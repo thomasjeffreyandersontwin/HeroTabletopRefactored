@@ -62,6 +62,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             //arrange
             var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
             characterUnderTest.MemoryInstance = characterUnderTest.Targeter.TargetedInstance;
+            Mock.Get(characterUnderTest.MemoryInstance).SetupGet(x => x.IsReal).Returns(true);
             //act
             characterUnderTest.Target();
             //assert
@@ -294,6 +295,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
             var mockGhost = characterUnderTest.GhostShadow;
+            mockGhost.IsSpawned = false;
             characterUnderTest.SyncGhostWithGame();
             Mock.Get<ManagedCharacter>(mockGhost).Verify(x => x.SyncWithGame());
             Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
@@ -310,6 +312,27 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             Mock.Get<Position>(mockPosition).Verify(p => p.ResetOrientation());
             Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void Teleport_MovesToPositionSpecified()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+            var positionToTeleportTo = TestObjectsFactory.PositionUnderTest;
+
+            characterUnderTest.Teleport(positionToTeleportTo);
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.MoveTo(positionToTeleportTo));
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void Teleport_TeleportsToCameraIfPositionNotSpecified()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+
+            characterUnderTest.Teleport();
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.MoveTo(characterUnderTest.Camera.AdjustedPosition));
         }
     }
 
@@ -625,6 +648,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 var ids = StandardizedFixture.CreateMany<Identity>().ToList();
                 managedChar.Identities.Active.Type = SurfaceType.Model;
                 managedChar.Identities.InsertMany(ids);
+                managedChar.IsSpawned = true;
                 Mock.Get<ManagedCharacter>(managedChar.GhostShadow).SetupGet(x => x.Position).Returns(MockPosition);
                 return managedChar;
             }
@@ -836,6 +860,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             string[] parameters)
         {
             var character = CharacterUnderTest;
+            character.IsSpawned = true;
             var generator = GetMockKeyBindCommandGeneratorForCommand(command, parameters);
             character.Generator = generator;
             return character;

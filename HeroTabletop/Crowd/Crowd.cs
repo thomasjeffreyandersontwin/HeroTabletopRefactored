@@ -246,6 +246,7 @@ namespace HeroVirtualTabletop.Crowd
                 }
             }
             DefaultAbilities.DefaultCharacter = systemCrowd?.Members?.FirstOrDefault(m => m.Name == DefaultAbilities.CHARACTERNAME) as AnimatedCharacter;
+            AddStopAbilitiesForAttackEffectAbilities();
         }
         public void AddDefaultMovementsToCharacters()
         {
@@ -253,6 +254,38 @@ namespace HeroVirtualTabletop.Crowd
             {
                 (c as MovableCharacter).AddDefaultMovements();
             }
+        }
+
+        private void AddStopAbilitiesForAttackEffectAbilities()
+        {
+            if(DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].StopAbility == null)
+            {
+                var stopAbilityForStunned = new AnimatedAbilityImpl();
+                stopAbilityForStunned.Name = "None";
+                stopAbilityForStunned.Owner = DefaultAbilities.DefaultCharacter;
+                MovElement noneMov = new MovElementImpl();
+                stopAbilityForStunned.InsertElement(noneMov);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].StopAbility = stopAbilityForStunned;
+            }
+            
+            if(DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].StopAbility == null ||
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].StopAbility == null ||
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].StopAbility == null)
+            {
+                var stopAbilityForSevereImpact = new AnimatedAbilityImpl();
+                stopAbilityForSevereImpact.Name = "Stand Up";
+                stopAbilityForSevereImpact.Owner = DefaultAbilities.DefaultCharacter;
+                MovElement movElement = new MovElementImpl();
+                movElement.Mov = new MovResourceImpl();
+                movElement.Mov.Name = "GETUP_BACK";
+                movElement.Mov.Tag = "Combat";
+                movElement.Mov.FullResourcePath = "GETUP_BACK";
+                stopAbilityForSevereImpact.InsertElement(movElement);
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].StopAbility = stopAbilityForSevereImpact;
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].StopAbility = stopAbilityForSevereImpact;
+                DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].StopAbility = stopAbilityForSevereImpact;
+            }
+            
         }
         public async Task LoadCrowds()
         {

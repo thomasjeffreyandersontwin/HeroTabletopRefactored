@@ -45,6 +45,22 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
+        public Position AdjustedPosition
+        {
+            get
+            {
+                MemoryManager memManager = new MemoryManagerImpl(false);
+                DesktopMemoryCharacter desktopMemChar = new DesktopMemoryCharacterImpl(memManager);
+                desktopMemChar.MemoryManager.Pointer = 0;
+                Position adjPosition = new PositionImpl(desktopMemChar);
+                var positionVector = this.Position.Vector;
+                positionVector.Y -= 3.2f;
+                adjPosition.Vector = positionVector;
+
+                return adjPosition;
+            }
+        }
+
         public Identity Identity { get; private set; }
 
         public ManagedCharacter ManueveringCharacter
@@ -123,7 +139,6 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     if (Math.Abs(x) >= 0.01f && Math.Abs(y) >= 0.01f && Math.Abs(z) >= 0.01f)
                         break;
                 }
-
             }
         }
         public void MoveToTarget(bool completeEvent = true)

@@ -12,6 +12,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         string Name { get; set; }
         void SpawnToDesktop(bool completeEvent = true);
+        void SpawnToPosition(Position position);
         void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true);
         void MoveCharacterToCamera(bool completeEvent = true);
         Dictionary<string, Identity> IdentitiesList { get; }
@@ -41,6 +42,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void RemoveIdentities();
         void Activate();
         void DeActivate();
+        void Teleport(Position position = null);
+        void UpdateDistanceCount();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer
@@ -129,6 +132,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         KeyBindCommandGenerator Generator { get; }
         Position Position { get; set; }
+        Position AdjustedPosition { get; }
         Identity Identity { get; }
         ManagedCharacter ManueveringCharacter { get; set; }
         void MoveToTarget(bool completeEvent = true);
@@ -150,6 +154,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         string Surface { get; set; }
         SurfaceType Type { get; set; }
         AnimatedAbility.AnimatedAbility AnimationOnLoad { get; set; }
+        void PlayWithAnimation();
     }
 
     public interface CharacterProgressBarStats

@@ -238,5 +238,26 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<Roster>(rosterVM.Roster).Verify(r => r.ActivateCrowdAsGang(null));
         }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleRelativePositioning_TogglesRosterFlagForRelativePositioning()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            rosterVM.ToggleRelativePositioning();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.UseOptimalPositioning = !r.UseOptimalPositioning);
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void Teleport_InvokesRosterSelectedTeleport()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+
+            rosterVM.Teleport();
+
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.Teleport(null));
+        }
     }
 }

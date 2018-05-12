@@ -202,7 +202,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             clone.Name = Name;
             clone.KeyboardShortcut = KeyboardShortcut;
             clone.Persistent = Persistent;
-            clone.Target = Target;
             clone.StopAbility = StopAbility?.Clone(target);
             return clone;
         }

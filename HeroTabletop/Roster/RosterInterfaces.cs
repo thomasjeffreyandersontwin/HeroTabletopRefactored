@@ -27,6 +27,7 @@ namespace HeroVirtualTabletop.Roster
         void UnSelectParticipant(CharacterCrowdMember participant);
         void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant);
         void RemoveParticipant(CharacterCrowdMember participant);
+        void RemoveParticipants(List<CharacterCrowdMember> participantsToRemove);
         void SyncParticipantWithGame(CharacterCrowdMember participant);
         void CreateGroupFromCrowd(Crowd.Crowd crowd);
         void RenameRosterMember(CrowdMember crowdMember);
@@ -51,11 +52,9 @@ namespace HeroVirtualTabletop.Roster
         bool SelectedParticipantsInGangMode { get; set; }
         bool IsGangInOperation { get; set; }
         CharacterCrowdMember TargetedCharacter { get; set; }
-
         void GroupSelectedParticpants();
-
         AttackInstructions CurrentAttackInstructions { get; set; }
-
+        bool UseOptimalPositioning { get; set; }
     }
 
     public interface RosterGroup: OrderedElement, OrderedCollection<CharacterCrowdMember>

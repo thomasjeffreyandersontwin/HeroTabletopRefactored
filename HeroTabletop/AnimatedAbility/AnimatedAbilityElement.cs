@@ -1277,7 +1277,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             foreach (AnimatedAbility ability in abilities)
             {
                 var clonedAbility = ability.Clone(ability.Target);
-                List<AnimationElement> animationElements = getAnimationListFromAbility(ability);
+                List<AnimationElement> animationElements = getAnimationListFromAbility(clonedAbility);
                 flattenedElements.AddRange(animationElements);
             }
             var lastElement = flattenedElements.Last();
@@ -1306,14 +1306,19 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private List<AnimationElement> getAnimationListFromAbility(AnimatedAbility ability)
         {
+            List<AnimationElement> flattenedElements = null;
             if (ability.Type == SequenceType.And)
-                return GetFlattenedAnimationListEligibleForPlay(ability.AnimationElements);
+                flattenedElements = GetFlattenedAnimationListEligibleForPlay(ability.AnimationElements);
             else
             {
                 AnimationElement randomElement = getRandomElement(ability);
                 List<AnimationElement> listToFlatten = new List<AnimationElement> { randomElement };
-                return GetFlattenedAnimationListEligibleForPlay(listToFlatten);
+                flattenedElements = GetFlattenedAnimationListEligibleForPlay(listToFlatten);
             }
+
+            flattenedElements.ForEach(fe => fe.Target = ability.Target);
+
+            return flattenedElements;
         }
 
         private static AnimationElement getRandomElement(AnimationSequencer sequencer)
@@ -1637,7 +1642,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             ReferenceElement refElement = new ReferenceElementImpl();
             refElement = (ReferenceElement)cloneBaseAttributes(refElement);
             refElement.Reference = Reference;
-            refElement.Target = Target;
+            refElement.Target = target;
 
             return refElement;
         }
@@ -2196,7 +2201,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             var abilityCollection = this.CrowdRepository.AllMembersCrowd.Members.Where(m => m is CharacterCrowdMember).SelectMany((member) =>
             {
-                return (member as CharacterCrowdMember).Abilities.ToList().Where(a => !(a is Attack.AnimatedAttack) && !(a is Attack.AreaEffectAttack));
+                return (member as CharacterCrowdMember).Abilities.ToList();
             }).Distinct();
             var referenceResources = new ObservableCollection<ReferenceResource>(abilityCollection.Select(x =>
             {

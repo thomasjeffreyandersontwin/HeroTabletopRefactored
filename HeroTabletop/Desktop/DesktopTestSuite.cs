@@ -31,7 +31,7 @@ namespace HeroVirtualTabletop.Desktop
         {
             //arrange
             var utility =
-                TestObjectsFactory.GetMockInteractionUtilityThatVerifiesCommand("spawn_npc MODEL_STATESMAN TESTMODEL");
+                TestObjectsFactory.GetMockInteractionUtilityThatVerifiesCommand("spawnnpc MODEL_STATESMAN TESTMODEL");
             //act
             _generator = new KeyBindCommandGeneratorImpl(utility);
             _generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, "MODEL_STATESMAN", "TESTMODEL");
@@ -62,7 +62,7 @@ namespace HeroVirtualTabletop.Desktop
             //arrange
             var utility =
                 TestObjectsFactory.GetMockInteractionUtilityThatVerifiesCommand(
-                    "spawn_npc MODEL_STATESMAN TESTMODEL$$load_costume Spyder");
+                    "spawnnpc MODEL_STATESMAN TESTMODEL$$loadcostume Spyder");
             _generator = new KeyBindCommandGeneratorImpl(utility);
 
             //act
@@ -416,11 +416,90 @@ namespace HeroVirtualTabletop.Desktop
             position.RotationMatrix = currentMatrix;
             var locationBeforeReset = position.Vector;
             var facingBeforeReset = position.FacingVector;
+            facingBeforeReset.Normalize();
 
             position.ResetOrientation();
 
             Assert.AreEqual(position.Vector, locationBeforeReset);
             Assert.AreEqual(position.FacingVector, facingBeforeReset);
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void GetRelativeDestinationMapForPositions_ReturnsDestinationPositionsRelativelyBasedOnClosestPosition()
+        {
+            Position position1 = TestObjectsFactory.PositionUnderTest;
+            position1.Vector = new Vector3(100, 0, 100);
+            Position position2 = TestObjectsFactory.PositionUnderTest;
+            position2.Vector = new Vector3(200, 0, 200);
+            var dist1_2 = Vector3.Distance(position1.Vector, position2.Vector);
+            Position position3 = TestObjectsFactory.PositionUnderTest;
+            position3.Vector = new Vector3(300, 0, 300);
+            var dist1_3 = Vector3.Distance(position1.Vector, position3.Vector);
+            List<Position> positionsToMoveRelatively = new List<Position> { position1, position2, position3 };
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(50, 0, 50);
+
+            var destinationMap = position.GetRelativeDestinationMapForPositions(positionsToMoveRelatively);
+
+            Position dest1 = destinationMap[position1];
+            Assert.IsTrue(Vector3.Distance(position.Vector, dest1.Vector) < 5);
+
+            var dest2 = destinationMap[position2];
+            var dest3 = destinationMap[position3];
+            var movedDist1_2 = Vector3.Distance(dest1.Vector, dest2.Vector);
+            var movedDist1_3 = Vector3.Distance(dest1.Vector, dest3.Vector);
+
+            Assert.AreEqual(dist1_2, movedDist1_2);
+            Assert.AreEqual(dist1_3, movedDist1_3);
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void GetOptimalDestinationMapForPositions_ReturnsDestinationPositionsThatAreNonOverlappingAroundThisPosition()
+        {
+            Position position1 = TestObjectsFactory.PositionUnderTest;
+            position1.Vector = new Vector3(100, 0, 100);
+            Position position2 = TestObjectsFactory.PositionUnderTest;
+            position2.Vector = new Vector3(200, 0, 200);
+            var dist1_2 = Vector3.Distance(position1.Vector, position2.Vector);
+            Position position3 = TestObjectsFactory.PositionUnderTest;
+            position3.Vector = new Vector3(300, 0, 300);
+            var dist1_3 = Vector3.Distance(position1.Vector, position3.Vector);
+            List<Position> positionsToMoveOptimally = new List<Position> { position1, position2, position3 };
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(50, 0, 50);
+
+            var destinationMap = position.GetOptimalDestinationMapForPositions(positionsToMoveOptimally);
+
+            foreach(var pos in positionsToMoveOptimally)
+            {
+                Position destPosition = destinationMap[pos];
+                Assert.IsTrue(Vector3.Distance(destPosition.Vector, position.Vector) <= 10);
+                Assert.IsFalse(destinationMap.Values.Any(p => p != destPosition && p.Vector == destPosition.Vector));
+            }
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void PlacePositionsOptimallyAroundMe_BringsPositionsAroundThisPositionInNonOverlappingManner()
+        {
+            Position position1 = TestObjectsFactory.PositionUnderTest;
+            position1.Vector = new Vector3(100, 0, 100);
+            Position position2 = TestObjectsFactory.PositionUnderTest;
+            position2.Vector = new Vector3(200, 0, 200);
+            var dist1_2 = Vector3.Distance(position1.Vector, position2.Vector);
+            Position position3 = TestObjectsFactory.PositionUnderTest;
+            position3.Vector = new Vector3(300, 0, 300);
+            var dist1_3 = Vector3.Distance(position1.Vector, position3.Vector);
+            List<Position> positionsToPlaceOptimally = new List<Position> { position1, position2, position3 };
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(50, 0, 50);
+
+            position.PlacePositionsOptimallyAroundMe(positionsToPlaceOptimally);
+
+            foreach (var pos in positionsToPlaceOptimally)
+            {
+                Assert.IsTrue(Vector3.Distance(pos.Vector, position.Vector) <= 10);
+                Assert.IsFalse(positionsToPlaceOptimally.Any(p => p != pos && p.Vector == pos.Vector));
+            }
         }
     }
     /// <summary>

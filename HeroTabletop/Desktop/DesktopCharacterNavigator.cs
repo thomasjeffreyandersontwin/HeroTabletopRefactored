@@ -600,6 +600,7 @@ namespace HeroVirtualTabletop.Desktop
             this.PositionsToSynchronize = null;
             this.DistanceToTravel = 0;
             this.IsKnockbackNavigation = false;
+            this.IsNavigatingToDestination = false;
             this.LastCollisionFreePointInCurrentDirection = new Vector3(float.MinValue);
             this.PreviousDirection = Direction.None;
             this.Destination = null;

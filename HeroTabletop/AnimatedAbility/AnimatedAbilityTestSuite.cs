@@ -260,6 +260,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             foreach (var character in characters)
             {
                 element.Target = character;
+                Mock.Get<AnimatedCharacter>(character).SetupGet(x => x.ActiveIdentity).Returns(TestObjectsFactory.Mockidentity);
+                character.ActiveIdentity.Type = SurfaceType.Costume;
                 File.Create(element.CostumeFilePath).Close();
             }
 
@@ -855,6 +857,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 var a = AnimatedCharacterUnderTest;
                 var i = StandardizedFixture.CreateMany<Identity>().ToList();
                 a.Identities.InsertMany(i);
+                a.Identities.Active = a.Identities.First();
                 return a;
             }
         }

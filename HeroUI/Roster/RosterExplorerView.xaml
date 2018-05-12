@@ -139,10 +139,10 @@
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=UseRelativePositioning}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.UseOptimalPositioning}" Value="True">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=UseRelativePositioning}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.UseOptimalPositioning}" Value="False">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -244,7 +244,23 @@
                                             <GroupBox Header="{Binding Name}" x:Name="grpBoxOptionGroup" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
                                                 <GroupBox.HeaderTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock  Text="{Binding}" PreviewMouseDown="TextBlock_PreviewMouseDown"/>
+                                                        <Border Height="20" BorderBrush="AliceBlue" PreviewMouseDown="TextBlock_PreviewMouseDown">
+                                                            <TextBlock  Text="{Binding}" PreviewMouseDown="TextBlock_PreviewMouseDown">
+                                                            </TextBlock>
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="True">
+                                                                            <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=AttackMenu}" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Path=DataContext.ShowAttackContextMenu, RelativeSource={RelativeSource FindAncestor, AncestorType=roster:RosterExplorerView}}" Value="False">
+                                                                            <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=RosterExplorerMenu}" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+
                                                     </DataTemplate>
                                                 </GroupBox.HeaderTemplate>
                                                 <Grid>

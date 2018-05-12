@@ -357,7 +357,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.CharacterActionList.Active = value;
                 if (this.CharacterActionList.Active == null)
                     this.CharacterActionList.Active = this.CharacterActionList.Default;
-                this.CharacterActionList.Active?.Play();
+                Identity identity = this.CharacterActionList.Active as Identity;
+                identity?.PlayWithAnimation();
             }
         }
 

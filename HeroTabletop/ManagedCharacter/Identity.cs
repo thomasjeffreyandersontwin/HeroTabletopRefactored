@@ -48,6 +48,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
         private AnimatedAbility.AnimatedAbility animationOnLoad;
+        [JsonProperty]
         public AnimatedAbility.AnimatedAbility AnimationOnLoad
         {
             get
@@ -82,6 +83,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 ((ManagedCharacter)Owner)?.AlignGhost();
             }
             ((ManagedCharacter)Owner)?.Target(completeEvent);
+        }
+
+        public void PlayWithAnimation()
+        {
+            this.Play();
+            this.AnimationOnLoad?.Play();
         }
 
         public override CharacterAction Clone()

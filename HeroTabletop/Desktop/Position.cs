@@ -579,6 +579,92 @@ namespace HeroVirtualTabletop.Desktop
             }
             return turnAxisDirection;
         }
+
+        public Dictionary<Position, Position> GetRelativeDestinationMapForPositions(List<Position> positions)
+        {
+            Dictionary<Position, Position> destinationMap = new Dictionary<Position, Position>();
+            Position closestPosition = GetClosestPosition(positions);
+            Vector3 mainVector = this.Vector - closestPosition.Vector;
+            mainVector.Normalize();
+            if (closestPosition != this)
+            {
+                foreach(var position in positions)
+                {
+                    float distanceToTravel = Vector3.Distance(this.Vector, closestPosition.Vector);
+                    Vector3 targetPositionVector = position.Vector + mainVector * distanceToTravel;
+                    Position targetPosition = GetPositionFromVector(targetPositionVector);
+                    if (destinationMap.ContainsKey(position))
+                        destinationMap[position] = targetPosition;
+                    else
+                        destinationMap.Add(position, targetPosition);
+                }
+            }
+
+            return destinationMap;
+        }
+
+        public Dictionary<Position, Position> GetOptimalDestinationMapForPositions(List<Position> positions)
+        {
+            Dictionary<Position, Position> destinationMap = new Dictionary<Position, Position>();
+            Position closestPosition = GetClosestPosition(positions);
+            Vector3 mainVector = this.Vector - closestPosition.Vector;
+            mainVector.Normalize();
+            Vector3 lastReferenceVector = mainVector;
+            List<Vector3> usedUpPositions = new List<Vector3>();
+            if (closestPosition != this)
+            {
+                foreach(Position position in positions)
+                {
+                    Vector3 nextReferenceVector;
+                    Vector3 altPosVector = GetNextTargetPositionVector(this.Vector, lastReferenceVector, out nextReferenceVector, ref usedUpPositions);
+                    lastReferenceVector = nextReferenceVector;
+                    Position destinationPosition = GetPositionFromVector(altPosVector);
+                    if (destinationMap.ContainsKey(position))
+                        destinationMap[position] = destinationPosition;
+                    else
+                        destinationMap.Add(position, destinationPosition);
+                }
+            }
+
+            return destinationMap;
+        }
+
+        public void TeleportPositionsReleativelyWithEachOtherToMe(List<Position> positionsToTeleport)
+        {
+            Position closestPosition = GetClosestPosition(positionsToTeleport);
+            Vector3 mainVector = this.Vector - closestPosition.Vector;
+            mainVector.Normalize();
+            float distance = Vector3.Distance(this.Vector, closestPosition.Vector);
+            if (closestPosition != this)
+            {
+                foreach(var position in positionsToTeleport)
+                {
+                    Vector3 targetPositionVector = position.Vector + mainVector * distance;
+                    position.Vector = targetPositionVector;
+                }
+            }
+        }
+
+        public void TeleportPositionsOptimallyAroundMe(List<Position> positionsToTeleport)
+        {
+            this.PlacePositionsOptimallyAroundMe(positionsToTeleport);
+            positionsToTeleport.ForEach(p => p.TurnTowards(this));
+        }
+        
+        public void PlacePositionsOptimallyAroundMe(List<Position> positionsToPlaceAround)
+        {
+            Vector3 lastReferenceVector = this.Vector + 500 * this.FacingVector;
+            List<Vector3> usedUpPositions = new List<Vector3>();
+
+            foreach(var position in positionsToPlaceAround)
+            {
+                Vector3 nextReferenceVector;
+                Vector3 targetPositionVector = GetNextTargetPositionVector(this.Vector, lastReferenceVector, out nextReferenceVector, ref usedUpPositions);
+                lastReferenceVector = nextReferenceVector;
+                position.Vector = targetPositionVector;
+                position.AlignFacingWith(this);
+            }
+        }
         private Vector3 GetNextTargetPositionVector(Vector3 locationVector, Vector3 lastReferenceVector, out Vector3 nextReferenceVector, ref List<Vector3> usedUpPositions)
         {
             lastReferenceVector.Normalize();
@@ -633,6 +719,38 @@ namespace HeroVirtualTabletop.Desktop
             nextReferenceVector = refVectors[i];
 
             return nextTargetVector;
+        }
+        private Position GetClosestPosition(List<Position> positions)
+        {
+            float distance = Int32.MaxValue;
+            Position closestCharacter = null;
+            foreach (Position p in positions)
+            {
+                var distanceFromCamera = Vector3.Distance(p.Vector, this.Vector);
+                if (distanceFromCamera < distance)
+                {
+                    distance = distanceFromCamera;
+                    closestCharacter = p;
+                }
+            }
+            return closestCharacter;
+        }
+
+        private Position GetPositionFromVector(Vector3 positionVector)
+        {
+            MemoryManager memManager = new MemoryManagerImpl(false);
+            DesktopMemoryCharacter desktopMemChar = new DesktopMemoryCharacterImpl(memManager);
+            desktopMemChar.MemoryManager.Pointer = 0;
+            Position destinationPosition = new PositionImpl(desktopMemChar);
+            destinationPosition.Vector = positionVector;
+
+            return destinationPosition;
+        }
+        public void AlignFacingWith(Position position)
+        {
+            Vector3 leaderFacingVector = position.FacingVector;
+            Vector3 distantPointInSameDirection = position.Vector + leaderFacingVector * 500;
+            this.SetFacing(distantPointInSameDirection);
         }
         public Vector3 GetRoundedVector(Vector3 vector, int decimalPlaces)
         {

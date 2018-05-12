@@ -31,5 +31,7 @@ namespace HeroVirtualTabletop.Roster
         void ActivateSelectedCharactersAsGang();
         void ActivateCrowdAsGang();
         void ActivateGang(List<CharacterCrowdMember> gangMembers);
+        void ToggleRelativePositioning();
+        void Teleport();
     }
 }

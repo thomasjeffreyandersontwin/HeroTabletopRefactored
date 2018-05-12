@@ -13,6 +13,7 @@ using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.ManagedCharacter;
 using Moq;
 using Ploeh.AutoFixture.Kernel;
+using HeroVirtualTabletop.Desktop;
 
 namespace HeroVirtualTabletop.Roster
 {
@@ -719,6 +720,113 @@ namespace HeroVirtualTabletop.Roster
             string stateName = r.Selected.Participants.FirstOrDefault().ActiveStates.FirstOrDefault().StateName;
 
             Assert.AreEqual(stateName, r.Selected.ActiveStates.FirstOrDefault().StateName);
+        }
+        [TestMethod]
+        [TestCategory("RosterSelection")]
+        public void Teleport_RetrievesRelativeOrOptimalDestinationMapBasedOnRosterSettingsAndUsesThemForTeleport()
+        {
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            r.UseOptimalPositioning = false;
+            r.SelectAllParticipants();
+            foreach (var c in r.Selected.Participants)
+            {
+                Mock.Get<CharacterCrowdMember>(c).SetupGet(x => x.Position).Returns(TestObjectsFactory.MockPosition);
+            }
+            var position = TestObjectsFactory.MockPosition;
+            Dictionary<Position, Position> relativeMap = new Dictionary<Desktop.Position, Desktop.Position>();
+            Dictionary<Position, Position> optimalMap = new Dictionary<Desktop.Position, Desktop.Position>();
+            Mock.Get<Position>(position).Setup(p => p.GetRelativeDestinationMapForPositions(It.IsAny<List<Position>>())).Returns
+                ((List<Position> positions) =>
+                {
+                    
+                    foreach (var pos in positions)
+                        relativeMap.Add(pos, TestObjectsFactory.MockPosition);
+                    return relativeMap;
+                });
+            Mock.Get<Position>(position).Setup(p => p.GetOptimalDestinationMapForPositions(It.IsAny<List<Position>>())).Returns
+                ((List<Position> positions) =>
+                {
+                    foreach (var pos in positions)
+                        optimalMap.Add(pos, TestObjectsFactory.MockPosition);
+                    return optimalMap;
+                });
+
+            r.Selected.Teleport(position);
+
+            Mock.Get<Position>(position).Verify(p => p.GetRelativeDestinationMapForPositions(It.Is<List<Position>>(l =>
+            l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
+
+            foreach(var selected in r.Selected.Participants)
+            {
+                var pos = relativeMap[selected.Position];
+                Mock.Get<CharacterCrowdMember>(selected).Verify(p => p.Teleport(pos));
+            }
+
+            r.UseOptimalPositioning = true;
+
+            r.Selected.Teleport(position);
+
+            Mock.Get<Position>(position).Verify(p => p.GetOptimalDestinationMapForPositions(It.Is<List<Position>>(l =>
+            l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
+            foreach (var selected in r.Selected.Participants)
+            {
+                var pos = optimalMap[selected.Position];
+                Mock.Get<CharacterCrowdMember>(selected).Verify(p => p.Teleport(pos));
+            }
+        }
+        [TestMethod]
+        [TestCategory("RosterSelection")]
+        public void SelectionWithMultipleCharacters_PositionsCharactersOptimallyForCertainRosterCommands()
+        {
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            r.UseOptimalPositioning = true;
+            r.SelectAllParticipants();
+            foreach (var c in r.Selected.Participants)
+            {
+                Mock.Get<CharacterCrowdMember>(c).SetupGet(x => x.Position).Returns(TestObjectsFactory.MockPosition);
+                Mock.Get<Camera>(c.Camera).SetupGet(x => x.AdjustedPosition).Returns(TestObjectsFactory.MockPosition);
+            }
+            var camPosition = r.Selected.Participants.First().Camera.AdjustedPosition;
+            var mocker = Mock.Get<Position>(camPosition);
+            Dictionary<Position, Position> relativeMap = new Dictionary<Desktop.Position, Desktop.Position>();
+            Dictionary<Position, Position> optimalMap = new Dictionary<Desktop.Position, Desktop.Position>();
+            Mock.Get<Position>(camPosition).Setup(p => p.GetRelativeDestinationMapForPositions(It.IsAny<List<Position>>())).Returns
+                ((List<Position> positions) =>
+                {
+
+                    foreach (var pos in positions)
+                        relativeMap.Add(pos, TestObjectsFactory.MockPosition);
+                    return relativeMap;
+                });
+            Mock.Get<Position>(camPosition).Setup(p => p.GetOptimalDestinationMapForPositions(It.IsAny<List<Position>>())).Returns
+                ((List<Position> positions) =>
+                {
+                    foreach (var pos in positions)
+                        optimalMap.Add(pos, TestObjectsFactory.MockPosition);
+                    return optimalMap;
+                });
+            
+
+            r.Selected.SpawnToDesktop();
+            
+            mocker.Verify(p => p.PlacePositionsOptimallyAroundMe(It.Is<List<Position>>(l =>
+            l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
+
+            mocker.ResetCalls();
+
+            r.Selected.MoveCharacterToCamera();
+
+            mocker.Verify(p => p.GetOptimalDestinationMapForPositions(It.Is<List<Position>>(l =>
+            l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
+
+            mocker.ResetCalls();
+            relativeMap.Clear();
+            optimalMap.Clear();
+
+            r.Selected.Teleport();
+
+            mocker.Verify(p => p.GetOptimalDestinationMapForPositions(It.Is<List<Position>>(l =>
+            l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
         }
     }
 

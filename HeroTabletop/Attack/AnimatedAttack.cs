@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using Caliburn.Micro;
 using System.Windows;
 using HeroVirtualTabletop.Movement;
+using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -197,12 +198,16 @@ namespace HeroVirtualTabletop.Attack
         {
             turnTowards(instructions.AttackCenter);
             TargetDestination = instructions.AttackCenter;
+            PlayAttackAnimations(instructions);
+            return null;
+        }
+        private async Task PlayAttackAnimations(AreaAttackInstructions instructions)
+        {
             Play(Attacker);
-            playDefenderAnimationOnAllTargets(instructions);
+            await playDefenderAnimationOnAllTargets(instructions);
             playAttackEffectsOnDefenders(instructions);
             Stop();
             instructions.Defenders.ForEach(d => d.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK));
-            return null;
         }
         public List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions)
         {
@@ -215,16 +220,25 @@ namespace HeroVirtualTabletop.Attack
             IsActive = true;
             return new AreaAttackInstructionsImpl();
         }
-        private void playDefenderAnimationOnAllTargets(AreaAttackInstructions instructions)
+        private async Task playDefenderAnimationOnAllTargets(AreaAttackInstructions instructions)
         {
-            var miss = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
-            miss.Play(instructions.DefendersMissed);
+            System.Action missAction = delegate ()
+            {
+                var miss = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
+                miss.Play(instructions.DefendersMissed);
+            };
 
-            var defaultHit = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.HIT];
-            if (OnHitAnimation == null || OnHitAnimation.AnimationElements == null || OnHitAnimation.AnimationElements.Count == 0)
-                defaultHit.Play(instructions.DefendersHit);
-            else
-                OnHitAnimation.Play(instructions.DefendersHit);
+            System.Action hitAction = delegate ()
+            {
+                var defaultHit = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.HIT];
+                if (OnHitAnimation == null || OnHitAnimation.AnimationElements == null || OnHitAnimation.AnimationElements.Count == 0)
+                    defaultHit.Play(instructions.DefendersHit);
+                else
+                    OnHitAnimation.Play(instructions.DefendersHit);
+            };
+
+            Task.Run(missAction);
+            await Task.Run(hitAction);
         }
         private void PlayKnockback(AreaAttackInstructions instructions)
         {
@@ -235,10 +249,10 @@ namespace HeroVirtualTabletop.Attack
         }
         private void playAttackEffectsOnDefenders(AreaAttackInstructions instructions)
         {
-            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DEAD));
-            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DYING));
-            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.UNCONSCIOUS));
-            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.STUNNED));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD]?.Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DEAD));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING]?.Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.DYING));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS]?.Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.UNCONSCIOUS));
+            DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED]?.Play(instructions.GetDefendersByImpactBasedOnSeverity(DefaultAbilities.STUNNED));
         }
 
         public void Cancel(AreaAttackInstructions instructions)

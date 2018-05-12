@@ -419,6 +419,7 @@ namespace HeroVirtualTabletop.Movement
             MovableCharacter attacker = TestObjectFactory.MockMovableCharacter;
             MovableCharacter defender1 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
             MovableCharacter defender2 = TestObjectFactory.MovableCharacterUnderTestWithMockDesktopNavigator;
+            defender1.IsGangLeader = true;
             Movement movement = TestObjectFactory.MovementUnderTest;
             double distance = 100;
             // act
@@ -642,6 +643,7 @@ namespace HeroVirtualTabletop.Movement
                 character.ActiveMovement.IsPaused = false;
                 character.ActiveMovement.IsCharacterTurning = false;
                 character.ActiveMovement.IsCharacterMovingToDestination = false;
+                character.IsMoving = false;
 
                 Mock.Get<DesktopNavigator>(mockNavigator).Setup(t => t.ChangeDirection(It.IsAny<Direction>())).Callback((Direction d) => 
                 {
@@ -800,6 +802,7 @@ namespace HeroVirtualTabletop.Movement
                     }
                     );
                 character.Movements.Active = MockCharacterMovement;
+                character.IsMoving = false;
                 return character;
             }
         }

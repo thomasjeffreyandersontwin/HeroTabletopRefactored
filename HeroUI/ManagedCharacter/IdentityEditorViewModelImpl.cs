@@ -233,7 +233,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     if (Owner.ActiveIdentity == EditedIdentity)
                     {
                         Owner.Target(false);
-                        Owner.ActiveIdentity.Play();
+                        Owner.ActiveIdentity.PlayWithAnimation();
                     }
                 }
             }
@@ -256,7 +256,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.EditedIdentity = identity;
             this.Owner.Identities.CollectionChanged += AvailableIdentities_CollectionChanged;
             this.IsShowingIdentityEditor = true;
-            this.BeginLoadAbilities();
+            this.LoadAbilities();
             NotifyOfPropertyChange(() => IsDefault);
         }
 
@@ -341,11 +341,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
 
 
-        private void CreateAbilitiesViewSource(ObservableCollection<AnimatedAbility.AnimatedAbility> abilities)
+        private void CreateAbilitiesViewSource(List<AnimatedAbility.AnimatedAbility> abilities)
         {
             abilitiesCVS = new CollectionViewSource();
             AnimatedAbility.AnimatedAbility none = new AnimatedAbility.AnimatedAbilityImpl();
             none.Name = "None";
+            none.Owner = this.Owner;
             abilities.Add(none);
             abilitiesCVS.Source = new ObservableCollection<AnimatedAbility.AnimatedAbility>(abilities.Where((an) => { return an.Owner == this.Owner; /*&& an.IsAttack == false;*/}).OrderBy(a => a.Order));
             abilitiesCVS.View.Filter += abilitiesCVS_Filter;
@@ -396,14 +397,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Load Abilities
 
-        private void BeginLoadAbilities()
+        private void LoadAbilities()
         {
-
-        }
-            
-        private void EndLoadAbilities()
-        {
-
+            CharacterCrowdMember ccm = this.Owner as CharacterCrowdMember;
+            var abilityCollection = ccm.CrowdRepository.AllMembersCrowd.Members.Where(m => m is CharacterCrowdMember).SelectMany((member) =>
+            {
+                return (member as CharacterCrowdMember).Abilities.ToList();
+            }).Distinct();
+            this.CreateAbilitiesViewSource(abilityCollection.ToList());
         }
 
         #endregion

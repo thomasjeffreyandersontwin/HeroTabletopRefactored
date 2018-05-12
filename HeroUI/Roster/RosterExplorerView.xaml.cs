@@ -51,6 +51,28 @@ namespace HeroVirtualTabletop.Roster
                 }
                 e.Handled = true;
             }
+            else if (e.RightButton == MouseButtonState.Pressed)
+            {
+                this.viewModel.StopSyncingWithDesktop = true;
+                //this.viewModel.isMultiSelecting = true;
+                this.viewModel.SelectedParticipants.Clear();
+                GroupBox groupbox = ControlUtilities.GetTemplateAncestorByType(e.OriginalSource as TextBlock, typeof(GroupBox)) as GroupBox;
+                var itemsPres = ControlUtilities.GetDescendantByType(groupbox, typeof(ItemsPresenter)) as ItemsPresenter;
+                try
+                {
+                    var vStackPanel = VisualTreeHelper.GetChild(itemsPres as DependencyObject, 0) as VirtualizingStackPanel;
+                    foreach (ListBoxItem item in vStackPanel.Children)
+                    {
+                        item.IsSelected = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string rosterCrowdName = groupbox.Header.ToString();
+                    this.viewModel.SelectCharactersByCrowdName(rosterCrowdName);
+                }
+                e.Handled = true;
+            }
         }
 
         private void ListViewItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)

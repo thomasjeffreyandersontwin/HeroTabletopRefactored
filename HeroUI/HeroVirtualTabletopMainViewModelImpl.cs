@@ -638,7 +638,7 @@ namespace HeroUI
         }
 
         public void Handle(ConfigureAttackEvent message)
-        {
+         {
             ShowAttackConfigurationWidgetPopup();
         }
 

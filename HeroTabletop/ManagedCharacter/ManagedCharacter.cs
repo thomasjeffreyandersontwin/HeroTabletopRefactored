@@ -190,6 +190,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 }
             }
         }
+
         public virtual void UnTarget(bool completeEvent = true)
         {
             Generator.GenerateDesktopCommandText(DesktopCommand.TargetEnemyNear);
@@ -277,7 +278,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         #region Ghost
         public void AlignGhost()
         {
-            if (this.ActiveIdentity.Type == SurfaceType.Model)
+            if (this.ActiveIdentity?.Type == SurfaceType.Model)
             {
                 if (this.GhostShadow == null)
                 {
@@ -289,6 +290,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.GhostShadow.Position.Vector = this.Position.Vector;
                 this.GhostShadow.Position.RotationMatrix = this.Position.RotationMatrix;
             }
+        }
+
+        public void Teleport(Position position = null)
+        {
+            if (position == null)
+                position = this.Camera.AdjustedPosition;
+            this.Position.MoveTo(position);
+            this.AlignGhost();
+            this.UpdateDistanceCount();
+        }
+
+        public void UpdateDistanceCount()
+        {
+
         }
 
         public  virtual void CreateGhostShadow()
@@ -409,15 +424,22 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Target(false);
             active?.Play();
         }
+
+        public void SpawnToPosition(Position position)
+        {
+            if (!this.IsSpawned)
+                SpawnToDesktop();
+            this.Teleport(position);
+        }
         public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
         {
             if (IsSpawned)
             {
-                Target();
+                Target(completeEvent);
                 Generator.GenerateDesktopCommandText(DesktopCommand.DeleteNPC);
                 if (completeEvent)
                     Generator.CompleteEvent();
-                this.GhostShadow?.ClearFromDesktop();
+                this.GhostShadow?.ClearFromDesktop(completeEvent);
             }
             
             IsSpawned = false;
@@ -431,7 +453,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             Target();
             var movableCharacter = this as MovableCharacter;
-            movableCharacter?.MoveForwardTo(this.Camera.Position);
+            movableCharacter?.MoveForwardTo(this.Camera.AdjustedPosition);
         }
 
         public void SyncWithGame()
@@ -514,8 +536,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void ResetOrientation()
         {
-            this.Position.ResetOrientation();
-            AlignGhost();
+            if (this.IsSpawned)
+            {
+                this.Position.ResetOrientation();
+                AlignGhost();
+            }
         }
 
         #endregion
