@@ -13,6 +13,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         string Name { get; set; }
         void SpawnToDesktop(bool completeEvent = true);
         void SpawnToPosition(Position position);
+        void CloneAndSpawn(Position spawnPosition);
         void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true);
         void MoveCharacterToCamera(bool completeEvent = true);
         Dictionary<string, Identity> IdentitiesList { get; }

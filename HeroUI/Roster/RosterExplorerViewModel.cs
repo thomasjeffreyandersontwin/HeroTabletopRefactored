@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ namespace HeroVirtualTabletop.Roster
         void UpdateRosterSelection();
         void Target();
         void Spawn();
+        void SpawnToPosition(Position position);
+        void CloneAndSpawn(Position position);
         void ClearFromDesktop();
         void MoveToCamera();
         void SavePosition();
@@ -33,5 +36,8 @@ namespace HeroVirtualTabletop.Roster
         void ActivateGang(List<CharacterCrowdMember> gangMembers);
         void ToggleRelativePositioning();
         void Teleport();
+        void ToggleSpawnOnClick();
+        void ToggleCloneAndSpawn();
+        void ToggleOverheadMode();
     }
 }

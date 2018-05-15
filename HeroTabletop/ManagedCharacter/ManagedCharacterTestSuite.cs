@@ -177,6 +177,21 @@ namespace HeroVirtualTabletop.ManagedCharacter
             //assert
             Assert.AreEqual(characterUnderTest.IsManueveringWithCamera, false);
         }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void CloneAndSpawn_CreatesCloneThenSpawnsClonedCharacter()
+        {
+            //arrange
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithIdentities;
+            var position = TestObjectsFactory.MockPosition;
+            //act
+            characterUnderTest.CloneAndSpawn(position);
+
+            //assert
+            var mocker = Mock.Get(characterUnderTest.Generator);
+            string[] para = { "model_statesman", characterUnderTest.Name + " Clone"};
+            mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, para));
+        }
 
         [TestMethod]
         [TestCategory("ManagedCharacter")]

@@ -294,9 +294,11 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void Teleport(Position position = null)
         {
+            if (this.MemoryInstance == null || !this.MemoryInstance.IsReal)
+                return;
             if (position == null)
                 position = this.Camera.AdjustedPosition;
-            this.Position.MoveTo(position);
+            this.Position?.MoveTo(position);
             this.AlignGhost();
             this.UpdateDistanceCount();
         }
@@ -430,6 +432,22 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (!this.IsSpawned)
                 SpawnToDesktop();
             this.Teleport(position);
+        }
+
+        public void CloneAndSpawn(Position position)
+        {
+            var clone = this.Clone();
+            clone.SpawnToPosition(position);
+        }
+        private ManagedCharacter Clone()
+        {
+            var clone = new ManagedCharacterImpl(this.Targeter, this.Generator, this.Camera);
+            clone.Name = this.Name + " Clone";
+            clone.InitializeActionGroups();
+            foreach (var id in Identities)
+                clone.Identities.InsertAction((Identity)id.Clone());
+
+            return clone;
         }
         public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)
         {

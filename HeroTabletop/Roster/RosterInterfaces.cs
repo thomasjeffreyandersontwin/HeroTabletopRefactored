@@ -11,12 +11,16 @@ using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
 using System.Collections.ObjectModel;
+using HeroVirtualTabletop.Desktop;
 
 namespace HeroVirtualTabletop.Roster
 {
     public enum RosterCommandMode { Standard, CycleCharacter, OnRosterClick }
     public interface Roster 
     {
+        CrowdRepository CrowdRepository { get; set; }
+        CrowdClipboard CrowdClipboard { get; set; }
+        KeyBindCommandGenerator KeybindCommandGenerator { get; set; }
         string Name { get; set; }
         RosterCommandMode CommandMode { get; set; }
         OrderedCollection<RosterGroup> Groups { get; }
@@ -55,6 +59,9 @@ namespace HeroVirtualTabletop.Roster
         void GroupSelectedParticpants();
         AttackInstructions CurrentAttackInstructions { get; set; }
         bool UseOptimalPositioning { get; set; }
+        bool OverheadMode { get; set; }
+        bool CloneAndSpawn { get; set; }
+        bool SpawnOnClick { get; set; }
     }
 
     public interface RosterGroup: OrderedElement, OrderedCollection<CharacterCrowdMember>

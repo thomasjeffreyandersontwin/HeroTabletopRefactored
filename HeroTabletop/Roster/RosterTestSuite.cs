@@ -73,7 +73,10 @@ namespace HeroVirtualTabletop.Roster
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
             foreach (var p in r.Participants)
+            {
                 p.IsActive = false;
+                p.IsGangLeader = false;
+            }
             RosterParticipant activeParticipant = r.Participants[2];
             CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
 
@@ -88,7 +91,10 @@ namespace HeroVirtualTabletop.Roster
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeParticipantsUnderTest;
             foreach (var p in r.Participants)
+            {
                 p.IsActive = false;
+                p.IsGangLeader = false;
+            }
             RosterParticipant activeParticipant = r.Participants[2];
             CharacterCrowdMemberImpl c = activeParticipant as CharacterCrowdMemberImpl;
 
@@ -360,7 +366,6 @@ namespace HeroVirtualTabletop.Roster
             roster.SelectedParticipantsInGangMode = true;
 
             roster.Selected.SpawnToDesktop();
-            roster.Selected.MoveCharacterToCamera();
             roster.Selected.SaveCurrentTableTopPosition();
             roster.Selected.PlaceOnTableTop();
             roster.Selected.ClearFromDesktop();
@@ -368,7 +373,6 @@ namespace HeroVirtualTabletop.Roster
             foreach (var p in roster.Participants.Where(p => p.RosterParent.Name == "Crowd 1"))
             {
                 Mock.Get<CharacterCrowdMember>(p).Verify(x => x.SpawnToDesktop(true));
-                Mock.Get<CharacterCrowdMember>(p).Verify(x => x.MoveCharacterToCamera(true));
                 Mock.Get<CharacterCrowdMember>(p).Verify(x => x.SaveCurrentTableTopPosition());
                 Mock.Get<CharacterCrowdMember>(p).Verify(x => x.PlaceOnTableTop(null));
                 Mock.Get<CharacterCrowdMember>(p).Verify(x => x.ClearFromDesktop(true, true));
@@ -497,6 +501,28 @@ namespace HeroVirtualTabletop.Roster
                 Mock.Get<CharacterCrowdMember>(p).Verify(x => x.DeActivate());
             }
         }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void SetOverheadMode_LoadsAlternateKeybind()
+        {
+            var roster = TestObjectsFactory.RosterUnderTest;
+            roster.KeybindCommandGenerator = TestObjectsFactory.MockKeybindGenerator;
+
+            roster.OverheadMode = true;
+
+            Mock.Get<KeyBindCommandGenerator>(roster.KeybindCommandGenerator).Verify(g => g.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, "required_keybinds_alt.txt"));
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void ResetOverheadMode_LoadsRegularKeybind()
+        {
+            var roster = TestObjectsFactory.RosterUnderTest;
+            roster.KeybindCommandGenerator = TestObjectsFactory.MockKeybindGenerator;
+
+            roster.OverheadMode = false;
+
+            Mock.Get<KeyBindCommandGenerator>(roster.KeybindCommandGenerator).Verify(g => g.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, "required_keybinds.txt"));
+        }
     }
 
     [TestClass]
@@ -556,21 +582,18 @@ namespace HeroVirtualTabletop.Roster
         public void SelectionWithMultipleCharacters_CanInvokeManagedCharacterCommandsOnAllSelected()
         {
             Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockedParticipants;
+            
             r.ClearAllSelections();
             r.SelectAllParticipants();
 
             r.Selected.SpawnToDesktop();
             r.Selected.Participants.ForEach(
-                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.SpawnToDesktop(true)));
+                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.SpawnToDesktop(It.IsAny<bool>())));
 
-            r.Selected.MoveCharacterToCamera();
-            r.Selected.Participants.ForEach(
-                participant =>
-                    Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.MoveCharacterToCamera(true)));
             var selectedList = r.Selected.Participants.ToList();
             r.Selected.ClearFromDesktop();
             selectedList.ForEach(
-                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(true, true)));
+                participant => Mock.Get<ManagedCharacterCommands>(participant).Verify(x => x.ClearFromDesktop(It.IsAny<bool>(), It.IsAny<bool>())));
         }
         [TestMethod]
         [TestCategory("RosterSelection")]
@@ -828,6 +851,46 @@ namespace HeroVirtualTabletop.Roster
             mocker.Verify(p => p.GetOptimalDestinationMapForPositions(It.Is<List<Position>>(l =>
             l.Contains(r.Selected.Participants[0].Position) && l.Contains(r.Selected.Participants[1].Position) && l.Contains(r.Selected.Participants[2].Position))));
         }
+        [TestMethod]
+        [TestCategory("RosterSelection")]
+        public void CloneAndSpawn_ClonesAndSpawnsSelectedCharacters()
+        {
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            r.UseOptimalPositioning = true;
+            r.SelectAllParticipants();
+            
+            Mock.Get(r.CrowdClipboard).Setup(x => x.PasteFromClipboard(It.IsAny<CrowdMember>()))
+                .Returns((CrowdMember z) => 
+                {
+                    var clonedMockChar = TestObjectsFactory.MockCharacterCrowdMember;
+                    clonedMockChar.IsSpawned = false;
+                    return clonedMockChar;
+                });
+            foreach (var c in r.Selected.Participants)
+            {
+                Mock.Get<CharacterCrowdMember>(c).SetupGet(x => x.Position).Returns(TestObjectsFactory.MockPosition);
+                Mock.Get<Camera>(c.Camera).SetupGet(x => x.AdjustedPosition).Returns(TestObjectsFactory.MockPosition);
+                var crowd = TestObjectsFactory.MockCrowd;
+                crowd.Name = c.RosterParent.Name;
+                r.CrowdRepository.AddCrowd(crowd);
+            }
+            var position = TestObjectsFactory.MockPosition;
+
+
+            var oldSelectedList = r.Selected.Participants.ToList();
+            r.Selected.CloneAndSpawn(position);
+
+            foreach(var oldSelected in oldSelectedList)
+            {
+                Mock.Get(r.CrowdClipboard).Verify(x => x.CopyToClipboard(oldSelected));
+                Mock.Get(r.CrowdClipboard).Verify(x => x.PasteFromClipboard(It.IsAny<Crowd.Crowd>()));
+            }
+
+            foreach(var selected in r.Selected.Participants)
+            {
+                Mock.Get(selected).Verify(x => x.SpawnToDesktop(It.IsAny<bool>()));
+            }
+        }
     }
 
     public class RosterTestObjectsFactory : CrowdTestObjectsFactory
@@ -856,6 +919,7 @@ namespace HeroVirtualTabletop.Roster
             .Without(x => x.CurrentAttackInstructions)
             .Without(x => x.SelectedParticipantsInGangMode)
             .With(x => x.IsGangInOperation, false)
+            .With(x => x.CrowdClipboard, MockCrowdClipboard)
             .Create();
 
         public Roster MockRoster => CustomizedMockFixture.Create<Roster>();
@@ -960,6 +1024,7 @@ namespace HeroVirtualTabletop.Roster
                     x.CharacterActionGroups = GetStandardCharacterActionGroup(x);
                     repo.AddCrowd(x.Parent);
                     x.CrowdRepository = repo;
+                    Mock.Get(x.Camera).SetupGet(y => y.AdjustedPosition).Returns(MockPosition);
                 }
 
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
@@ -1038,6 +1103,8 @@ namespace HeroVirtualTabletop.Roster
                 foreach (var x in rosterUnderTest.Participants)
                 {
                     x.RosterParent = new RosterParentImpl { Name = g.Name, Order = g.Order, RosterGroup = g };
+                    x.IsSpawned = false;
+                    Mock.Get(x.Camera).SetupGet(y => y.AdjustedPosition).Returns(MockPosition);
                 }
                 return rosterUnderTest;
             }

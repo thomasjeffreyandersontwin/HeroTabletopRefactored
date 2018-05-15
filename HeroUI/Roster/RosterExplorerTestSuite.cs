@@ -259,5 +259,59 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.Teleport(null));
         }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void CloneAndSpawn_InvokesRosterSelectedCloneAndSpawn()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+            var position = TestObjectsFactory.MockPosition;
+
+            rosterVM.CloneAndSpawn(position);
+
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.CloneAndSpawn(position));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void SpawnToPosition_InvokesRosterSelectedSpawnToPosition()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+            var position = TestObjectsFactory.MockPosition;
+
+            rosterVM.SpawnToPosition(position);
+
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.SpawnToPosition(position));
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleCloneAndSpawn_TogglesRosterFlagForCloneAndSpawn()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            rosterVM.ToggleCloneAndSpawn();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.CloneAndSpawn = !r.CloneAndSpawn);
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleSpawnOnClick_TogglesRosterFlagForSpawnOnClick()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            rosterVM.ToggleSpawnOnClick();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.SpawnOnClick = !r.SpawnOnClick);
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleOverheadMode_TogglesRosterFlagForOverheadMode()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            rosterVM.ToggleOverheadMode();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.OverheadMode = !r.OverheadMode);
+        }
     }
 }

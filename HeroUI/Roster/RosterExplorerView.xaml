@@ -153,24 +153,24 @@
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=SpawnOnClick}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.SpawnOnClick}" Value="False">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=SpawnOnClick}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.SpawnOnClick}" Value="True">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="ToggleCloneSpawn" Content="&#xf0c5;" ToolTip="Toggle Clone and Spawn (Ctrl+C)">
+                <Button x:Name="ToggleCloneAndSpawn" Content="&#xf0c5;" ToolTip="Toggle Clone and Spawn (Ctrl+C)">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=CloneAndSpawn}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.CloneAndSpawn}" Value="False">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=CloneAndSpawn}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.CloneAndSpawn}" Value="True">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -181,10 +181,10 @@
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=OverheadMode}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.OverheadMode}" Value="False">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=OverheadMode}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.OverheadMode}" Value="True">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>

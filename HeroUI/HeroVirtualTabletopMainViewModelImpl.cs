@@ -36,6 +36,7 @@ namespace HeroUI
         private const string GAME_EXE_FILENAME = "cityofheroes.exe";
         private const string GAME_DATA_FOLDERNAME = "data";
         private const string GAME_KEYBINDS_FILENAME = "required_keybinds.txt";
+        private const string GAME_KEYBINDS_ALT_FILENAME = "required_keybinds_alt.txt";
         private const string GAME_ENABLE_CAMERA_FILENAME = "enable_camera.txt";
         private const string GAME_DISABLE_CAMERA_FILENAME = "disable_camera.txt";
         private const string SELECT_GAME_DIRECTORY_MESSAGE = "Please select City of Heroes Game Directory";
@@ -475,6 +476,10 @@ namespace HeroUI
             File.AppendAllText(
                 Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_KEYBINDS_FILENAME),
                 Properties.Resources.required_keybinds
+                );
+            File.AppendAllText(
+                Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_KEYBINDS_ALT_FILENAME),
+                Properties.Resources.required_keybinds_alt
                 );
         }
 

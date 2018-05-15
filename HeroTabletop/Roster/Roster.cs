@@ -23,11 +23,14 @@ namespace HeroVirtualTabletop.Roster
 {
     public class RosterImpl : PropertyChangedBase, Roster
     {
+        private const string GAME_KEYBINDS_FILENAME = "required_keybinds.txt";
+        private const string GAME_KEYBINDS_ALT_FILENAME = "required_keybinds_alt.txt";
 
-        public RosterImpl(CrowdRepository repository, CrowdClipboard clipboard)
+        public RosterImpl(CrowdRepository repository, CrowdClipboard clipboard, KeyBindCommandGenerator keybindCommandGenerator)
         {
             this.CrowdRepository = repository;
             this.CrowdClipboard = clipboard;
+            this.KeybindCommandGenerator = keybindCommandGenerator;
 
             Groups = new OrderedCollectionImpl<RosterGroup>();
             Selected = new RosterSelectionImpl(this);
@@ -35,7 +38,7 @@ namespace HeroVirtualTabletop.Roster
 
         public CrowdRepository CrowdRepository { get; set; }
         public CrowdClipboard CrowdClipboard { get; set; }
-
+        public KeyBindCommandGenerator KeybindCommandGenerator { get; set; }
         public string Name { get; set; }
         private RosterCommandMode commandMode;
         public RosterCommandMode CommandMode {
@@ -157,6 +160,53 @@ namespace HeroVirtualTabletop.Roster
                     this.SetActivationsForGangMode(value);
                 }
                 NotifyOfPropertyChange(() => SelectedParticipantsInGangMode);
+            }
+        }
+
+        private bool overheadMode;
+        public bool OverheadMode
+        {
+            get
+            {
+                return overheadMode;
+            }
+            set
+            {
+                overheadMode = value;
+                if (value)
+                    KeybindCommandGenerator.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, GAME_KEYBINDS_ALT_FILENAME);
+                else
+                    KeybindCommandGenerator.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, GAME_KEYBINDS_FILENAME);
+                KeybindCommandGenerator.CompleteEvent();
+                NotifyOfPropertyChange(() => OverheadMode);
+            }
+        }
+
+        private bool cloneAndSpawn;
+        public bool CloneAndSpawn
+        {
+            get
+            {
+                return cloneAndSpawn;
+            }
+            set
+            {
+                cloneAndSpawn = value;
+                NotifyOfPropertyChange(() => CloneAndSpawn);
+            }
+        }
+
+        private bool spawnOnClick;
+        public bool SpawnOnClick
+        {
+            get
+            {
+                return spawnOnClick;
+            }
+            set
+            {
+                spawnOnClick = value;
+                NotifyOfPropertyChange(() => SpawnOnClick);
             }
         }
 
@@ -1203,6 +1253,27 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        public void CloneAndSpawn(Position spawnPosition)
+        {
+            List<CharacterCrowdMember> clonedMembers = new List<CharacterCrowdMember>();
+            var repo = this.Roster.CrowdRepository;
+            var crowdClipboard = this.Roster.CrowdClipboard;
+            foreach (var selected in this.Participants)
+            {
+                Crowd.Crowd parent = repo.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == selected.RosterParent.Name) as Crowd.Crowd;
+                crowdClipboard.CopyToClipboard(selected);
+
+                CharacterCrowdMember clonedMember = crowdClipboard.PasteFromClipboard(parent) as CharacterCrowdMember;
+                this.Roster.AddCrowdMemberToRoster(clonedMember, parent);
+                clonedMembers.Add(clonedMember);
+            }
+            this.Participants.Clear();
+            foreach(var clonedMember in clonedMembers)
+            {
+                this.Participants.Add(clonedMember);
+            }
+            this.SpawnToPosition(spawnPosition);
+        }
 
         public void UpdateDistanceCount()
         {

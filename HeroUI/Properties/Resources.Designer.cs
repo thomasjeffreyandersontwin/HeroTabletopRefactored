@@ -142,5 +142,47 @@ namespace HeroUI.Properties {
                 return ResourceManager.GetString("required_keybinds", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to W &quot;+up&quot;
+        ///A &quot;+left&quot;
+        ///S &quot;+down&quot;
+        ///D &quot;+right&quot;
+        ///Z &quot;+forward&quot;
+        ///SPACE &quot;+backward&quot;
+        ///
+        ///DOWN &quot;+lookup&quot;
+        ///DOWNARROW &quot;+lookup&quot;
+        ///LEFT &quot;+turnleft&quot;
+        ///LEFTARROW &quot;+turnleft&quot;
+        ///RIGHT &quot;+turnright&quot;
+        ///RIGHTARROW &quot;+turnright&quot;
+        ///UP &quot;+lookdown&quot;
+        ///UPARROW &quot;+lookdown&quot;
+        ///
+        ///; &quot;+zoomin&quot;
+        ///. &quot;+zoomout&quot;
+        ///
+        ///B &quot;bind_load_file b.txt&quot;
+        ///C /nop
+        ///H /nop
+        ///F1 /nop
+        ///F2 /nop
+        ///delete /nop
+        ///
+        ///M &quot;move_npc&quot;
+        ///
+        ///X /nop&quot;
+        ///
+        ///F &quot;fly&quot;
+        ///N &quot;noclip&quot;
+        ///SHIFT+M &quot;popmenu maps&quot;
+        ///SHIFT+N &quot;popmenu NPC&quot;.
+        /// </summary>
+        internal static string required_keybinds_alt {
+            get {
+                return ResourceManager.GetString("required_keybinds_alt", resourceCulture);
+            }
+        }
     }
 }

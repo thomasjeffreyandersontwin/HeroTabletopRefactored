@@ -125,6 +125,13 @@ namespace HeroVirtualTabletop.Roster
             }
 
         }
+        public bool IsMovementOngoing
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         #endregion
 
@@ -323,6 +330,24 @@ namespace HeroVirtualTabletop.Roster
             RefreshRosterCommandsEligibility();
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action)); // save needed due to possible identity change
             SelectNextCharacterInCrowdCycle();
+        }
+
+        public void CloneAndSpawn(Position position)
+        {
+            this.Roster.Selected?.CloneAndSpawn(position);
+            // update selections
+            this.SelectedParticipants.Clear();
+            foreach(var selected in this.Roster.Selected?.Participants)
+            {
+                this.SelectedParticipants.Add(selected);
+            }
+            this.UpdateRosterSelection();
+            NotifyOfPropertyChange(() => SelectedParticipants);
+        }
+
+        public void SpawnToPosition(Position position)
+        {
+            this.Roster.Selected?.SpawnToPosition(position);
         }
 
         #endregion
@@ -782,12 +807,22 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (this.Roster.AttackingCharacter == null)
                 {
-                    //if (CharacterIsMoving == true)
-                    //{
-                    //    MoveCharacterToDesktopPositionClicked();
-                    //}
-                    //else
-                    //    ContinueDraggingCharacter();
+                    if (IsMovementOngoing == true)
+                    {
+                        //MoveCharacterToDesktopPositionClicked();
+                    }
+                    else if (this.Roster.SpawnOnClick)
+                    {
+                        Position mousePosition = this.mouseHoverElement.Position;
+                        if (this.Roster.CloneAndSpawn)
+                        {
+                            this.CloneAndSpawn(mousePosition);
+                        }
+                        else
+                        {
+                            this.SpawnToPosition(mousePosition);
+                        }
+                    }  
                 }
                 else
                 {
@@ -1101,6 +1136,30 @@ namespace HeroVirtualTabletop.Roster
         public void ToggleRelativePositioning()
         {
             this.Roster.UseOptimalPositioning = !this.Roster.UseOptimalPositioning;
+        }
+
+        #endregion
+
+        #region Toggle Spawn on Click
+        public void ToggleSpawnOnClick()
+        {
+            this.Roster.SpawnOnClick = !this.Roster.SpawnOnClick;
+        }
+
+        #endregion
+
+        #region Toggle Clone and Spawn
+        public void ToggleCloneAndSpawn()
+        {
+            this.Roster.CloneAndSpawn = !this.Roster.CloneAndSpawn;
+        }
+
+        #endregion
+
+        #region Toggle Spawn on Click
+        public void ToggleOverheadMode()
+        {
+            this.Roster.OverheadMode = !this.Roster.OverheadMode;
         }
 
         #endregion

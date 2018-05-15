@@ -392,14 +392,17 @@ namespace HeroVirtualTabletop.Desktop
             var position = TestObjectsFactory.PositionUnderTest;
             Matrix defaultMatrix = new Microsoft.Xna.Framework.Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
             Matrix currentMatrix = new Microsoft.Xna.Framework.Matrix(1, 2, 2, 2,2, 1, 3, 3, 3, 3, 1, 3, 100, 10, 100, 1);
+            Vector3 facing = new Vector3(3, 3, 1);
             position.RotationMatrix = currentMatrix;
 
             position.ResetOrientation();
 
-            Assert.AreEqual(position.RotationMatrix.M11, defaultMatrix.M11);
+            Matrix newRotationMatrix = Matrix.CreateLookAt(position.Vector, facing, Vector3.Up);
+
+            Assert.AreEqual(position.RotationMatrix.M11, -1 * newRotationMatrix.M11);
             Assert.AreEqual(position.RotationMatrix.M12, defaultMatrix.M12);
-            Assert.AreEqual(position.RotationMatrix.M13, defaultMatrix.M13);
-            Assert.AreEqual(position.RotationMatrix.M13, defaultMatrix.M14);
+            Assert.AreEqual(position.RotationMatrix.M13, newRotationMatrix.M13);
+            Assert.AreEqual(position.RotationMatrix.M14, defaultMatrix.M14);
             Assert.AreEqual(position.RotationMatrix.M21, defaultMatrix.M21);
             Assert.AreEqual(position.RotationMatrix.M22, defaultMatrix.M22);
             Assert.AreEqual(position.RotationMatrix.M23, defaultMatrix.M23);
@@ -416,12 +419,11 @@ namespace HeroVirtualTabletop.Desktop
             position.RotationMatrix = currentMatrix;
             var locationBeforeReset = position.Vector;
             var facingBeforeReset = position.FacingVector;
-            facingBeforeReset.Normalize();
-
+            Matrix newRotationMatrix = Matrix.CreateLookAt(position.Vector, facingBeforeReset, Vector3.Up);
             position.ResetOrientation();
 
             Assert.AreEqual(position.Vector, locationBeforeReset);
-            Assert.AreEqual(position.FacingVector, facingBeforeReset);
+            Assert.AreEqual(position.FacingVector, new Vector3(newRotationMatrix.M31, defaultMatrix.M32, -1 * newRotationMatrix.M33));
         }
         [TestMethod]
         [TestCategory("Position")]

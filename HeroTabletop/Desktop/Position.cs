@@ -237,10 +237,14 @@ namespace HeroVirtualTabletop.Desktop
             }
             set
             {
-                SetFacing(value);
+                Matrix matrix = RotationMatrix;
+                matrix.M31 = value.X;
+                matrix.M32 = value.Y;
+                matrix.M33 = value.Z;
+                RotationMatrix = matrix;
             }
         }
-        private void SetFacing(Vector3 facingVector)
+        private void SetHorizontalFacing(Vector3 facingVector)
         {
             Vector3 currentPositionVector = this.Vector;
             if (facingVector != currentPositionVector)
@@ -750,7 +754,7 @@ namespace HeroVirtualTabletop.Desktop
         {
             Vector3 leaderFacingVector = position.FacingVector;
             Vector3 distantPointInSameDirection = position.Vector + leaderFacingVector * 500;
-            this.SetFacing(distantPointInSameDirection);
+            this.SetHorizontalFacing(distantPointInSameDirection);
         }
         public Vector3 GetRoundedVector(Vector3 vector, int decimalPlaces)
         {
@@ -795,7 +799,7 @@ namespace HeroVirtualTabletop.Desktop
 
             Microsoft.Xna.Framework.Matrix defaultMatrix = new Microsoft.Xna.Framework.Matrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
             this.RotationMatrix = defaultMatrix;
-            this.FacingVector = currentFacing;
+            this.SetHorizontalFacing(currentFacing);
             this.Vector = currentPositionVector;
         }
         public override bool Equals(Object other)
