@@ -1178,5 +1178,14 @@ namespace HeroVirtualTabletop.Roster
         }
 
         #endregion
+
+        #region Scan and Fix Memory
+
+        public void ScanAndFixMemoryTargeter()
+        {
+            this.Roster.Selected.ScanAndFixMemoryTargeter();
+        }
+
+        #endregion
     }
 }

@@ -326,5 +326,16 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.MoveForwardTo(position));
         }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ScanAndFixMemoryTargeter_InvokesRosterSelectedScanAndFixMemoryTargeter()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+
+            rosterVM.ScanAndFixMemoryTargeter();
+
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ScanAndFixMemoryTargeter());
+        }
     }
 }

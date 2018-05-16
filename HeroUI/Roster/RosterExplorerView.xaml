@@ -96,7 +96,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="ScanAndFixMemory" Content="&#xf26c;" ToolTip="Scan and Fix Memory (Ctrl+K)"/>
+                <Button x:Name="ScanAndFixMemoryTargeter" Content="&#xf26c;" ToolTip="Scan and Fix Memory (Ctrl+K)"/>
             </WrapPanel>
             <WrapPanel Grid.Row="1">
                 <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>

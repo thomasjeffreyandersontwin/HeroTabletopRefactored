@@ -1451,10 +1451,10 @@ namespace HeroVirtualTabletop.Roster
                 Participants.First()?.MoveForwardTo(destination);
             }
         }
-        public void ScanAndFixMemoryPointer()
+        public void ScanAndFixMemoryTargeter()
         {
             foreach (var participant in this.Participants)
-                participant.ScanAndFixMemoryPointer();
+                participant.ScanAndFixMemoryTargeter();
         }
         public void TurnByKeyPress(Key key)
         {

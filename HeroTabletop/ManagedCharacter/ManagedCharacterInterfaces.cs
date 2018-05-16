@@ -45,7 +45,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void DeActivate();
         void Teleport(Position position = null);
         void UpdateDistanceCount();
-        void ScanAndFixMemoryPointer();
+        void ScanAndFixMemoryTargeter();
     }
 
     public interface ManagedCharacter : ManagedCharacterCommands, CharacterActionContainer

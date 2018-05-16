@@ -40,5 +40,6 @@ namespace HeroVirtualTabletop.Roster
         void ToggleCloneAndSpawn();
         void ToggleOverheadMode();
         void MovetoPosition(Position position);
+        void ScanAndFixMemoryTargeter();
     }
 }

@@ -506,7 +506,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Vector3 distantPointInSameDirection = character.Position.Vector + leaderFacingVector * 500;
             (this.Position as Position).Face(distantPointInSameDirection);
         }
-        public void ScanAndFixMemoryPointer()
+        public void ScanAndFixMemoryTargeter()
         {
             if (IsSpawned)
             {
@@ -517,7 +517,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 {
                     this.Target(false);
                     Generator.CompleteEvent();
-                    var currentTarget = new DesktopCharacterTargeterImpl();
+                    DesktopCharacterTargeter currentTarget = new DesktopCharacterTargeterImpl();
 
                     if (DesktopLabel == currentTarget.TargetedInstance?.Label)
                     {
