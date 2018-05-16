@@ -418,6 +418,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var now = DateTime.Now;
             //act
             element.Duration = 1000;
+            element.IsUnitPause = false;
             element.Play();
 
             var after = DateTime.Now;

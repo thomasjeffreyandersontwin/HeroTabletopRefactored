@@ -129,7 +129,7 @@ namespace HeroVirtualTabletop.Roster
         {
             get
             {
-                return false;
+                return this.Roster.MovingCharacters?.Count > 0;
             }
         }
 
@@ -807,13 +807,13 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (this.Roster.AttackingCharacter == null)
                 {
-                    if (IsMovementOngoing == true)
+                    Position mousePosition = this.mouseHoverElement.Position;
+                    if (IsMovementOngoing)
                     {
-                        //MoveCharacterToDesktopPositionClicked();
+                        this.MovetoPosition(mousePosition);
                     }
                     else if (this.Roster.SpawnOnClick)
                     {
-                        Position mousePosition = this.mouseHoverElement.Position;
                         if (this.Roster.CloneAndSpawn)
                         {
                             this.CloneAndSpawn(mousePosition);
@@ -883,6 +883,21 @@ namespace HeroVirtualTabletop.Roster
                 return this.Roster.Participants.FirstOrDefault(p => p.Name == this.mouseHoverElement.Name);
             }
             return null;
+        }
+
+        #endregion
+
+        #region Move to Position
+
+        public void MovetoPosition(Position position)
+        {
+            var oldSelected = this.SelectedParticipants;
+            this.Roster.ClearAllSelections();
+            foreach (var c in this.Roster.MovingCharacters)
+                this.Roster.SelectParticipant(c as CharacterCrowdMember);
+            this.Roster.Selected.MoveForwardTo(position);
+
+            this.UpdateRosterSelection();
         }
 
         #endregion

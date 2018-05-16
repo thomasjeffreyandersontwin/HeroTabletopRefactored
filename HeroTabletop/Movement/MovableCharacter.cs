@@ -48,14 +48,24 @@ namespace HeroVirtualTabletop.Movement
         public void Move(Direction direction, Position destination = null)
         {
             if (ActiveMovement == null)
-                Movements.Active = DefaultMovement;
+            {
+                if (DefaultMovements.CurrentActiveMovementForMovingCharacters != null && this.Movements.Any(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name))
+                    Movements.Active = this.Movements.First(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name);
+                else
+                    Movements.Active = DefaultMovement;
+            }
             ActiveMovement.IsCharacterMovingToDestination = destination != null;
             ActiveMovement.Move(direction, destination);
         }
         public void MoveForwardTo(Position destination)
         {
             if (ActiveMovement == null)
-                Movements.Active = DefaultMovement;
+            {
+                if (DefaultMovements.CurrentActiveMovementForMovingCharacters != null && this.Movements.Any(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name))
+                    Movements.Active = this.Movements.First(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name);
+                else
+                    Movements.Active = DefaultMovement;
+            }
             ActiveMovement.IsCharacterMovingToDestination = true;
             ActiveMovement.MoveForwardTo(destination);
         }
@@ -68,20 +78,35 @@ namespace HeroVirtualTabletop.Movement
         public void Turn(TurnDirection direction, double angle = 5)
         {
             if (ActiveMovement == null)
-                Movements.Active = DefaultMovement;
+            {
+                if (DefaultMovements.CurrentActiveMovementForMovingCharacters != null && this.Movements.Any(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name))
+                    Movements.Active = this.Movements.First(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name);
+                else
+                    Movements.Active = DefaultMovement;
+            }
             ActiveMovement.IsCharacterTurning = true;
             ActiveMovement?.Turn(direction, angle);
         }
         public void TurnTowardDestination(Position destination)
         {
             if (ActiveMovement == null)
-                Movements.Active = DefaultMovement;
+            {
+                if (DefaultMovements.CurrentActiveMovementForMovingCharacters != null && this.Movements.Any(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name))
+                    Movements.Active = this.Movements.First(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name);
+                else
+                    Movements.Active = DefaultMovement;
+            }
             ActiveMovement?.TurnTowardDestination(destination);
         }
         public async Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance)
         {
             if (ActiveMovement == null)
-                Movements.Active = DefaultMovement;
+            {
+                if (DefaultMovements.CurrentActiveMovementForMovingCharacters != null && this.Movements.Any(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name))
+                    Movements.Active = this.Movements.First(m => m.Name == DefaultMovements.CurrentActiveMovementForMovingCharacters.Name);
+                else
+                    Movements.Active = DefaultMovement;
+            }
             await ActiveMovement?.ExecuteKnockback(charactersBeingKnockedback, distance);
         }
         public void CreateGhostMovements()
@@ -251,6 +276,11 @@ namespace HeroVirtualTabletop.Movement
         }
 
         public MovableCharacter Character => Owner as MovableCharacter;
+        [JsonIgnore]
+        public List<MovableCharacter> Targets
+        {
+            get;set;
+        }
 
         public void Rename(string updatedName)
         {
@@ -266,12 +296,26 @@ namespace HeroVirtualTabletop.Movement
 
             return clonedCharacterMovemnt;
         }
+        public void Play(List<MovableCharacter> targets)
+        {
+            this.Targets = targets;
+            DefaultMovements.CurrentActiveMovementForMovingCharacters = this;
+            foreach(var target in targets)
+            {
+                CharacterMovement cmTarget = target.Movements.FirstOrDefault(m => m.Name == this.Name);
+                if (cmTarget != null && cmTarget != this)
+                    target.Movements.Active = cmTarget;
+            }
+            this.Play();
+        }
         public override void Play(bool completeEvent = true)
         {
             ((MovableCharacter)Owner).IsMoving = true;
             this.IsActive = true;
             ((MovableCharacter)Owner).Movements.Active = this;
-            this.Movement.Start(this.Character);
+            if (this.Targets == null || this.Targets.Count == 0)
+                this.Targets = new List<HeroVirtualTabletop.Movement.MovableCharacter> { this.Owner as MovableCharacter};
+            this.Movement.Start(this.Targets);
         }
         public override void Stop(bool completeEvent = true)
         {
@@ -281,6 +325,9 @@ namespace HeroVirtualTabletop.Movement
             this.IsCharacterTurning = false;
             this.IsCharacterMovingToDestination = false;
             this.Movement.Stop(this.Character);
+            if (DefaultMovements.CurrentActiveMovementForMovingCharacters == this)
+                DefaultMovements.CurrentActiveMovementForMovingCharacters = null;
+            this.Targets.Clear();
         }
         public void MoveByKeyPress(Key key)
         {
@@ -539,6 +586,8 @@ namespace HeroVirtualTabletop.Movement
         public async Task MoveForwardTo(MovableCharacter characterToMove, Position destination, double speed = 0f)
         {
             characterToMove.DesktopNavigator.Destination = destination;
+            if(characterToMove.IsMoving)
+                characterToMove.Position.TurnTowards(destination);
             await Move(characterToMove, Direction.Forward, destination, speed);
         }
         public async Task MoveByKeyPress(List<MovableCharacter> charactersToMove, Key key, double speed = 0f)
@@ -566,6 +615,8 @@ namespace HeroVirtualTabletop.Movement
         }
         public async Task MoveForwardTo(List<MovableCharacter> charactersToMove, Position destination, double speed = 0f)
         {
+            foreach(var characterToMove in charactersToMove.Where(c => c.IsMoving))
+                characterToMove.Position.TurnTowards(destination);
             await Move(charactersToMove, Direction.Forward, destination, speed);
         }
 
@@ -955,6 +1006,15 @@ namespace HeroVirtualTabletop.Movement
             return clonedMember;
         }
     }
+
+    public class DefaultMovements
+    {
+        public static CharacterMovement CurrentActiveMovementForMovingCharacters { get; set; }
+        public const string Walk = "Walk";
+        public const string Run = "Run";
+        public const string Swim = "Swim";
+    }
+
     public class MovementDirectionToIconTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

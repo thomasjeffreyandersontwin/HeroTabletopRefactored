@@ -313,5 +313,18 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.OverheadMode = !r.OverheadMode);
         }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void MoveToPosition_InvokesRosterSelectedMoveForward()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+            SelectTwoMockParticipants(rosterVM);
+            var position = TestObjectsFactory.MockPosition;
+            Mock.Get<Roster>(rosterVM.Roster).SetupGet(x => x.MovingCharacters).Returns(new List<Movement.MovableCharacter> { TestObjectsFactory.MockMovableCharacter, TestObjectsFactory.MockMovableCharacter });
+
+            rosterVM.MovetoPosition(position);
+
+            Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.MoveForwardTo(position));
+        }
     }
 }

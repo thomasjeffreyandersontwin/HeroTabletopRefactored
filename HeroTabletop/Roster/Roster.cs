@@ -18,6 +18,8 @@ using Ploeh.AutoFixture;
 using Caliburn.Micro;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using HeroVirtualTabletop.Movement;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.Roster
 {
@@ -207,6 +209,37 @@ namespace HeroVirtualTabletop.Roster
             {
                 spawnOnClick = value;
                 NotifyOfPropertyChange(() => SpawnOnClick);
+            }
+        }
+
+        public List<MovableCharacter> MovingCharacters
+        {
+            get
+            {
+                List<MovableCharacter> movingCharacters = new List<MovableCharacter>();
+                CharacterCrowdMember activeMovementCharacter = this.Participants.FirstOrDefault(p => p.Movements.Any(m => m.IsActive));
+                if(activeMovementCharacter != null)
+                {
+                    Crowd.Crowd activeMovementParent = this.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == activeMovementCharacter.RosterParent.Name) as Crowd.Crowd;
+                    if (this.IsGangInOperation && activeMovementCharacter.IsActive)
+                    {
+                        foreach (CharacterCrowdMember c in this.Participants.Where(p => p.IsActive))
+                        {
+                            movingCharacters.Add(c);
+                        }
+                    }
+                    else if (this.SelectedParticipantsInGangMode && activeMovementParent.IsGang)
+                    {
+                        foreach (CharacterCrowdMember c in this.Participants.Where(p => p.RosterParent.Name == activeMovementParent.Name))
+                        {
+                            movingCharacters.Add(c);
+                        }
+                    }
+                    else
+                        movingCharacters.Add(activeMovementCharacter);
+                }
+                
+                return movingCharacters;
             }
         }
 
@@ -1280,6 +1313,7 @@ namespace HeroVirtualTabletop.Roster
             foreach (var part in Participants)
                 part.UpdateDistanceCount();
         }
+
         public void InitializeActionGroups()
         {
             throw new NotImplementedException();
@@ -1384,6 +1418,72 @@ namespace HeroVirtualTabletop.Roster
         {
             foreach (var crowdMember in Participants)
                 crowdMember.ResetOrientation();
+        }
+
+        public void MoveByKeyPress(Key key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Move(Direction direction, Position destination = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MoveForwardTo(Position destination)
+        {
+            if (Participants.Count > 1)
+            {
+                List<Position> positionsToPlaceAround = Participants.Select(p => p.Position).ToList();
+                Dictionary<Position, Position> destinationMap = null;
+                if (this.Roster.UseOptimalPositioning)
+                    destinationMap = destination.GetOptimalDestinationMapForPositions(positionsToPlaceAround);
+                else
+                    destinationMap = destination.GetRelativeDestinationMapForPositions(positionsToPlaceAround);
+                foreach (CharacterCrowdMember part in Participants)
+                {
+                    Position pos = destinationMap[part.Position];
+                    part.MoveForwardTo(pos);
+                }
+            }
+            else
+            {
+                Participants.First()?.MoveForwardTo(destination);
+            }
+        }
+        public void ScanAndFixMemoryPointer()
+        {
+            foreach (var participant in this.Participants)
+                participant.ScanAndFixMemoryPointer();
+        }
+        public void TurnByKeyPress(Key key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Turn(TurnDirection direction, double angle = 5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TurnTowardDestination(Position destination)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ExecuteKnockback(List<MovableCharacter> charactersBeingKnockedback, double distance)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyMovementsTo(MovableCharacter targetCharacter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveMovements()
+        {
+            throw new NotImplementedException();
         }
     }
     class RosterSelectionCharacterActionsWrapper : CharacterActionImpl

@@ -204,9 +204,10 @@ namespace HeroVirtualTabletop.Desktop
                 var z = Z;
                 while (true)
                 {
-                    if ((x != 0f && Math.Abs(x) < 0.01f) || (y != 0f && Math.Abs(y) < 0.01f) || (z != 0f && Math.Abs(z) < 0.01f))
+                    if ((x != 0f && Math.Abs(x) < 0.01f) || (y != 0f && Math.Abs(y) < 0.0001f) || (z != 0f && Math.Abs(z) < 0.01f))
                     {
                         Thread.Sleep(5);
+                        RefreshRotationMatrix();
                         x = X;
                         y = Y;
                         z = Z;
@@ -226,6 +227,10 @@ namespace HeroVirtualTabletop.Desktop
 
             }
 
+        }
+        private void RefreshRotationMatrix()
+        {
+            var rotMatx = this.RotationMatrix;
         }
         [JsonIgnore]
         public Vector3 FacingVector

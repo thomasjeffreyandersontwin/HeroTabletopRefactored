@@ -414,7 +414,7 @@ namespace HeroVirtualTabletop.Movement
             // Deactivate Current Movement
             DeactivateMovement(targets, characterMovement);
             // Set Active
-            characterMovement.Play();
+            characterMovement.Play(targets);
             // Disable Camera Control
             Camera.DisableMovement();
 
@@ -476,14 +476,18 @@ namespace HeroVirtualTabletop.Movement
 
         public async Task MoveByKey()
         {
+            StopMovementTimer();
             this.CharacterMovementInAction.IsCharacterTurning = false;
             await this.CharacterMovementInAction.Movement.MoveByKeyPress(this.CharactersToMove, this.CurrentInputKey, this.CharacterMovementInAction.Speed);
+            movementTimer?.Change(25, 25);
         }
 
         public async Task TurnByKey()
         {
+            StopMovementTimer();
             this.CharacterMovementInAction.IsCharacterTurning = true;
             await this.CharacterMovementInAction.Movement.TurnByKeyPress(this.CharactersToMove, this.CurrentInputKey);
+            movementTimer?.Change(25, 25);
         }
 
         private void StartMovementTimer()

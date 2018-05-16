@@ -694,7 +694,7 @@ namespace HeroVirtualTabletop.Crowd
         }
     }
 
-    public class CrowdTestObjectsFactory : AttackTestObjectsFactory
+    public class CrowdTestObjectsFactory : MovableCharacterTestObjectFactory
     {
         public CrowdTestObjectsFactory()
         {
@@ -935,18 +935,18 @@ namespace HeroVirtualTabletop.Crowd
                 new TypeRelay(
                     typeof(IEventAggregator),
                     typeof(EventAggregator)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(CharacterMovement),
-                    typeof(CharacterMovementImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(Movement.Movement),
-                    typeof(MovementImpl)));
-            StandardizedFixture.Customizations.Add(
-                new TypeRelay(
-                    typeof(MovementMember),
-                    typeof(MovementMemberImpl)));
+            //StandardizedFixture.Customizations.Add(
+            //    new TypeRelay(
+            //        typeof(CharacterMovement),
+            //        typeof(CharacterMovementImpl)));
+            //StandardizedFixture.Customizations.Add(
+            //    new TypeRelay(
+            //        typeof(Movement.Movement),
+            //        typeof(MovementImpl)));
+            //StandardizedFixture.Customizations.Add(
+            //    new TypeRelay(
+            //        typeof(MovementMember),
+            //        typeof(MovementMemberImpl)));
             setupFixtureToBuildCrowdRepositories();
         }
         private void setupFixtureToBuildCrowdRepositories()

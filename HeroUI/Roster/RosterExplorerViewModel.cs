@@ -39,5 +39,6 @@ namespace HeroVirtualTabletop.Roster
         void ToggleSpawnOnClick();
         void ToggleCloneAndSpawn();
         void ToggleOverheadMode();
+        void MovetoPosition(Position position);
     }
 }

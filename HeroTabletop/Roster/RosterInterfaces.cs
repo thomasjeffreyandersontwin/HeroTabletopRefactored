@@ -12,6 +12,7 @@ using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.Common;
 using System.Collections.ObjectModel;
 using HeroVirtualTabletop.Desktop;
+using HeroVirtualTabletop.Movement;
 
 namespace HeroVirtualTabletop.Roster
 {
@@ -62,6 +63,7 @@ namespace HeroVirtualTabletop.Roster
         bool OverheadMode { get; set; }
         bool CloneAndSpawn { get; set; }
         bool SpawnOnClick { get; set; }
+        List<MovableCharacter> MovingCharacters { get; }
     }
 
     public interface RosterGroup: OrderedElement, OrderedCollection<CharacterCrowdMember>
@@ -76,7 +78,7 @@ namespace HeroVirtualTabletop.Roster
         Crowd.Crowd GetRosterParentCrowd();
     }
 
-    public interface RosterSelection : CharacterActionContainer, ManagedCharacterCommands, AnimatedCharacterCommands, CrowdMemberCommands
+    public interface RosterSelection : CharacterActionContainer, ManagedCharacterCommands, AnimatedCharacterCommands, MovableCharacterCommands, CrowdMemberCommands
     {
         List<CharacterCrowdMember> Participants { get;set; }
         Roster Roster { get; set; }

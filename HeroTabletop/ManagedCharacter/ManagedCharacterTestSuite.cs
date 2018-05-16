@@ -440,6 +440,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             //arrange
             var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+            characterUnderTest.IsSpawned = true;
             characterUnderTest.Identities.Active = TestObjectsFactory.Mockidentity;
             var cameraUnderTest = TestObjectsFactory.CameraUnderTest;
 

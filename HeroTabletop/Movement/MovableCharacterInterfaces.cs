@@ -31,13 +31,6 @@ namespace HeroVirtualTabletop.Movement
         Up_ARROW = 3,
         Down_ARROW = 4
     }
-    public enum DefaultMovements
-    {
-        Walk = 1,
-        Run = 2,
-        Swim = 3
-    }
-
     public interface MovableCharacterCommands
     {
         void MoveByKeyPress(Key key);
@@ -95,6 +88,7 @@ namespace HeroVirtualTabletop.Movement
         bool IsCharacterMovingToDestination { get; set; }
         bool IsCharacterTurning { get; set; }
         void Rename(string newName);
+        void Play(List<MovableCharacter> targets);
     }
     public interface Movement: MovementCommands
     {

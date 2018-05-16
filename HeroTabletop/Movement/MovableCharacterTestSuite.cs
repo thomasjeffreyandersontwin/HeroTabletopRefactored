@@ -14,6 +14,7 @@ using Ploeh.AutoFixture.Kernel;
 using HeroVirtualTabletop.Crowd;
 using System.Threading;
 using HeroVirtualTabletop.ManagedCharacter;
+using HeroVirtualTabletop.Attack;
 
 namespace HeroVirtualTabletop.Movement
 {
@@ -113,24 +114,26 @@ namespace HeroVirtualTabletop.Movement
         public void PlayCharacterMovement_SetsAndStartsActiveMovement()
         {
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
+            DefaultMovements.CurrentActiveMovementForMovingCharacters = null;
             var characterMovement = character.Movements.First();
             characterMovement.Play();
 
             Assert.AreEqual(character.ActiveMovement, characterMovement);
             var mockMovement = Mock.Get<Movement>(characterMovement.Movement);
-            mockMovement.Verify(m => m.Start(character, null, 0));
+            mockMovement.Verify(m => m.Start(It.Is<List<MovableCharacter>>(t => t.Contains(character)), null, 0));
         }
         [TestMethod]
         [TestCategory("MovableCharacter")]
         public void StopCharacterMovement_StopsAndResetsActiveMovement()
         {
             MovableCharacter character = TestObjectFactory.MovableCharacterUnderTestWithCharacterMovement;
+            DefaultMovements.CurrentActiveMovementForMovingCharacters = null;
             var characterMovement = character.Movements.First();
             characterMovement.Play();
 
             Assert.AreEqual(character.ActiveMovement, characterMovement);
             var mockMovement = Mock.Get<Movement>(characterMovement.Movement);
-            mockMovement.Verify(m => m.Start(character, null, 0));
+            mockMovement.Verify(m => m.Start(It.Is<List<MovableCharacter>>(t => t.Contains(character)), null, 0));
 
             characterMovement.Stop();
             Assert.AreEqual(character.ActiveMovement, null);
@@ -563,7 +566,7 @@ namespace HeroVirtualTabletop.Movement
         }
     }
 
-    public class MovableCharacterTestObjectFactory : CrowdTestObjectsFactory
+    public class MovableCharacterTestObjectFactory : AttackTestObjectsFactory
     {
         public MovableCharacterTestObjectFactory()
         {
@@ -585,6 +588,8 @@ namespace HeroVirtualTabletop.Movement
             .With(x => x.IsPaused, false)
             .With(x => x.Speed, 2)
             );
+            StandardizedFixture.Customize<CharacterMovementImpl>(t => t
+            .Without(x => x.Targets));
         }
 
         public MovableCharacter MovableCharacterUnderTest

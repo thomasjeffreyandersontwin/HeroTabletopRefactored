@@ -14,7 +14,7 @@ namespace HeroVirtualTabletop.Movement
     [TestClass]
     public class MovementTestSuite
     {
-        public MovableCharacterTestObjectFactory TestObjectsFactory;
+        public Crowd.CrowdTestObjectsFactory TestObjectsFactory;
 
         public MovementEditorViewModel MovementEditorViewModelUnderTest
         {
@@ -36,7 +36,7 @@ namespace HeroVirtualTabletop.Movement
         [TestInitialize]
         public void TestInitialize()
         {
-            TestObjectsFactory = new MovableCharacterTestObjectFactory();
+            TestObjectsFactory = new Crowd.CrowdTestObjectsFactory();
         }
 
 

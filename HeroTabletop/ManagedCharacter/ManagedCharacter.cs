@@ -506,6 +506,27 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Vector3 distantPointInSameDirection = character.Position.Vector + leaderFacingVector * 500;
             (this.Position as Position).Face(distantPointInSameDirection);
         }
+        public void ScanAndFixMemoryPointer()
+        {
+            if (IsSpawned)
+            {
+                this.Target();
+                var memoryElement = WaitUntilTargetIsRegistered();
+
+                if (memoryElement == null)
+                {
+                    this.Target(false);
+                    Generator.CompleteEvent();
+                    var currentTarget = new DesktopCharacterTargeterImpl();
+
+                    if (DesktopLabel == currentTarget.TargetedInstance?.Label)
+                    {
+                        this.Targeter = currentTarget;
+                        this.MemoryInstance = this.Targeter.TargetedInstance;
+                    }
+                }
+            }
+        }
         public void RemoveActionGroup(CharacterActionGroup actionGroup)
         {
             this.CharacterActionGroups.Remove(actionGroup);
