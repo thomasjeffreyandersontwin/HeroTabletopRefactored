@@ -23,7 +23,7 @@ namespace HeroVirtualTabletop.Roster
     public class RosterExplorerViewModelImpl : PropertyChangedBase, RosterExplorerViewModel, IShell
         , IHandle<AddToRosterEvent>, IHandle<SyncWithRosterEvent>, IHandle<DeleteCrowdMemberEvent>, IHandle<RenameCrowdMemberEvent>
         , IHandle<ListenForDesktopTargetChangeEvent>, IHandle<StopListeningForDesktopTargetChangeEvent>
-        , IHandle<AttackStartedEvent>, IHandle<ActivateMovementEvent>, IHandle<DeactivateMovementEvent>
+        , IHandle<AttackStartedEvent>, IHandle<CancelAttackEvent>, IHandle<ActivateMovementEvent>, IHandle<DeactivateMovementEvent>
     {
         #region Private Fields
 
@@ -73,6 +73,7 @@ namespace HeroVirtualTabletop.Roster
                 selectedParticipants = value;
                 UpdateRosterSelection();
                 Target();
+                this.Roster?.RestartDistanceCounting();
                 NotifyOfPropertyChange(() => SelectedParticipants);
                 NotifyOfPropertyChange(() => ShowAttackContextMenu);
                 NotifyOfPropertyChange(() => CanToggleGangMode);
@@ -250,15 +251,6 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
-        #region Attack Initialization
-
-        public void Handle(AttackStartedEvent message)
-        {
-            this.Roster.CurrentAttackInstructions = message.AttackInstructions;
-        }
-
-        #endregion
-
         #region Activate/Deactivate Movements
 
         public void Handle(ActivateMovementEvent message)
@@ -342,12 +334,14 @@ namespace HeroVirtualTabletop.Roster
                 this.SelectedParticipants.Add(selected);
             }
             this.UpdateRosterSelection();
+            //SelectNextCharacterInCrowdCycle();
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 
         public void SpawnToPosition(Position position)
         {
             this.Roster.Selected?.SpawnToPosition(position);
+            SelectNextCharacterInCrowdCycle();
         }
 
         #endregion
@@ -791,7 +785,7 @@ namespace HeroVirtualTabletop.Roster
             desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
             //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
             desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
-            //desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
+            desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
             //desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
             //desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
         }
@@ -799,6 +793,31 @@ namespace HeroVirtualTabletop.Roster
         private void DisplayCharacterPopupMenu()
         {
             desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+        }
+        int numRetryPopupMenu = 3;
+        private void DisplayCharacterPopupMenue()
+        {
+            System.Action d = delegate ()
+            {
+                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)
+                if(this.Roster.AttackingCharacter == this.Roster.TargetedCharacter && numRetryPopupMenu > 0)
+                {
+                    numRetryPopupMenu--;
+                    DisplayCharacterPopupMenue();
+                }
+                else
+                {
+                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+                    numRetryPopupMenu = 3;
+                }
+                if (this.Roster.DistanceCountingCharacter != null)
+                {
+                    var mousePosition = this.mouseHoverElement.Position;
+                    this.Roster.DistanceCountingCharacter.UpdateDistanceCount(mousePosition);
+                }
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
+            adex.ExecuteAsyncDelegate();
         }
 
         private void RespondToDesktopLeftClick()
@@ -837,8 +856,10 @@ namespace HeroVirtualTabletop.Roster
         private void PlayAttackCycle()
         {
             var hoveredCharacter = GetHoveredCharacter();
+            var mousePosition = this.mouseHoverElement.Position;
+            this.Roster.DistanceCountingCharacter?.UpdateDistanceCount(mousePosition);
 
-            if(hoveredCharacter == null && numRetryHover > 0)
+            if (hoveredCharacter == null && numRetryHover > 0)
             {
                 numRetryHover--;
                 System.Action d = delegate ()
@@ -852,7 +873,7 @@ namespace HeroVirtualTabletop.Roster
             {
                 numRetryHover = 3;
                 if(hoveredCharacter == this.Roster.AttackingCharacter || hoveredCharacter == null)
-                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(this.mouseHoverElement.Position);
+                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(mousePosition);
             }
         }
 
@@ -873,7 +894,9 @@ namespace HeroVirtualTabletop.Roster
             CharacterCrowdMember hoveredCharacter = GetHoveredCharacter();
             if (hoveredCharacter != null)
             {
-                this.SelectCharacter(hoveredCharacter);
+                this.Roster.TargetHoveredCharacter(hoveredCharacter);
+                if (this.Roster.TargetOnHover && this.Roster.TargetedCharacter != hoveredCharacter)
+                    this.SelectCharacter(hoveredCharacter);
             }
         }
         private CharacterCrowdMember GetHoveredCharacter()
@@ -1073,6 +1096,21 @@ namespace HeroVirtualTabletop.Roster
 
         #region Attack Integration
 
+        #region Attack Initialization/Cancellation
+
+        public void Handle(AttackStartedEvent message)
+        {
+            this.Roster.CurrentAttackInstructions = message.AttackInstructions;
+            this.Roster.RestartDistanceCounting();
+        }
+
+        public void Handle(CancelAttackEvent message)
+        {
+            this.Roster.RestartDistanceCounting();
+        }
+
+        #endregion
+
         public void AddSelectedAsAttackTarget()
         {
             this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
@@ -1184,6 +1222,24 @@ namespace HeroVirtualTabletop.Roster
         public void ScanAndFixMemoryTargeter()
         {
             this.Roster.Selected.ScanAndFixMemoryTargeter();
+        }
+
+        #endregion
+
+        #region Toggle Target On Hover
+
+        public void ToggleTargetOnHover()
+        {
+            this.Roster.TargetOnHover = !this.Roster.TargetOnHover;
+        }
+
+        #endregion
+
+        #region Reset Distance Counting
+
+        public void ResetDistanceCount()
+        {
+            this.Roster.DistanceCountingCharacter?.ResetDistanceCount();
         }
 
         #endregion

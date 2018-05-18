@@ -27,7 +27,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             //arrange
             var character = TestObjectsFactory.CharacterUnderTest;
-            string[] parameters = {character.Name};
+            string[] parameters = { character.Name };
             var generator = TestObjectsFactory.GetMockKeyBindCommandGeneratorForCommand(DesktopCommand.TargetName,
                 parameters);
             character.Generator = generator;
@@ -92,14 +92,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
         [TestCategory("ManagedCharacter")]
         public void Follow_GeneratesCorrectCommandText()
         {
-            string[] para = {};
+            string[] para = { };
             var characterUnderTest =
                 TestObjectsFactory.GetCharacterUnderTestWithCommandGenerationSetupToCommand(DesktopCommand.Follow, para);
             characterUnderTest.Follow();
             var generator = characterUnderTest.Generator;
             Mock.Get(generator).VerifyAll();
         }
-        
+
         [TestMethod]
         [TestCategory("ManagedCharacter")]
         public void TargetAndMoveCameraToCharacter_TellsCameraToMoveToCharacter()
@@ -144,7 +144,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(characterUnderTest.Generator);
-            string[] para = {"model_statesman", characterUnderTest.DesktopLabel};
+            string[] para = { "model_statesman", characterUnderTest.DesktopLabel };
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, para));
         }
 
@@ -153,7 +153,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void SpawnToDesktop_CLearsFromDesktopIfAlreadySpawned()
         {
             //arrange
-            string[] para = {};
+            string[] para = { };
             var characterUnderTest =
                 TestObjectsFactory.GetCharacterUnderTestWithCommandGenerationSetupToCommand(DesktopCommand.DeleteNPC,
                     para);
@@ -189,7 +189,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(characterUnderTest.Generator);
-            string[] para = { "model_statesman", characterUnderTest.Name + " Clone"};
+            string[] para = { "model_statesman", characterUnderTest.Name + " Clone" };
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, para));
         }
 
@@ -198,7 +198,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void ClearsFromDesktop_RemovesCharacterFromDesktop()
         {
             //arrange
-            string[] para = {};
+            string[] para = { };
             var characterUnderTest =
                 TestObjectsFactory.GetCharacterUnderTestWithCommandGenerationSetupToCommand(DesktopCommand.DeleteNPC,
                     para);
@@ -230,7 +230,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public void MoveCharacterToCamera_DoesNotUseKeybindsToMove()
         {
             //arrange
-            string[] paras = {};
+            string[] paras = { };
             var characterUnderTest =
                 TestObjectsFactory.GetCharacterUnderTestWithCommandGenerationSetupToCommand(DesktopCommand.MoveNPC,
                     paras);
@@ -291,7 +291,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var characterUnderTest = TestObjectsFactory.CharacterUnderTestWithMockGhost;
 
             characterUnderTest.AlignGhost();
-            
+
             Assert.AreEqual(characterUnderTest.GhostShadow.Position.Vector, characterUnderTest.Position.Vector);
         }
         [TestMethod]
@@ -349,6 +349,53 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.MoveTo(characterUnderTest.Camera.AdjustedPosition));
         }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void UpdateDistanceCount_InvokesPositionUpdateDistanceCount()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+
+            characterUnderTest.UpdateDistanceCount();
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.UpdateDistanceCount());
+
+            var dest = TestObjectsFactory.MockPosition;
+            characterUnderTest.UpdateDistanceCount(dest);
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.UpdateDistanceCount(dest));
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void ResetDistanceCount_InvokesPositionResetDistanceCount()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+
+            characterUnderTest.ResetDistanceCount();
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.ResetDistanceCount());
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void SpawnToPosition_UpdatesDistanceCount()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+            var dest = TestObjectsFactory.MockPosition;
+
+            characterUnderTest.SpawnToPosition(dest);
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.UpdateDistanceCount());
+        }
+        [TestMethod]
+        [TestCategory("ManagedCharacter")]
+        public void Teleport_UpdatesDistanceCount()
+        {
+            var characterUnderTest = TestObjectsFactory.CharacterUnderTest;
+            var dest = TestObjectsFactory.MockPosition;
+
+            characterUnderTest.Teleport(dest);
+
+            Mock.Get<Position>(characterUnderTest.Position).Verify(p => p.UpdateDistanceCount());
+        }
     }
 
     [TestClass]
@@ -373,7 +420,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             character.Target();
             cameraUnderTest.MoveToTarget();
             //assert
-            string[] para = {""};
+            string[] para = { "" };
             Mock.Get(generator)
                 .Verify(
                     x => x.GenerateDesktopCommandText(It.Is<DesktopCommand>(y => y.Equals(DesktopCommand.Follow)), para));
@@ -449,7 +496,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert - character deleted
             var keyMocker = Mock.Get(characterUnderTest.Generator);
-            string[] para = {};
+            string[] para = { };
             keyMocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.DeleteNPC, para));
 
             //assert - camera has assumed character identity
@@ -482,7 +529,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(id.Generator);
-            string[] para = {id.Surface};
+            string[] para = { id.Surface };
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
         }
 
@@ -498,7 +545,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
             //assert
             var mocker = Mock.Get(id.Generator);
-            string[] para = {id.Surface};
+            string[] para = { id.Surface };
             mocker.Verify(x => x.GenerateDesktopCommandText(DesktopCommand.BeNPC, para));
         }
     }
@@ -511,7 +558,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public CharacterActionListTestSuite()
         {
             TestObjectsFactory = new ManagedCharacterTestObjectsFactory();
-        } 
+        }
 
         [TestMethod]
         [TestCategory("CharacterAction")]
@@ -568,7 +615,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             var idList = TestObjectsFactory.IdentityListUnderTest;
             var prevId = idList[2];
             var afterId = idList[3];
-            
+
             var idToAdd = TestObjectsFactory.ModelIdentityUnderTest;
             //act
             idList.InsertActionAfter(idToAdd, prevId);
@@ -625,7 +672,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        
+
         public ManagedCharacter CharacterUnderTestWithIdentities
         {
             get
@@ -658,7 +705,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 StandardizedFixture.Customize<ManagedCharacterImpl>(x => x
                 .With(y => y.GhostShadow, MockCharacter));
-                
+
                 var managedChar = StandardizedFixture.Create<ManagedCharacter>();
                 managedChar.CharacterActionGroups = GetStandardCharacterActionGroup(managedChar);
                 var ids = StandardizedFixture.CreateMany<Identity>().ToList();
@@ -735,7 +782,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             get
             {
-                var idList =  StandardizedFixture.Build<CharacterActionListImpl<Identity>>()
+                var idList = StandardizedFixture.Build<CharacterActionListImpl<Identity>>()
                     .With(x => x.Type, CharacterActionType.Identity)
                     .Do(x => x.InsertMany(StandardizedFixture.CreateMany<Identity>().ToList()))
                     .Create();
@@ -802,7 +849,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             {
                 Identity id = new IdentityImpl(MockCharacter, "aName", "aCostume", SurfaceType.Costume,
                     MockKeybindGenerator, null);
-                
+
                 return id;
             }
         }

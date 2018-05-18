@@ -523,6 +523,126 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<KeyBindCommandGenerator>(roster.KeybindCommandGenerator).Verify(g => g.GenerateDesktopCommandText(DesktopCommand.BindLoadFile, "required_keybinds.txt"));
         }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void RestartDistanceCountingInActiveGang_SetsGangLeaderAsDistanceCountingCharacter()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            foreach (var p in roster.Participants)
+            {
+                p.IsSpawned = true;
+            }
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.SelectedParticipantsInGangMode = true;
+            roster.Activate();
+
+            roster.RestartDistanceCounting();
+
+            var gangLeader = roster.Participants.First(r => r.IsGangLeader);
+            Assert.AreEqual(roster.DistanceCountingCharacter, gangLeader);
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void RestartDistanceCountingWithActivatedCharacter_SetsActiveCharacterAsDistanceCountingCharacter()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            foreach (var p in roster.Participants)
+                p.IsSpawned = true;
+            CharacterCrowdMember participant1 = roster.Participants[0];
+            roster.SelectParticipant(participant1);
+            roster.Activate();
+
+            roster.RestartDistanceCounting();
+            
+            Assert.AreEqual(roster.DistanceCountingCharacter, roster.ActiveCharacter);
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void RestartDistanceCounting_SetsTargetedCharacterAsDistanceCountingCharacter()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            foreach (var p in roster.Participants)
+            {
+                p.IsSpawned = true;
+                p.IsActive = false;
+                p.IsGangLeader = false;
+            }
+            CharacterCrowdMember participant1 = roster.Participants[1];
+            roster.SelectParticipant(participant1);
+            roster.TargetedCharacter = roster.Participants[1];
+
+            roster.RestartDistanceCounting();
+
+            Assert.AreEqual(roster.DistanceCountingCharacter, roster.TargetedCharacter);
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void RestartDistanceCounting_SetsStartPositionForCounting()
+        {
+            Roster roster = TestObjectsFactory.RosterUnderTestWithSixMockParticipantsInTwoGroups;
+            foreach (var p in roster.Participants)
+            {
+                p.IsSpawned = true;
+                p.IsActive = false;
+                p.IsGangLeader = false;
+            }
+            CharacterCrowdMember participant1 = roster.Participants[1];
+            roster.SelectParticipant(participant1);
+            roster.TargetedCharacter = roster.Participants[1];
+            var mockDuplicatePosition = TestObjectsFactory.MockPosition;
+            Mock.Get<Position>(roster.TargetedCharacter.Position).Setup(p => p.Duplicate(It.IsAny<uint>())).Returns(mockDuplicatePosition);
+
+            roster.RestartDistanceCounting();
+            
+            Mock.Get<Position>(roster.DistanceCountingCharacter.Position).VerifySet(p => p.DistanceCountingStartPosition = mockDuplicatePosition);
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void TargetOnHover_TargetsHoveredCharacterOnlyIfTargetOnHoverModeActive()
+        {
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            foreach (var p in r.Participants)
+            {
+                p.IsSpawned = true;
+                Mock.Get(p).SetupGet(x => x.DesktopLabel).Returns(p.Name);
+            }
+            r.SelectParticipant(r.Participants[0]);
+            r.TargetedCharacter = r.Participants[0];
+            r.TargetOnHover = true;
+
+            r.TargetHoveredCharacter(r.Participants[1]);
+
+            Mock.Get(r.Participants[1]).Verify(p => p.Target(true));
+
+            r.TargetOnHover = false;
+            r.TargetHoveredCharacter(r.Participants[0]);
+
+            Mock.Get(r.Participants[0]).Verify(p => p.Target(It.IsAny<bool>()), Times.Never);
+        }
+        [TestMethod]
+        [TestCategory("Roster")]
+        public void TargetOnHover_UpdatesDistanceCount()
+        {
+            Roster r = TestObjectsFactory.RosterUnderTestWithThreeMockParticipants;
+            foreach (var p in r.Participants)
+            {
+                p.IsSpawned = true;
+                p.IsActive = false;
+                p.IsGangLeader = false;
+                Mock.Get(p).SetupGet(x => x.DesktopLabel).Returns(p.Name);
+                Mock.Get(p).SetupGet(x => x.Position).Returns(TestObjectsFactory.MockPosition);
+            }
+            RosterParticipant selected = r.Participants[0];
+
+            r.SelectParticipant(r.Participants[0]);
+            r.TargetedCharacter = r.Participants[0];
+            r.TargetOnHover = false;
+            r.RestartDistanceCounting();
+
+            r.TargetHoveredCharacter(r.Participants[1]);
+            Mock.Get<CharacterCrowdMember>(r.DistanceCountingCharacter).Verify(p => p.UpdateDistanceCount(r.Participants[1].Position));
+        }
     }
 
     [TestClass]
@@ -1025,6 +1145,7 @@ namespace HeroVirtualTabletop.Roster
                     repo.AddCrowd(x.Parent);
                     x.CrowdRepository = repo;
                     Mock.Get(x.Camera).SetupGet(y => y.AdjustedPosition).Returns(MockPosition);
+                    Mock.Get(x).SetupGet(y => y.Position).Returns(MockPosition);
                 }
 
                 rosterUnderTest.AddCharacterCrowdMemberAsParticipant(MockCharacterCrowdMember);
@@ -1044,6 +1165,7 @@ namespace HeroVirtualTabletop.Roster
                     x.CharacterActionGroups = GetStandardCharacterActionGroup(x);
                     repo.AddCrowd(x.Parent);
                     x.CrowdRepository = repo;
+                    Mock.Get(x).SetupGet(y => y.Position).Returns(MockPosition);
                 }
 
                 return rosterUnderTest;

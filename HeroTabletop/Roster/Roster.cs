@@ -36,6 +36,9 @@ namespace HeroVirtualTabletop.Roster
 
             Groups = new OrderedCollectionImpl<RosterGroup>();
             Selected = new RosterSelectionImpl(this);
+
+            this.TargetOnHover = false;
+            this.UseOptimalPositioning = true;
         }
 
         public CrowdRepository CrowdRepository { get; set; }
@@ -162,6 +165,19 @@ namespace HeroVirtualTabletop.Roster
                     this.SetActivationsForGangMode(value);
                 }
                 NotifyOfPropertyChange(() => SelectedParticipantsInGangMode);
+            }
+        }
+        private bool targetOnHover;
+        public bool TargetOnHover
+        {
+            get
+            {
+                return targetOnHover;
+            }
+            set
+            {
+                targetOnHover = value;
+                NotifyOfPropertyChange(() => TargetOnHover);
             }
         }
 
@@ -795,9 +811,95 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        private CharacterCrowdMember distanceCountingCharacter;
+        public CharacterCrowdMember DistanceCountingCharacter
+        {
+            get
+            {
+                return distanceCountingCharacter;
+            }
+            set
+            {
+                distanceCountingCharacter = value;
+                NotifyOfPropertyChange(() => DistanceCountingCharacter);
+            }
+        }
+
         public void GroupSelectedParticpants()
         {
             throw new NotImplementedException();
+        }
+
+        public void RestartDistanceCounting()
+        {
+            if (this.Selected.Participants.Count > 0)
+            {
+                if (this.AttackingCharacter != null)
+                {
+                    this.DistanceCountingCharacter = this.AttackingCharacter;
+                    //if (this.AttackingCharacters.Count > 1 && this.IsGangInOperation)
+                    //{
+                    //    this.CurrentDistanceCountingCharacter = Participants.First(p => (p as Character).IsGangLeader) as Character;
+                    //}
+                    //else
+                    //{
+                    //    this.CurrentDistanceCountingCharacter = this.AttackingCharacters.First();
+                    //}
+                    foreach (var c in Selected.Participants)
+                    {
+                        //if (!AttackingCharacters.Contains(c))
+                        //{
+                        //    this.CurrentDistanceCountingCharacter.UpdateDistanceCount(c.CurrentPositionVector);
+                        //    break;
+                        //}
+                        if(c != this.AttackingCharacter)
+                        {
+                            this.DistanceCountingCharacter.UpdateDistanceCount(c.Position);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    this.DistanceCountingCharacter?.ResetDistanceCount();
+                    if (Selected.Participants.Count > 1 && IsGangInOperation)
+                        this.DistanceCountingCharacter = Participants.First(p => p.IsGangLeader);
+                    else if (this.ActiveCharacter != null)
+                        this.DistanceCountingCharacter = this.ActiveCharacter;
+                    else if (this.Selected.Participants.Contains(this.TargetedCharacter))
+                        this.DistanceCountingCharacter = this.TargetedCharacter;
+                    else if (Selected.Participants.Count > 0)
+                        this.DistanceCountingCharacter = Selected.Participants.First();
+                    if (DistanceCountingCharacter != null)
+                    {
+                        if (!DistanceCountingCharacter.IsSpawned)
+                            this.DistanceCountingCharacter = null;
+                        else
+                        {
+                            this.DistanceCountingCharacter.Position.DistanceCountingStartPosition = this.DistanceCountingCharacter.Position.Duplicate();
+                        }
+                    }
+                }
+            }
+        }
+        public void TargetHoveredCharacter(CharacterCrowdMember hoveredCharacter)
+        {
+            if (this.TargetOnHover)
+            {
+                if (hoveredCharacter.DesktopLabel != this.TargetedCharacter.DesktopLabel)
+                {
+                    hoveredCharacter.Target();
+                }
+                this.TargetedCharacter = hoveredCharacter;
+            }
+            else if (this.DistanceCountingCharacter != null && this.DistanceCountingCharacter != hoveredCharacter)
+            {
+                this.DistanceCountingCharacter.UpdateDistanceCount(hoveredCharacter.Position);
+            }
+            else if(this.DistanceCountingCharacter != null && DistanceCountingCharacter == hoveredCharacter)
+            {
+                this.DistanceCountingCharacter.UpdateDistanceCount();
+            }
         }
 
     }
@@ -1313,7 +1415,16 @@ namespace HeroVirtualTabletop.Roster
             foreach (var part in Participants)
                 part.UpdateDistanceCount();
         }
-
+        public void UpdateDistanceCount(Position position)
+        {
+            foreach (var part in Participants)
+                part.UpdateDistanceCount(position);
+        }
+        public void ResetDistanceCount()
+        {
+            foreach (var part in Participants)
+                part.ResetDistanceCount();
+        }
         public void InitializeActionGroups()
         {
             throw new NotImplementedException();

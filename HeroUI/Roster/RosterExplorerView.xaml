@@ -107,14 +107,14 @@
                 <Button x:Name="ResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
             </WrapPanel>
             <WrapPanel Grid.Row="2">
-                <Button x:Name="ToggleTargetOnMouseHover" Content="&#xf140;" ToolTip="Toggle Target on Hover (Ctrl+H)">
+                <Button x:Name="ToggleTargetOnHover" Content="&#xf140;" ToolTip="Toggle Target on Hover (Ctrl+H)">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=TargetOnHover}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Roster.TargetOnHover}" Value="False">
                                     <Setter Property="Opacity" Value="0.5"/>
                                 </DataTrigger>
-                                <DataTrigger  Binding="{Binding Path=TargetOnHover}" Value="True">
+                                <DataTrigger  Binding="{Binding Path=Roster.TargetOnHover}" Value="True">
                                     <Setter Property="Opacity" Value="1"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -213,13 +213,13 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Style="{StaticResource IconButton}" HorizontalAlignment="Left" Content="&#xf0e4;" ToolTip="Reset Counter (Ctrl+K)" />
+            <Button x:Name="ResetDistanceCount" Grid.Column="0" Style="{StaticResource IconButton}" HorizontalAlignment="Left" Content="&#xf0e4;" ToolTip="Reset Counter (Ctrl+K)" />
             <TextBlock Name="txtDistanceCounter"  Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                  
-                         Text="{Binding Path=CurrentDistanceCountingCharacter.CurrentDistanceCount}">
+                         Text="{Binding Path=Roster.DistanceCountingCharacter.Position.DistanceCount}">
                 <TextBlock.Foreground>
                     <MultiBinding Converter="{StaticResource DistanceCounterTextColorConverter}">
-                        <Binding Path="CurrentDistanceCountingCharacter.CurrentDistanceCount"/>
-                        <Binding Path="CurrentDistanceCountingCharacter.CurrentDistanceLimit"/>
+                        <Binding Path="Roster.DistanceCountingCharacter.Position.DistanceCount"/>
+                        <Binding Path="Roster.DistanceCountingCharacter.DistanceLimit"/>
                     </MultiBinding>
                 </TextBlock.Foreground>
             </TextBlock>

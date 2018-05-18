@@ -54,6 +54,8 @@ namespace HeroVirtualTabletop.Roster
         CharacterCrowdMember ActiveCharacter { get; }
         CharacterCrowdMember AttackingCharacter { get; }
         CharacterCrowdMember LastSelectedCharacter { get; }
+        CharacterCrowdMember DistanceCountingCharacter { get;  }
+        void RestartDistanceCounting();
         bool SelectedParticipantsInGangMode { get; set; }
         bool IsGangInOperation { get; set; }
         CharacterCrowdMember TargetedCharacter { get; set; }
@@ -63,6 +65,8 @@ namespace HeroVirtualTabletop.Roster
         bool OverheadMode { get; set; }
         bool CloneAndSpawn { get; set; }
         bool SpawnOnClick { get; set; }
+        bool TargetOnHover { get; set;  }
+        void TargetHoveredCharacter(CharacterCrowdMember hoveredCharacter);
         List<MovableCharacter> MovingCharacters { get; }
     }
 

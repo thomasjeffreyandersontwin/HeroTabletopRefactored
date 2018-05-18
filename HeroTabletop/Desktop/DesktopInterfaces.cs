@@ -74,8 +74,9 @@ namespace HeroVirtualTabletop.Desktop
         Vector3 Vector { get; set; }
         Position JustMissedPosition { get; set; }
         Position Duplicate(uint targetPointer = 0);
+        Position DistanceCountingStartPosition { get; set; }
+        float DistanceCount { get; set; }
         bool IsWithin(float dist, Position position, out float calculatedDistance);
-        //void MoveTo(Position destination);
         float DistanceFrom(Position targetPos);
         void TurnTowards(Position lookingAt);
         Matrix RotationMatrix { get; set; }
@@ -100,6 +101,9 @@ namespace HeroVirtualTabletop.Desktop
         Dictionary<Position, Position> GetOptimalDestinationMapForPositions(List<Position> positions);
         void PlacePositionsOptimallyAroundMe(List<Position> positionsToPlaceAround);
         Dictionary<PositionBodyLocation, PositionLocationPart> BodyLocations { get; }
+        void UpdateDistanceCount();
+        void UpdateDistanceCount(Position position);
+        void ResetDistanceCount();
     }
 
     public interface DesktopMemoryCharacter // Former MemoryElement

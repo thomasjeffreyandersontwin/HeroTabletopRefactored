@@ -82,7 +82,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
         [JsonIgnore]
         public Camera Camera { get; set; }
 
-        public Position Position => MemoryInstance.Position;
+        public Position Position => MemoryInstance?.Position;
+
+        public float DistanceLimit { get; set; }
+        
         private string name;
         [JsonProperty(Order = 0)]
         public string Name
@@ -305,9 +308,18 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void UpdateDistanceCount()
         {
-
+            this.Position.UpdateDistanceCount();
         }
 
+        public void UpdateDistanceCount(Position position)
+        {
+            this.Position.UpdateDistanceCount(position);
+        }
+
+        public void ResetDistanceCount()
+        {
+            this.Position.ResetDistanceCount();
+        }
         public  virtual void CreateGhostShadow()
         {
             this.GhostShadow = new ManagedCharacterImpl(this.Targeter, this.Generator, this.Camera);

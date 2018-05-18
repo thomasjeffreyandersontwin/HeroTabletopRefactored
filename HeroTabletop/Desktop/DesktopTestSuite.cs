@@ -503,6 +503,77 @@ namespace HeroVirtualTabletop.Desktop
                 Assert.IsFalse(positionsToPlaceOptimally.Any(p => p != pos && p.Vector == pos.Vector));
             }
         }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void UpdateDistanceCount_SetsDistanceFromStartPositionToCurrentPosition()
+        {
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(20, 20, 20);
+            position.DistanceCountingStartPosition = TestObjectsFactory.MockPosition;
+            position.DistanceCountingStartPosition.Vector = new Vector3(10, 10, 10);
+
+            position.UpdateDistanceCount();
+
+            var distance = Vector3.Distance(position.Vector, position.DistanceCountingStartPosition.Vector);
+            distance = (float)Math.Round((distance) / 8f, 2);
+
+            Assert.AreEqual(position.DistanceCount, distance);
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void UpdateDistanceCountUsingPosition_SetsDistanceFromStartPositionToThatPosition()
+        {
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(20, 20, 20);
+            position.DistanceCountingStartPosition = TestObjectsFactory.PositionUnderTest;
+            position.DistanceCountingStartPosition.Vector = new Vector3(10, 10, 10);
+
+            Position destination = TestObjectsFactory.MockPosition;
+            destination.Vector = new Vector3(30, 30, 30);
+
+            position.UpdateDistanceCount(destination);
+
+            var distance = Vector3.Distance(destination.Vector, position.DistanceCountingStartPosition.Vector);
+            distance = (float)Math.Round((distance) / 8f, 2);
+
+            Assert.AreEqual(position.DistanceCount, distance);
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void MoveToPosition_UpdatesDistanceCount()
+        {
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(20, 20, 20);
+            position.DistanceCountingStartPosition = TestObjectsFactory.PositionUnderTest;
+            position.DistanceCountingStartPosition.Vector = new Vector3(10, 10, 10);
+
+            Position destination = TestObjectsFactory.MockPosition;
+            destination.Vector = new Vector3(30, 30, 30);
+
+            position.MoveTo(destination);
+
+            var distance = Vector3.Distance(position.Vector, position.DistanceCountingStartPosition.Vector);
+            distance = (float)Math.Round((distance) / 8f, 2);
+
+            Assert.AreEqual(position.DistanceCount, distance);
+        }
+        [TestMethod]
+        [TestCategory("Position")]
+        public void ResetDistanceCount_ResetsDistanceCountAndStartPosition()
+        {
+            Position position = TestObjectsFactory.PositionUnderTest;
+            position.Vector = new Vector3(20, 20, 20);
+            position.DistanceCountingStartPosition = TestObjectsFactory.PositionUnderTest;
+            position.DistanceCountingStartPosition.Vector = new Vector3(10, 10, 10);
+            var distance = Vector3.Distance(position.Vector, position.DistanceCountingStartPosition.Vector);
+            distance = (float)Math.Round((distance) / 8f, 2);
+            position.DistanceCount = distance;
+
+            position.ResetDistanceCount();
+
+            Assert.AreEqual(position.Vector, position.DistanceCountingStartPosition.Vector);
+            Assert.AreEqual(position.DistanceCount, 0);
+        }
     }
     /// <summary>
     /// RUN THE TESTS IN THIS CLASS WITHOUT CITY OF HEROES RUNNING. OTHERWISE TESTS WOULD FAIL
@@ -1178,7 +1249,7 @@ namespace HeroVirtualTabletop.Desktop
             get
             {
                 Position p = CustomizedMockFixture.Create<PositionImpl>();
-                
+                p.DistanceCountingStartPosition = null;
                 //stand straight up and face 0 degrees
                 Matrix m = new Matrix();
                 m.M11 = 1;

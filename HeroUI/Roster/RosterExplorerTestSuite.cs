@@ -337,5 +337,27 @@ namespace HeroVirtualTabletop.Roster
 
             Mock.Get<RosterSelection>(rosterVM.Roster.Selected).Verify(s => s.ScanAndFixMemoryTargeter());
         }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ToggleTargetOnHover_TogglesRosterFlagForTargetOnHover()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            rosterVM.ToggleTargetOnHover();
+
+            Mock.Get<Roster>(rosterVM.Roster).VerifySet(r => r.TargetOnHover = !r.TargetOnHover);
+        }
+        [TestMethod]
+        [TestCategory("RosterExplorer")]
+        public void ResetDistanceCount_ResetsDistanceCountForRosterDistanceCountingCharacter()
+        {
+            var rosterVM = RosterExplorerViewModelUnderTest;
+
+            Mock.Get(rosterVM.Roster).SetupGet(r => r.DistanceCountingCharacter).Returns(TestObjectsFactory.MockCharacterCrowdMember);
+
+            rosterVM.ResetDistanceCount();
+
+            Mock.Get(rosterVM.Roster.DistanceCountingCharacter).Verify(c => c.ResetDistanceCount());
+        }
     }
 }

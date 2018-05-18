@@ -5,11 +5,12 @@ using System.Threading;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using System.Linq;
+using Caliburn.Micro;
 
 namespace HeroVirtualTabletop.Desktop
 
 {
-    public class PositionImpl : Position 
+    public class PositionImpl : PropertyChangedBase, Position 
     {
         private DesktopMemoryCharacter desktopMemoryCharacter { get; set; }
         public PositionImpl(Vector3 vector):this()
@@ -228,6 +229,22 @@ namespace HeroVirtualTabletop.Desktop
             }
 
         }
+        [JsonIgnore]
+        public Position DistanceCountingStartPosition { get; set; }
+        private float distanceCount;
+        [JsonIgnore]
+        public float DistanceCount
+        {
+            get
+            {
+                return distanceCount;
+            }
+            set
+            {
+                distanceCount = value > 1 ? value : 0;
+                NotifyOfPropertyChange(() => DistanceCount);
+            }
+        }
         private void RefreshRotationMatrix()
         {
             var rotMatx = this.RotationMatrix;
@@ -277,6 +294,7 @@ namespace HeroVirtualTabletop.Desktop
             X = destination.X;
             Y = destination.Y;
             Z = destination.Z;
+            UpdateDistanceCount();
         }
         private void InitializeBodyParts()
         {
@@ -294,16 +312,41 @@ namespace HeroVirtualTabletop.Desktop
             X = destination.X;
             Y = destination.Y;
             Z = destination.Z;
-
+            this.UpdateDistanceCount();
         }
         public void MoveTo(Vector3 destination)
         {
             X = destination.X;
             Y = destination.Y;
             Z = destination.Z;
-
+            this.UpdateDistanceCount();
+        }
+        public void UpdateDistanceCount()
+        {
+            if (this.DistanceCountingStartPosition != null)
+            {
+                float currentDistance = this.DistanceFrom(this.DistanceCountingStartPosition);
+                if (currentDistance < 5)
+                    currentDistance = 5;
+                this.DistanceCount = (float)Math.Round((currentDistance) / 8f, 2);
+            }
         }
 
+        public void UpdateDistanceCount(Position position)
+        {
+            if (position != null && this.DistanceCountingStartPosition != null)
+            {
+                float currentDistance = this.DistanceCountingStartPosition.DistanceFrom(position);
+                if (currentDistance < 5)
+                    currentDistance = 5;
+                this.DistanceCount = (float)Math.Round((currentDistance) / 8f, 2);
+            }
+        }
+        public void ResetDistanceCount()
+        {
+            this.DistanceCount = 0f;
+            this.DistanceCountingStartPosition = this.Duplicate();
+        }
         public bool IsAtLocation(Vector3 location)
         {
             if (X == location.X && Y == location.Y && Z == location.Z)

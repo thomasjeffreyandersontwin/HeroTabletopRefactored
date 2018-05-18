@@ -45,6 +45,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
         void DeActivate();
         void Teleport(Position position = null);
         void UpdateDistanceCount();
+        void UpdateDistanceCount(Position position);
+        void ResetDistanceCount();
         void ScanAndFixMemoryTargeter();
     }
 
@@ -52,6 +54,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     {
         DesktopCharacterTargeter Targeter { get; set; }
         string DesktopLabel { get; }
+        float DistanceLimit { get; set; }
         Position Position { get; }
         ManagedCharacter GhostShadow { get; }
         bool IsActive { get; set; }
