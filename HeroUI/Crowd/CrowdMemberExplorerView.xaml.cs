@@ -40,12 +40,14 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.ExpansionUpdateNeeded -= viewModel_ExpansionUpdateNeeded;
             this.viewModel.FlattenNumberRequired -= viewModel_FlattenNumberRequired;
             this.viewModel.FlattenNumberEntryFinished -= viewModel_FlattenNumberEntryFinished;
+            this.viewModel.RefreshViewRequired -= viewModel_RefreshViewRequired;
             this.viewModel.EditModeEnter += viewModel_EditModeEnter;
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
             this.viewModel.ExpansionUpdateNeeded += viewModel_ExpansionUpdateNeeded;
             this.viewModel.FlattenNumberRequired += viewModel_FlattenNumberRequired;
             this.viewModel.FlattenNumberEntryFinished += viewModel_FlattenNumberEntryFinished;
+            this.viewModel.RefreshViewRequired += viewModel_RefreshViewRequired;
             await this.viewModel.LoadCrowdCollection();
         }
 
@@ -469,6 +471,20 @@ namespace HeroVirtualTabletop.Crowd
                 }
             }
         }
+        #endregion
+
+        #region Refresh Tree View
+
+        private void viewModel_RefreshViewRequired(object sender, EventArgs e)
+        {
+            this.RefreshTreeView();
+        }
+
+        private void RefreshTreeView()
+        {
+            this.treeViewCrowd.Items.Refresh();
+        }
+
         #endregion
 
         #region Drag Drop

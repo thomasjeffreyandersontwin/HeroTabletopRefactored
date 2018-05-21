@@ -76,6 +76,13 @@ namespace HeroVirtualTabletop.Crowd
             if (ExpansionUpdateNeeded != null)
                 ExpansionUpdateNeeded(sender, e);
         }
+
+        public event EventHandler RefreshViewRequired;
+        public void OnRefreshViewRequired(object sender, EventArgs e)
+        {
+            if (RefreshViewRequired != null)
+                RefreshViewRequired(sender, e);
+        }
         public event EventHandler FlattenNumberRequired;
         public void OnFlattenNumberRequired(object sender, EventArgs e)
         {
@@ -373,9 +380,10 @@ namespace HeroVirtualTabletop.Crowd
 
             foreach (Crowd cr in this.CrowdRepository.Crowds)
             {
-                cr.ApplyFilter(filter); //Filter already check
-                OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
+                cr.ApplyFilter(filter);
+                //OnExpansionUpdateNeeded(cr, new CustomEventArgs<ExpansionUpdateEvent> { Value = ExpansionUpdateEvent.Filter });
             }
+            OnRefreshViewRequired(this, null);
         }
 
         #endregion

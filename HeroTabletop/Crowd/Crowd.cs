@@ -676,7 +676,7 @@ namespace HeroVirtualTabletop.Crowd
                 {
                     cm.ApplyFilter(filter);
                 }
-                if (Members.Any(cm => { return cm.MatchesFilter; }))
+                if (Members.Any(cm => cm.MatchesFilter))
                 {
                     MatchesFilter = true;
                 }
