@@ -51,19 +51,12 @@ namespace HeroVirtualTabletop.Crowd
             await this.viewModel.LoadCrowdCollection();
         }
 
-        //JA TO DO can we please createe some intention revealing functions so we have less nested cyclomatic complexity
         private void viewModel_EditNeeded(object sender, CustomEventArgs<string> e)
         {
             CrowdMember modelToSelect = sender as CrowdMember;
             if (sender == null) // need to unselect
             {
-                DependencyObject dObject = treeViewCrowd.GetItemFromSelectedObject(treeViewCrowd.SelectedItem);
-                TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
-                if (tvi != null)
-                {
-                    tvi.IsSelected = false;
-                    this.selectedCrowdRoot = null;
-                }
+                UnselectSelectedNodeInTreeview();
             }
             else
             {
@@ -73,89 +66,127 @@ namespace HeroVirtualTabletop.Crowd
                 
                 if (sender is Crowd)
                 {
-                    if (this.viewModel.SelectedCrowdMember == null) // A new crowd has been added to the collection
+                    TreeViewItem item = FindCrowdNodeInTree(sender as Crowd);
+                    if(item != null)
                     {
-                        for (int i = 0; i < treeViewCrowd.Items.Count; i++)
-                        {
-                            TreeViewItem item = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(treeViewCrowd.Items[i]) as TreeViewItem;
-                            if (item != null)
-                            {
-                                var model = item.DataContext as CrowdMember;
-                                if (model.Name == modelToSelect.Name)
-                                {
-                                    item.IsSelected = true;
-                                    itemFound = true;
-                                    txtBox = FindTextBoxInTemplate(item);
-                                    this.viewModel.SelectedCrowdMember = model as Crowd;
-                                    break;
-                                }
-                            }
-                        }
+                        itemFound = true;
+                        txtBox = FindTextBoxInTemplate(item);
                     }
                 }
+
                 if (!itemFound)
                 {
-                    DependencyObject dObject = null;
-                    if (e != null) // Something sent as event args
+                    bool isDragDropInProgress = e != null && e.Value == "EditAfterDragDrop" && this.currentDropItemNodeParent != null;
+                    TreeViewItem tvi = GetParentNodeForItemToSelect(isDragDropInProgress);
+                    TreeViewItem item = FindNodeThatRepresentsCrowdMember(tvi, modelToSelect);
+                    if(item != null)
                     {
-                        if (e.Value == "EditAfterDragDrop" && this.currentDropItemNodeParent != null)
-                        {
-                            dObject = currentDropItemNodeParent;
-                        }
-                    }
-                    else
-                    {
-                        if (this.selectedCrowdRoot != null && this.viewModel.SelectedCrowdMember != null)
-                        {
-                            TreeViewItem item = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(this.selectedCrowdRoot) as TreeViewItem;
-                            dObject = FindTreeViewItemUnderTreeViewItemByModelName(item, this.viewModel.SelectedCrowdMember.Name);
-                        }
-                        else
-                            dObject = treeViewCrowd.GetItemFromSelectedObject(this.viewModel.SelectedCrowdMember);
-                    }
-                    TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
-                    if (tvi != null)
-                    {
-                        CrowdMember model = tvi.DataContext as CrowdMember;
-                        if (tvi.Items != null)
-                        {
-                            tvi.IsExpanded = true;
-                            tvi.UpdateLayout();
-                            for (int i = 0; i < tvi.Items.Count; i++)
-                            {
-                                TreeViewItem item = tvi.ItemContainerGenerator.ContainerFromItem(tvi.Items[i]) as TreeViewItem;
-                                if (item != null)
-                                {
-                                    model = item.DataContext as CrowdMember;
-                                    if (model.Name == modelToSelect.Name)
-                                    {
-                                        item.IsSelected = true;
-                                        itemFound = true;
-                                        item.UpdateLayout();
-                                        txtBox = FindTextBoxInTemplate(item);
-                                        if (model is Crowd)
-                                        {
-                                            this.viewModel.SelectedCrowdMember = model as Crowd;
-                                            this.viewModel.SelectedCrowdParent = tvi.DataContext as Crowd;
-                                            this.viewModel.SelectedCharacterCrowdMember = null;
-                                        }
-                                        else
-                                        {
-                                            this.viewModel.SelectedCharacterCrowdMember = model as CharacterCrowdMemberImpl;
-                                            this.viewModel.SelectedCrowdMember = tvi.DataContext as Crowd;
-                                        }
-                                        if (this.selectedCrowdRoot == null)
-                                            this.selectedCrowdRoot = tvi.DataContext as CrowdImpl;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        itemFound = true;
+                        txtBox = FindTextBoxInTemplate(item);
                     }
                 }
                 if (txtBox != null)
                     this.viewModel.EnterEditMode(txtBox);
             }
+        }
+
+        private void UnselectSelectedNodeInTreeview()
+        {
+            DependencyObject dObject = treeViewCrowd.GetItemFromSelectedObject(treeViewCrowd.SelectedItem);
+            TreeViewItem tvi = dObject as TreeViewItem; // got the selected treeviewitem
+            if (tvi != null)
+            {
+                tvi.IsSelected = false;
+                this.selectedCrowdRoot = null;
+            }
+        }
+
+        private TreeViewItem FindCrowdNodeInTree(Crowd modelToSelect)
+        {
+            TreeViewItem item = null;
+            if (this.viewModel.SelectedCrowdMember == null) // A new crowd has been added to the collection
+            {
+                for (int i = 0; i < treeViewCrowd.Items.Count; i++)
+                {
+                    item = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(treeViewCrowd.Items[i]) as TreeViewItem;
+                    if (item != null)
+                    {
+                        var model = item.DataContext as CrowdMember;
+                        if (model.Name == modelToSelect.Name)
+                        {
+                            item.IsSelected = true;
+                            
+                            this.viewModel.SelectedCrowdMember = model as Crowd;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return item;
+        }
+
+        private TreeViewItem FindNodeThatRepresentsCrowdMember(TreeViewItem tviParent, CrowdMember modelToSelect)
+        {
+            TreeViewItem item = null;
+            if (tviParent != null)
+            {
+                CrowdMember model = tviParent.DataContext as CrowdMember;
+                if (tviParent.Items != null)
+                {
+                    tviParent.IsExpanded = true;
+                    tviParent.UpdateLayout();
+                    for (int i = 0; i < tviParent.Items.Count; i++)
+                    {
+                        item = tviParent.ItemContainerGenerator.ContainerFromItem(tviParent.Items[i]) as TreeViewItem;
+                        if (item != null)
+                        {
+                            model = item.DataContext as CrowdMember;
+                            if (model.Name == modelToSelect.Name)
+                            {
+                                item.IsSelected = true;
+                                item.UpdateLayout();
+                                if (model is Crowd)
+                                {
+                                    this.viewModel.SelectedCrowdMember = model as Crowd;
+                                    this.viewModel.SelectedCrowdParent = tviParent.DataContext as Crowd;
+                                    this.viewModel.SelectedCharacterCrowdMember = null;
+                                }
+                                else
+                                {
+                                    this.viewModel.SelectedCharacterCrowdMember = model as CharacterCrowdMemberImpl;
+                                    this.viewModel.SelectedCrowdMember = tviParent.DataContext as Crowd;
+                                }
+                                if (this.selectedCrowdRoot == null)
+                                    this.selectedCrowdRoot = tviParent.DataContext as CrowdImpl;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return item;
+        }
+
+        private TreeViewItem GetParentNodeForItemToSelect(bool isDragDropInProgress)
+        {
+            DependencyObject dObject = null;
+            if (isDragDropInProgress)
+            {
+                dObject = currentDropItemNodeParent;
+            }
+            else
+            {
+                if (this.selectedCrowdRoot != null && this.viewModel.SelectedCrowdMember != null)
+                {
+                    TreeViewItem itemParent = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(this.selectedCrowdRoot) as TreeViewItem;
+                    dObject = FindTreeViewItemUnderTreeViewItemByModelName(itemParent, this.viewModel.SelectedCrowdMember.Name);
+                }
+                else
+                    dObject = treeViewCrowd.GetItemFromSelectedObject(this.viewModel.SelectedCrowdMember);
+            }
+            TreeViewItem tvi = dObject as TreeViewItem;
+            return tvi;
         }
 
         private TextBox FindTextBoxInTemplate(TreeViewItem item)
