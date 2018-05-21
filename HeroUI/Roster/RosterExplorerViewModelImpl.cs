@@ -334,7 +334,6 @@ namespace HeroVirtualTabletop.Roster
                 this.SelectedParticipants.Add(selected);
             }
             this.UpdateRosterSelection();
-            //SelectNextCharacterInCrowdCycle();
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 

@@ -81,7 +81,7 @@ namespace HeroVirtualTabletop.Desktop
         [JsonIgnore]
         public float Unit { get; set; }
         private float x, y, z = 0;
-
+        [JsonProperty]
         public float X
         {
             get
@@ -103,7 +103,7 @@ namespace HeroVirtualTabletop.Desktop
                 }
             }
         }
-
+        [JsonProperty]
         public float Y
         {
             get
@@ -126,7 +126,7 @@ namespace HeroVirtualTabletop.Desktop
                 }
             }
         }
-
+        [JsonProperty]
         public float Z
         {
             get

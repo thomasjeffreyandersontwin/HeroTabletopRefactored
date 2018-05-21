@@ -725,6 +725,7 @@ namespace HeroVirtualTabletop.Movement
             foreach (MovableCharacter character in charactersToTurn)
             {
                 character.Position.TurnTowards(destination);
+                character.GhostShadow?.Position?.TurnTowards(destination);
             }
         }
 
@@ -733,7 +734,10 @@ namespace HeroVirtualTabletop.Movement
             MovableCharacter target = GetLeadingCharacterForMovement(targets);
             Key key = GetKeyFromDirection(turnDirection);
             foreach (MovableCharacter character in targets)
+            {
                 character.Position.Turn(turnDirection, turnAngle);
+                character.GhostShadow?.Position?.Turn(turnDirection, turnAngle);
+            }
             await Task.Delay(2);
             Reset(target);
         }
@@ -761,6 +765,7 @@ namespace HeroVirtualTabletop.Movement
             {
                 mainCharacterToMove.DesktopNavigator.Destination = destination;
                 mainCharacterToMove.Position.TurnTowards(destination);
+                mainCharacterToMove.GhostShadow?.Position.TurnTowards(destination);
             }
             else
             {
@@ -830,16 +835,18 @@ namespace HeroVirtualTabletop.Movement
             PlayAppropriateAbility(target.DesktopNavigator.Direction, targets);
             target.DesktopNavigator.ChangeDirection(target.DesktopNavigator.Direction);
             List<Position> followerPositions = targets.Where(t => t != target).Select(t => t.Position).ToList();
+            followerPositions.AddRange(targets.Where(t => t.GhostShadow != null).Select(t => t.GhostShadow.Position));
             await target.DesktopNavigator.NavigateToDestination(target.Position, destination, target.DesktopNavigator.Direction, this.Speed, this.HasGravity, followerPositions);
 
             PlayAppropriateAbility(Direction.Still, targets);
 
-            targets.ForEach(t => t.AlignGhost());
+            targets.ForEach(t => t.AlignGhost());  
 
             this.Stop(target);
             target.ActiveMovement.IsCharacterMovingToDestination = false;
             target.ActiveMovement.IsCharacterTurning = false;
-            target.Movements.Active = null;
+            if(DefaultMovements.CurrentActiveMovementForMovingCharacters == null)
+                target.Movements.Active = null;
         }
 
         private async Task MoveByDistance(List<MovableCharacter> targets, double distance)
@@ -876,8 +883,9 @@ namespace HeroVirtualTabletop.Movement
                 if (movementMember.Direction != Direction.Still)//&& Keyboard.IsKeyDown(key))
                 {
                     List<Position> followerPositions = targets.Where(t => t != target).Select(t => t.Position).ToList();
+                    followerPositions.AddRange(targets.Where(t => t.GhostShadow != null).Select(t => t.GhostShadow.Position));
                     await target.DesktopNavigator.Navigate(target.Position, movementMember.Direction, this.Speed, this.HasGravity, followerPositions);
-                    targets.ForEach(t => t.AlignGhost());
+                    //targets.ForEach(t => t.AlignGhost());
                 }
             }
         }
@@ -910,6 +918,7 @@ namespace HeroVirtualTabletop.Movement
             {
                 AnimatedAbility.AnimatedAbility ability = MovementMembers.First(mm => mm.Direction == direction).Ability;
                 ability.Play(targets.Cast<AnimatedCharacter>().ToList());
+                ability.Play(targets.Where(t => t.GhostShadow != null).Cast<AnimatedCharacter>().ToList());
             }
         }
     }

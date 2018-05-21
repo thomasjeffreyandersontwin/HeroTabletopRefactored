@@ -1161,6 +1161,8 @@ namespace HeroVirtualTabletop.Roster
             {
                 Participants.First()?.SpawnToPosition(position);
             }
+            if (this.Roster.DistanceCountingCharacter == null)
+                this.Roster.RestartDistanceCounting();
         }
 
         public void ClearFromDesktop(bool completeEvent = true, bool clearManueveringWithCamera = true)

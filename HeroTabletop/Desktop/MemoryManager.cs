@@ -1,4 +1,5 @@
 ﻿using Binarysharp.MemoryManagement;
+using HeroVirtualTabletop.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,9 +32,16 @@ namespace HeroVirtualTabletop.Desktop
         {
             this.targetPointer = targetPointer;
             this.targetMemoryAddress = new IntPtr(0x00F14FB0);
-            this.InitializeGameInMemory();
-            if(initFromCurrentTarget)
-                InitFromCurrentTarget();
+            try
+            {
+                this.InitializeGameInMemory();
+                if (initFromCurrentTarget)
+                    InitFromCurrentTarget();
+            }
+            catch
+            {
+
+            }
         }
 
         private void InitializeGameInMemory()
