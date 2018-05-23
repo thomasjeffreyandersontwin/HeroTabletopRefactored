@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using HeroVirtualTabletop.Crowd;
 using Newtonsoft.Json;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -359,6 +360,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 NotifyOfPropertyChange(() => IsNonDirectional);
             }
         }
+        [JsonProperty]
+        public string OverridingCostumeName { get; set; }
 
         public Position AttackDirection { get; set; }
 
@@ -373,6 +376,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 {
                     if(Target.Identities.Active.Type == ManagedCharacter.SurfaceType.Model && Target.GhostShadow != null)
                         costumeName = Target.GhostShadow.Name + "_" + Target.GhostShadow.Identities.Active.Surface + "_Modified.costume";
+                    else if(!string.IsNullOrEmpty(OverridingCostumeName))
+                        costumeName = Target.Name + "_" + OverridingCostumeName + "_Modified.costume";
                     else
                         costumeName = Target.Name + "_" + Target.Identities.Active.Surface + "_Modified.costume";
                 }
@@ -391,9 +396,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 {
                     if (Target.Identities.Active.Type == ManagedCharacter.SurfaceType.Model && Target.GhostShadow != null)
                         costume_name = Target.GhostShadow.Identities.Active.Surface + ".costume";
+                    else if(!string.IsNullOrEmpty(OverridingCostumeName))
+                        costume_name = OverridingCostumeName + ".costume";
                     else
                         costume_name = Target.Identities.Active.Surface + ".costume";
-
                 }
                 else costume_name = Target.Name + ".costume";
                 return Path.Combine(HeroVirtualTabletopGame.CostumeDirectory, costume_name);
@@ -872,7 +878,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             PauseElement clone = new PauseElementImpl();
             clone = (PauseElement)cloneBaseAttributes(clone);
             clone.Target = target;
-            clone.LongDistanceDelay = LongDistanceDelay;
+            clone.LongDistanceDelay = LongDistanceDelay; 
             clone.MediumDistanceDelay = MediumDistanceDelay;
             clone.ShortDistanceDelay = ShortDistanceDelay;
             clone.IsUnitPause = IsUnitPause;
@@ -1172,6 +1178,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             animationElement.Target = Target;
             animationElement.ParentSequence = this;
             AnimationElements.Add(animationElement);
+            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
         }
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement insertAfter)
@@ -1208,6 +1215,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 AnimationElements.Insert(position, toInsert);
                 toInsert.ParentSequence = this;
             }
+            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
         }
         public void InsertElement(AnimationElement animationElement, int index)
@@ -1221,6 +1229,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             AnimationElements.Insert(index, animationElement);
             animationElement.ParentSequence = this;
+            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
         }
 
@@ -1234,9 +1243,31 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (animElement != null)
                     AnimationElements.Remove(animElement);
             }
+            ChangeFXBehaviorWhenIdentityElementPresent();
             //FixOrders(); // don't need to reset orders actually. Plus it helps to differentiate between two otherwise identical elements - one just deleted and one right after it that was cloned from the deleted one
         }
+        private void ChangeFXBehaviorWhenIdentityElementPresent()
+        {
+            var animationElements = GetFlattenedAnimationList(this.AnimationElements);
 
+            foreach (FXElement fxElement in animationElements.Where(e => e is FXElement))
+            {
+                fxElement.OverridingCostumeName = null;
+                if (animationElements.Any(e => e.AnimationElementType == AnimationElementType.LoadIdentity))
+                {
+                    int fxIndex = animationElements.IndexOf(fxElement);
+                    var identityElement = animationElements.LastOrDefault(e => e.AnimationElementType == AnimationElementType.LoadIdentity && animationElements.IndexOf(e) < fxIndex) as LoadIdentityElement;
+                    if (identityElement != null)
+                    {
+                        int identityIndex = animationElements.IndexOf(identityElement);
+                        if (!animationElements.Any(e => e.AnimationElementType == AnimationElementType.FX && animationElements.IndexOf(e) < fxIndex && animationElements.IndexOf(e) > identityIndex))
+                        {
+                            fxElement.OverridingCostumeName = identityElement.Reference.Identity.Surface;
+                        }
+                    }
+                }
+            }
+        }
         public override void Play(List<AnimatedCharacter> targets)
         {
             if (Type == SequenceType.And)
@@ -1431,6 +1462,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
                         animationElement.Name = refResource.Ability.Name;
                     }
                     break;
+                case AnimationElementType.LoadIdentity:
+                    animationElement = new LoadIdentityElementImpl();
+                    IdentityResource idResource = LoadIdentityElementImpl.LastIdentityReference;
+                    fullName = GetAppropriateAnimationName(AnimationElementType.LoadIdentity, flattenedList);
+                    if (idResource == null || idResource.Identity == null || idResource.Identity.Owner != this.Target)
+                        animationElement.Name = fullName;
+                    else
+                    {
+                        (animationElement as LoadIdentityElement).Reference = idResource;
+                        animationElement.Name = idResource.Identity.Name;
+                    }
+                    break;
             }
 
             return animationElement;
@@ -1515,6 +1558,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     break;
                 case AnimationElementType.Reference:
                     name = "Ref Element";
+                    break;
+                case AnimationElementType.LoadIdentity:
+                    name = "Identity Element";
                     break;
             }
 
@@ -1668,6 +1714,76 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
     }
 
+    public class LoadIdentityElementImpl : AnimationElementImpl, LoadIdentityElement
+    {
+
+        private IdentityResource identity;
+        [JsonProperty]
+        public IdentityResource Reference
+        {
+            get
+            {
+                return identity;
+            }
+            set
+            {
+                identity = value;
+                NotifyOfPropertyChange(() => Reference);
+            }
+        }
+        public static IdentityResource LastIdentityReference { get; set; }
+        public LoadIdentityElementImpl(AnimatedCharacter owner, IdentityResource identity): base(owner)
+        {
+            this.Reference = identity;
+            this.AnimationElementType = AnimationElementType.LoadIdentity;
+        }
+
+        public LoadIdentityElementImpl() : this(null, null)
+        {
+
+        }
+
+        public override AnimationElement Clone(AnimatedCharacter target)
+        {
+            LoadIdentityElement clonedElement = new LoadIdentityElementImpl(target, this.Reference);
+            clonedElement.Name = this.Name;
+            return clonedElement;
+        }
+
+        public override void Play(List<AnimatedCharacter> targets)
+        {
+            completeEvent = false;
+            foreach (var target in targets)
+            {
+                target.Target(false);
+                PlayResource(target);
+            }
+            completeEvent = true;
+            var firstOrDefault = targets.FirstOrDefault();
+            firstOrDefault?.Generator.CompleteEvent();
+        }
+
+        public override void StopResource(AnimatedCharacter target)
+        {
+            var targetToPlay = target ?? this.Target;
+            targetToPlay.Target(false);
+            target.ActiveIdentity.Play();
+        }
+
+        public override void PlayResource(AnimatedCharacter target)
+        {
+            var targetToPlay = target ?? this.Target;
+            var generator = targetToPlay.Generator;
+            if (this.Reference != null)
+            {
+                targetToPlay.Target(false);
+                this.Reference.Identity.Play(false);
+            }
+            if (completeEvent)
+                generator.CompleteEvent();
+        }
+    }
+
     public class AnimatedResourceImpl : PropertyChangedBase, AnimatedResource
     {
         private string name;
@@ -1787,6 +1903,25 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 fullResourcePath = value;
                 NotifyOfPropertyChange(() => FullResourcePath);
+            }
+        }
+    }
+
+    public class IdentityResourceImpl : AnimatedResourceImpl, IdentityResource
+    {
+        private Identity identity;
+        [JsonProperty]
+        public Identity Identity
+        {
+            get
+            {
+                return identity;
+            }
+
+            set
+            {
+                identity = value;
+                NotifyOfPropertyChange(() => Identity);
             }
         }
     }
@@ -1951,6 +2086,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        private ObservableCollection<IdentityResource> identityElements;
+        public ObservableCollection<IdentityResource> IdentityElements
+        {
+            get
+            {
+                if (identityElements == null)
+                    identityElements = GetIdentityResources();
+                return identityElements;
+            }
+            set
+            {
+                identityElements = value;
+                NotifyOfPropertyChange(() => IdentityElements);
+            }
+        }
+
         private CollectionViewSource movResourcesCVS;
         public CollectionViewSource MOVResourcesCVS
         {
@@ -2004,6 +2155,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 referenceElementsCVS = value;
                 NotifyOfPropertyChange(() => ReferenceElementsCVS);
+            }
+        }
+
+        private CollectionViewSource identityElementsCVS;
+        public CollectionViewSource IdentityElementsCVS
+        {
+            get
+            {
+                return identityElementsCVS;
+            }
+            set
+            {
+                identityElementsCVS = value;
+                NotifyOfPropertyChange(() => IdentityElementsCVS);
             }
         }
 
@@ -2067,6 +2232,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                             case AnimationElementType.Reference:
                                 //Helper.SaveUISettings("Ability_ReferenceFilter", value);
                                 ReferenceElementsCVS.View.Refresh();
+                                break;
+                            case AnimationElementType.LoadIdentity:
+                                IdentityElementsCVS.View.Refresh();
                                 break;
                         }
                     }
@@ -2211,6 +2379,23 @@ namespace HeroVirtualTabletop.AnimatedAbility
             return referenceResources;
         }
 
+        public ObservableCollection<IdentityResource> GetIdentityResources()
+        {
+            ObservableCollection<IdentityResource> identityResources = null;
+            if(this.CurrentAbility != null && this.CurrentAbility.Owner != null)
+            {
+                var currentOwner = this.CurrentAbility.Owner as AnimatedCharacter;
+                List<IdentityResource> identityCollection = new List<IdentityResource>(currentOwner.Identities.Select(x =>
+                {
+                    return new IdentityResourceImpl { Identity = x as Identity, Name = x.Name, Tag = "" };
+                }));
+                identityCollection = identityCollection.OrderBy(x => x, new IdentityResourceComparer()).ToList();
+                identityResources = new ObservableCollection<IdentityResource>(identityCollection);
+            }
+
+            return identityResources;
+        }
+
         #region Load Resources
         public void LoadResources()
         {
@@ -2230,6 +2415,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             NotifyOfPropertyChange(() => SoundResourcesCVS);
 
             LoadReferenceResource();
+            LoadIdentityResource();
         }
 
         public void LoadReferenceResource()
@@ -2239,6 +2425,16 @@ namespace HeroVirtualTabletop.AnimatedAbility
             referenceElementsCVS.Source = this.ReferenceElements;
             referenceElementsCVS.View.Filter += ReferenceResourcesCVS_Filter;
             NotifyOfPropertyChange(() => ReferenceElementsCVS);
+        }
+
+        public void LoadIdentityResource()
+        {
+            this.identityElements = null;
+            identityElementsCVS = new CollectionViewSource();
+            identityElementsCVS.Source = this.IdentityElements;
+            if(identityElementsCVS.View != null)
+                identityElementsCVS.View.Filter += AnimatedResourceCVS_Filter;
+            NotifyOfPropertyChange(() => IdentityElementsCVS);
         }
 
         private bool AnimatedResourceCVS_Filter(object item)
@@ -2255,6 +2451,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 else if (CurrentAnimationElement is FXElement && (CurrentAnimationElement as FXElement).FX == animationRes)
                     return true;
                 else if (CurrentAnimationElement is SoundElement && (CurrentAnimationElement as SoundElement).Sound == animationRes)
+                    return true;
+                else if (CurrentAnimationElement is LoadIdentityElement && (CurrentAnimationElement as LoadIdentityElement).Reference == animationRes)
                     return true;
             }
             // Replace non-alphanumeric characters with empty string
@@ -2338,6 +2536,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 s1 = ar1.Ability.Name;
                 s2 = ar2.Ability.Name;
+            }
+
+            return CommonLibrary.CompareStrings(s1, s2);
+        }
+    }
+
+    public class IdentityResourceComparer : IComparer<IdentityResource>
+    {
+        public int Compare(IdentityResource ir1, IdentityResource ir2)
+        {
+            string s1 = string.Empty;
+            string s2 = string.Empty;
+            if (ir1.Identity != null && ir2.Identity != null && ir1.Identity.Name == ir2.Identity.Name)
+            {
+                s1 = ir1.Identity.Surface;
+                s2 = ir2.Identity.Surface;
             }
 
             return CommonLibrary.CompareStrings(s1, s2);

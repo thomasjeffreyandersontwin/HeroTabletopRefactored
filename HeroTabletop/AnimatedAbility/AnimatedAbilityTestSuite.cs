@@ -173,15 +173,40 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             //arrange
             var element = TestObjectsFactory.FxElementUnderTestWithAnimatedCharacter;
+            element.Target.Identities.Active = element.Target.Identities.FirstOrDefault();
+            element.Target.ActiveIdentity.Surface = "IdentityABCXYZ";
             File.Create(element.CostumeFilePath).Close();
             var generator = element.Target.Generator;
-            element.Target.Identities.Active = element.Target.Identities.FirstOrDefault();
             //act
             element.Play();
 
             //assert
             string[] para = {Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath)};
             Mock.Get(generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
+            Assert.IsTrue(element.ModifiedCostumeFilePath.Contains(element.Target.ActiveIdentity.Surface));
+            Assert.IsTrue(element.ModifiedCostumeContainsFX);
+            File.Delete(element.CostumeFilePath);
+        }
+        [TestMethod]
+        [TestCategory("AnimationElement")]
+        [TestCategory("FXElement")]
+        public void FXElement_LoadsOverridingCostumeOnOwnerWithFXResourceIfSpecified()
+        {
+            //arrange
+            var element = TestObjectsFactory.FxElementUnderTestWithAnimatedCharacter;
+            element.Target.Identities.Active = element.Target.Identities.FirstOrDefault();
+            element.Target.ActiveIdentity.Surface = "IdentityABCXYZ";
+            element.OverridingCostumeName = "CostumeOverrideXYZ";
+            File.Create(element.CostumeFilePath).Close();
+            var generator = element.Target.Generator;
+            //act
+            element.Play();
+
+            //assert
+            string[] para = { Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath) };
+            Mock.Get(generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para));
+            Assert.IsFalse(element.ModifiedCostumeFilePath.Contains(element.Target.ActiveIdentity.Surface));
+            Assert.IsTrue(element.ModifiedCostumeFilePath.Contains(element.OverridingCostumeName));
             Assert.IsTrue(element.ModifiedCostumeContainsFX);
             File.Delete(element.CostumeFilePath);
         }
@@ -457,6 +482,34 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var after = DateTime.Now;
             var expected = now.AddMilliseconds(element.Duration);
             Assert.AreEqual(expected.Second, after.Second);
+        }
+    }
+
+    [TestClass]
+    public class IdentityElementTestSuite
+    {
+        public AnimatedAbilityTestObjectsFactory TestObjectsFactory = new AnimatedAbilityTestObjectsFactory();
+        [TestMethod]
+        [TestCategory("AnimationElement")]
+        [TestCategory("LoadIdentityElement")]
+        public void LoadIdentityElementPlay_PlaysReferenceIdentity()
+        {
+            var element = TestObjectsFactory.LoadIdentityElementUnderTest;
+
+            element.Play();
+
+            Mock.Get<Identity>(element.Reference.Identity).Verify(x => x.Play(It.IsAny<bool>()));
+        }
+        [TestMethod]
+        [TestCategory("AnimationElement")]
+        [TestCategory("LoadIdentityElement")]
+        public void LoadIdentityElementStop_PlaysActiveIdentity()
+        {
+            var element = TestObjectsFactory.LoadIdentityElementUnderTest;
+
+            element.Stop();
+
+            Mock.Get<Identity>(element.Target.ActiveIdentity).Verify(x => x.Play(It.IsAny<bool>()));
         }
     }
 
@@ -941,6 +994,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 FXElement fx = StandardizedFixture.Build<FXElementImpl>()
                     .With(x => x.Target, MockAnimatedCharacter)
                     .With(x => x.FX, MockFxResource)
+                    .With(x => x.OverridingCostumeName, null)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
                     .Without(x => x.Color1)
                     .Without(x => x.Color2)
@@ -961,6 +1015,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 FXElement fx = StandardizedFixture.Build<FXElementImpl>()
                     .With(x => x.Target, AnimatedCharacterUndertestWithIdentities)
                     .With(x => x.FX, MockFxResource)
+                    .With(x => x.OverridingCostumeName, null)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
                     .Without(x => x.Color1)
                     .Without(x => x.Color2)
@@ -980,6 +1035,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 FXElement fx = StandardizedFixture.Build<FXElementImpl>()
                     .With(x => x.Target, AnimatedCharacterUndertestWithIdentitiesAndGhost)
                     .With(x => x.FX, MockFxResource)
+                    .With(x => x.OverridingCostumeName, null)
                     .With(x => x.ParentSequence, MockAnimatedAbility)
                     .Without(x => x.Color1)
                     .Without(x => x.Color2)
@@ -1022,6 +1078,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     .Create();
 
                 return p;
+            }
+        }
+
+        public IdentityResource MockIdentityResource
+        {
+            get
+            {
+                var mockResource = CustomizedMockFixture.Create<IdentityResource>();
+                mockResource.Identity = Mockidentity;
+                mockResource.Identity.Owner = MockAnimatedCharacter;
+                return mockResource;
+            }
+        }
+
+        public LoadIdentityElement LoadIdentityElementUnderTest
+        {
+            get
+            {
+                LoadIdentityElement element = StandardizedFixture.Build<LoadIdentityElementImpl>()
+                    .With(x => x.Target, MockAnimatedCharacter)
+                    .With(x => x.ParentSequence, MockAnimatedAbility)
+                    .With(x => x.Reference, MockIdentityResource)
+                    .Create();
+                element.Target = element.Reference.Identity.Owner as AnimatedCharacter;
+                Mock.Get(element.Target).SetupGet(x => x.Identities).Returns(MockIdentities);
+                Mock.Get(element.Target).SetupGet(x => x.ActiveIdentity).Returns(Mockidentity);
+                return element;
             }
         }
 

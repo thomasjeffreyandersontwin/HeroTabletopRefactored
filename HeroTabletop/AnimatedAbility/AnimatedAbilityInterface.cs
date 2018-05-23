@@ -92,7 +92,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
         FX,
         Reference,
         Sequence,
-        Pause
+        Pause,
+        LoadIdentity
     }
     public enum SequenceType
     {
@@ -178,7 +179,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         Color Color2 { get; set; }
         Color Color3 { get; set; }
         Color Color4 { get; set; }
-
+        string OverridingCostumeName { get; set; }
         string CostumeFilePath { get; }
         string ModifiedCostumeFilePath { get; }
         bool ModifiedCostumeContainsFX { get; }
@@ -220,6 +221,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
         SequenceElement Copy(AnimatedCharacter destination);
     }
 
+    public interface LoadIdentityElement: AnimationElement
+    {
+        IdentityResource Reference { get; set; }
+    }
+
     public interface AnimatedResourceManager
     {
         string GameDirectory { get; set; }
@@ -233,10 +239,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         ObservableCollection<ReferenceResource> ReferenceElements { get; set; }
 
+        ObservableCollection<IdentityResource> IdentityElements { get; set; }
+
         CollectionViewSource MOVResourcesCVS { get; set; }
         CollectionViewSource FXResourcesCVS { get; set; }
         CollectionViewSource SoundResourcesCVS { get; set; }
         CollectionViewSource ReferenceElementsCVS { get; set; }
+        CollectionViewSource IdentityElementsCVS { get; set; }
         AnimatedAbility CurrentAbility { get; set; }
         AnimationElement CurrentAnimationElement { get; set; }
         string Filter { get; set; }
@@ -260,6 +269,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
     public interface MovResource: AnimatedResource
     {
         string FullResourcePath { get; set; }
+    }
+    public interface IdentityResource: AnimatedResource
+    {
+        Identity Identity { get; set; }
     }
     public interface ReferenceResource
     {

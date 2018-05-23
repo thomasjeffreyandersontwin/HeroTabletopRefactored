@@ -180,6 +180,7 @@
                 <Button x:Name="AddReferenceElement" Content="&#xf08e;" ToolTip="Add Reference (Alt+Plus+R)" />
                 <Button x:Name="AddSequenceElement" Content="&#xf126;" ToolTip="Add Sequence (Alt+Plus+Q)"/>
                 <Button x:Name="AddPauseElement" Content="&#xf04c;" ToolTip="Add Pause (Alt+Plus+P)"/>
+                <Button x:Name="AddLoadIdentityElement" Content="&#xf129;" ToolTip="Add Identity (Ctrl+I)"/>
                 <Button x:Name="DemoAnimatedAbility" Content="&#xf04b;" ToolTip="Demo Ability (Alt+Enter)" />
             </StackPanel>
             <TextBlock Text="Activation Key" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultStyle}"/>
@@ -519,6 +520,32 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Character" Binding="{Binding Character.Name}" Width="auto" IsReadOnly="True"></DataGridTextColumn>
                         <DataGridTextColumn Header="Ability" Binding="{Binding Ability.Name}" Width="*" IsReadOnly="True"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <DataGrid x:Name="dataGridIdentityReferences"
+                          MaxWidth="400"
+                          Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
+                          Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=LoadIdentity, FallbackValue=Collapsed}"
+                          ItemsSource="{Binding AnimatedResourceMananger.IdentityElementsCVS.View}"
+                          SelectionUnit="FullRow" AutoGenerateColumns="False" IsEnabled="{Binding CanEditAbilityOptions}"
+                          SelectionMode="Single" CanUserResizeRows="False"
+                          SelectedValue="{Binding SelectedAnimationElement.Reference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      >
+                    <i:Interaction.Behaviors>
+                        <behaviors:ScrollIntoViewForDataGrid />
+                    </i:Interaction.Behaviors>
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Foreground" Value="White"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="DataGridCell.IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#FF1144FF" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Identity" Binding="{Binding Identity.Name}" Width="*" IsReadOnly="True"></DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

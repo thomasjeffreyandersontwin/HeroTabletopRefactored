@@ -534,6 +534,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.AddAnimationElement(animationElement);
         }
 
+        public void AddLoadIdentityElement()
+        {
+            AnimationElement animationElement = this.CurrentAbility.GetNewAnimationElement(AnimationElementType.LoadIdentity);
+            this.AddAnimationElement(animationElement);
+        }
+
         private void AddAnimationElement(AnimationElement animationElement)
         {
             AnimationSequencer sequenceToAddTo = null;
@@ -552,7 +558,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 sequenceToAddTo.InsertElement(animationElement);
             OnAnimationAdded(animationElement, null);
             this.SaveAbility();
-            NotifyOfPropertyChange(() => CanCloneAnimation);
+            NotifyOfPropertyChange(() => CanCloneAnimation); 
         }
 
 
@@ -789,9 +795,18 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else if (e.PropertyName == "Reference")
             {
-                ReferenceElement element = sender as ReferenceElement;
-                element.Name = element.Reference.Ability.Name;
-                ReferenceElementImpl.LastReference = element.Reference;
+                if(sender is ReferenceElement)
+                {
+                    ReferenceElement element = sender as ReferenceElement;
+                    element.Name = element.Reference.Ability.Name;
+                    ReferenceElementImpl.LastReference = element.Reference;
+                }
+                else if(sender is LoadIdentityElement)
+                {
+                    LoadIdentityElement element = sender as LoadIdentityElement;
+                    element.Name = element.Reference.Identity.Name;
+                    LoadIdentityElementImpl.LastIdentityReference = element.Reference;
+                }
             }
             else
             {

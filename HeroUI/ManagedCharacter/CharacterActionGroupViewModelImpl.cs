@@ -339,15 +339,15 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         private void SetSelectedAction(T value)
         {
-            if (selectedAction != null && selectedAction is AnimatedAbility.AnimatedAbility)
-            {
-                if (selectedAction as AnimatedAbility.AnimatedAbility != value as AnimatedAbility.AnimatedAbility)
-                {
-                    AnimatedAbility.AnimatedAbility ability = selectedAction as AnimatedAbility.AnimatedAbility;
-                    if (!ability.Persistent && !(ability is AnimatedAttack))
-                        ability.Stop();
-                }
-            }
+            //if (selectedAction != null && selectedAction is AnimatedAbility.AnimatedAbility)
+            //{
+            //    if (selectedAction as AnimatedAbility.AnimatedAbility != value as AnimatedAbility.AnimatedAbility)
+            //    {
+            //        AnimatedAbility.AnimatedAbility ability = selectedAction as AnimatedAbility.AnimatedAbility;
+            //        if (!ability.Persistent && !(ability is AnimatedAttack))
+            //              ability.Stop();
+            //    }
+            //}
             selectedAction = value;
             //if(!(value is AnimatedAbility.AnimatedAbility))
             //    this.CharacterActionList.Active = value;
