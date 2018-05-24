@@ -583,7 +583,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //act
             element.InsertElementAfter(toInsert, insertAfter);
 
-
             //assert
             Assert.AreEqual(insertAfter.Order, insertAfterOrder - 1);
             Assert.AreEqual(toInsert.Order, insertAfterOrder);
