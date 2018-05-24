@@ -16,6 +16,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
     public class AnimatedCharacterImpl : ManagedCharacterImpl, AnimatedCharacter, INotifyPropertyChanged
     {
         private const string ABILITY_ACTION_GROUP_NAME = "Powers";
+        public const string DEFAULT_ABILITIES_ACTION_GROUP_NAME = "Default Abilities";
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
         {
@@ -40,15 +41,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override void InitializeActionGroups()
         {
             base.InitializeActionGroups();
-            CreateAbilityActionGroup();
+            CreateAbilityActionGroups();
+            LoadDefaultAbilities();
         }
 
-        private void CreateAbilityActionGroup()
+        private void CreateAbilityActionGroups()
         {
-            var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, Generator, this);
-            abilitiesGroup.Name = ABILITY_ACTION_GROUP_NAME;
+            CreateAbilityGroup();
+            CreateDefaultAbilityGroup();
+        }
 
-            this.CharacterActionGroups.Add(abilitiesGroup);
+        private void CreateAbilityGroup()
+        {
+            if(this.Abilities == null)
+            {
+                var abilitiesGroup = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, Generator, this);
+                abilitiesGroup.Name = ABILITY_ACTION_GROUP_NAME;
+                this.CharacterActionGroups.Add(abilitiesGroup);
+            }
+        }
+        private void CreateDefaultAbilityGroup()
+        {
+            if (this.DefaultAbilities == null)
+            {
+                var defaultAbilitiesGroup = new CharacterActionListImpl<AnimatedAbility>(CharacterActionType.Ability, Generator, this);
+                defaultAbilitiesGroup.Name = DEFAULT_ABILITIES_ACTION_GROUP_NAME;
+                this.CharacterActionGroups.Add(defaultAbilitiesGroup); 
+            }
         }
         public override void Target(bool completeEvent = true)
         { 
@@ -75,25 +94,35 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return CharacterActionGroups.FirstOrDefault(ag => ag.Name == ABILITY_ACTION_GROUP_NAME) as CharacterActionList<AnimatedAbility>;
             }
         }
+        public CharacterActionList<AnimatedAbility> DefaultAbilities
+        {
+            get
+            {
+                return CharacterActionGroups.FirstOrDefault(ag => ag.Name == DEFAULT_ABILITIES_ACTION_GROUP_NAME) as CharacterActionList<AnimatedAbility>;
+            }
+        }
         public AnimatedAbility DefaultAbility => Abilities.Default;
         public List<AnimatedAbility> ActivePersistentAbilities
         {
             get { throw new NotImplementedException(); }
         }
-        public void loadDefaultAbilities()
+        public void LoadDefaultAbilities()
         {
-            if (Repository != null)
-                if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CHARACTERNAME))
-                {
-                    var defaultCharacter = Repository.CharacterByName[DefaultAbilities.CHARACTERNAME];
-                    foreach (var defaultAbility in defaultCharacter.Abilities)
-                        if (Abilities.Contains(defaultAbility) == false)
-                            if (defaultCharacter.Abilities.Contains(defaultAbility))
-                                Abilities[defaultAbility.Name] = defaultCharacter.Abilities[defaultAbility.Name];
+            CreateDefaultAbilityGroup();
 
-                    //to do load the rest of the default abilities
+            if (this.DefaultAbilities.Count() == 0 && Repository != null)
+                if (Repository.CharacterByName.ContainsKey(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME))
+                {
+                    var defaultCharacter = HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DefaultCharacter;
+                    foreach (var defaultAbility in defaultCharacter.Abilities)
+                    {
+                        if (!DefaultAbilities.Contains(defaultAbility))
+                            if (defaultCharacter.Abilities.Contains(defaultAbility) && HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.IsCoreDefaultAbility(defaultAbility))
+                                DefaultAbilities[defaultAbility.Name] = defaultCharacter.Abilities[defaultAbility.Name];
+                    }
                 }
         }
+        
         public override Dictionary<CharacterActionType, Dictionary<string, CharacterAction>> StandardActionGroups
         {
             get
@@ -190,10 +219,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void AddDefaultState(string defaultState, bool playImmediately = true)
         {
-            if (Repository.CharacterByName.ContainsKey(DefaultAbilities.CHARACTERNAME))
+            if (Repository.CharacterByName.ContainsKey(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME))
             {
 
-                AnimatedAbility defaultAbility = Repository?.CharacterByName?[DefaultAbilities.CHARACTERNAME]
+                AnimatedAbility defaultAbility = Repository?.CharacterByName?[HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME]
                     ?.Abilities?[defaultState];
 
                 if (defaultAbility != null)
@@ -292,12 +321,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             switch (state.StateName)
             {
-                case DefaultAbilities.DYING:
-                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD);
-                case DefaultAbilities.UNCONSCIOUS:
-                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING);
-                case DefaultAbilities.STUNNED:
-                    return !this.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING || s.StateName == DefaultAbilities.UNCONSCIOUS);
+                case HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING:
+                    return !this.ActiveStates.Any(s => s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DEAD);
+                case HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS:
+                    return !this.ActiveStates.Any(s => s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DEAD || s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING);
+                case HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.STUNNED:
+                    return !this.ActiveStates.Any(s => s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DEAD || s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING || s.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS);
                 default:
                     return true;
             }

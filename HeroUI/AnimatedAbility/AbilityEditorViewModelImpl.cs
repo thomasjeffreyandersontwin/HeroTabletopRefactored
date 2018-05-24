@@ -15,6 +15,7 @@ using System.IO;
 using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Desktop;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -958,30 +959,44 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void ExecuteAnimatedAbility(AnimatedAbility ability)
         {
-            //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
-            if (ability is AreaEffectAttack)
+            System.Action d = delegate ()
             {
-                AreaAttackInstructions areaAttackInstructions = (ability as AreaEffectAttack).StartAttackCycle();
-                //Mouse.OverrideCursor = cursor;
-                this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, areaAttackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
-            }
-            else if (ability is AnimatedAttack)
-            {
-                AttackInstructions attackInstructions = (ability as AnimatedAttack).StartAttackCycle();
-                //Mouse.OverrideCursor = cursor;
-                this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, attackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
-            }
-            else
-            {
-                ability?.Play();
-            }
+                IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
+                WindowsUtilities.SetForegroundWindow(winHandle);
+                //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
+                if (ability is AreaEffectAttack)
+                {
+                    AreaAttackInstructions areaAttackInstructions = (ability as AreaEffectAttack).StartAttackCycle();
+                    //Mouse.OverrideCursor = cursor;
+                    this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, areaAttackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                }
+                else if (ability is AnimatedAttack)
+                {
+                    AttackInstructions attackInstructions = (ability as AnimatedAttack).StartAttackCycle();
+                    //Mouse.OverrideCursor = cursor;
+                    this.EventAggregator.Publish(new AttackStartedEvent(ability.Owner as AnimatedCharacter, attackInstructions), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                }
+                else
+                {
+                    ability?.Play();
+                }
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
+            adex.ExecuteAsyncDelegate();
         }
 
         public void DemoAnimation()
         {
-            AnimatedCharacter currentTarget = GetCurrentTarget();
-            if (this.SelectedAnimationElement != null)
-                this.SelectedAnimationElement.Play(currentTarget);
+            System.Action d = delegate ()
+            {
+                IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
+                WindowsUtilities.SetForegroundWindow(winHandle);
+                AnimatedCharacter currentTarget = GetCurrentTarget();
+                if (this.SelectedAnimationElement != null)
+                    this.SelectedAnimationElement.Play(currentTarget);
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
+            adex.ExecuteAsyncDelegate();
         }
 
         private AnimatedCharacter GetCurrentTarget()

@@ -130,14 +130,14 @@ namespace HeroVirtualTabletop.Movement
         public bool IsMoving { get; set; }
         public Movement GetNewMovement()
         {
-            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME] as MovableCharacter;
             string validMovementName = GetNewValidMovementName(defaultCharacter);
             Movement movement = new MovementImpl(validMovementName);
             return movement;
         }
         public CharacterMovement AddMovement(Movement movement = null)
         {
-            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME] as MovableCharacter;
             if (movement == null)
             {
                 movement = GetNewMovement();
@@ -151,7 +151,7 @@ namespace HeroVirtualTabletop.Movement
 
         public CharacterMovement AddMovement(CharacterMovement characterMovement, Movement movement = null)
         {
-            MovableCharacter defaultCharacter = this.Repository.CharacterByName[DefaultAbilities.CHARACTERNAME] as MovableCharacter;
+            MovableCharacter defaultCharacter = this.Repository.CharacterByName[HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME] as MovableCharacter;
             if (movement == null)
             {
                 movement = GetNewMovement();
@@ -212,7 +212,7 @@ namespace HeroVirtualTabletop.Movement
 
         public void AddDefaultMovements()
         {
-            MovableCharacter defaultCharacter = DefaultAbilities.DefaultCharacter as MovableCharacter;
+            MovableCharacter defaultCharacter = HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DefaultCharacter as MovableCharacter;
 
             if (defaultCharacter != null && this != defaultCharacter && defaultCharacter.Movements != null && defaultCharacter.Movements.Count() > 0)
             {

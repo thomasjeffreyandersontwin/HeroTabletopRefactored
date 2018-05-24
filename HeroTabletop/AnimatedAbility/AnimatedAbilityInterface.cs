@@ -45,6 +45,33 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public const string CROWDNAME = "System Characters";
 
         public static AnimatedCharacter DefaultCharacter { get; set;}
+        static List<string> CoreDefaultAbilities = new List<string>
+            {
+                "Recovery",
+                "Stun Recovery",
+                "Pass Turn",
+                "Half Phase Action",
+                "Hold Action",
+                "Draw A Weapon",
+                "Dodge",
+                "Strike",
+                "Haymaker",
+                "Prone",
+                "Move By",
+                "Move Through",
+                "Grab",
+                "Disarm",
+                "Block",
+                "Set",
+                "Sweep",
+                "Rapid Fire",
+                "Off Ground",
+                "Generic Damage/Power"
+            };
+        public static bool IsCoreDefaultAbility(AnimatedAbility ability)
+        {
+            return CoreDefaultAbilities.Contains(ability.Name);
+        }
     }
     public interface AnimatedCharacterRepository
     {
@@ -57,6 +84,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         AnimatedCharacterRepository Repository { get; set; }
         List<FXElement> LoadedFXs { get; }
         CharacterActionList<AnimatedAbility> Abilities { get; }
+        CharacterActionList<AnimatedAbility> DefaultAbilities { get; }
         List<AnimatedAbility> ActivePersistentAbilities { get; }
         //ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
         bool IsSelected { get; set; }
@@ -64,6 +92,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         bool CheckIfAbilityNameIsDuplicate(string updatedName);
         Position Facing { get; set; }
         string GetNewValidAbilityName(string name = "Ability");
+        void LoadDefaultAbilities();
     }
     public interface AnimatableCharacterState
     {

@@ -77,6 +77,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             if (message.EditedCharacter != null)
             {
+                message.EditedCharacter.LoadDefaultAbilities();
                 this.CharacterActionGroups = new ObservableCollection<CharacterActionGroupViewModel>();
                 foreach (var group in message.EditedCharacter?.CharacterActionGroups)
                 {

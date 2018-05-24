@@ -1179,8 +1179,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             animationElement.Target = Target;
             animationElement.ParentSequence = this;
             AnimationElements.Add(animationElement);
-            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
+            ChangeFXBehaviorWhenIdentityElementPresent();
         }
         public void InsertElementAfter(AnimationElement toInsert, AnimationElement insertAfter)
         {
@@ -1216,8 +1216,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 AnimationElements.Insert(position, toInsert);
                 toInsert.ParentSequence = this;
             }
-            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
+            ChangeFXBehaviorWhenIdentityElementPresent();
         }
         public void InsertElement(AnimationElement animationElement, int index)
         {
@@ -1230,8 +1230,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             AnimationElements.Insert(index, animationElement);
             animationElement.ParentSequence = this;
-            ChangeFXBehaviorWhenIdentityElementPresent();
             FixOrders();
+            ChangeFXBehaviorWhenIdentityElementPresent();
         }
 
         public void RemoveElement(AnimationElement animationElement)
@@ -1244,8 +1244,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (animElement != null)
                     AnimationElements.Remove(animElement);
             }
-            ChangeFXBehaviorWhenIdentityElementPresent();
             //FixOrders(); // don't need to reset orders actually. Plus it helps to differentiate between two otherwise identical elements - one just deleted and one right after it that was cloned from the deleted one
+            ChangeFXBehaviorWhenIdentityElementPresent();
         }
         private void ChangeFXBehaviorWhenIdentityElementPresent()
         {

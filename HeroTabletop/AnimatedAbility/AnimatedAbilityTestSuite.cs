@@ -1275,7 +1275,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
                 var character = AnimatedCharacterUnderTest;
                 character.Repository = repo;
-                ((AnimatedCharacterImpl) character).loadDefaultAbilities();
+                ((AnimatedCharacterImpl) character).LoadDefaultAbilities();
 
                 var dodge = MockAnimatedAbility;
                 dodge.Name = DefaultAbilities.DODGE;

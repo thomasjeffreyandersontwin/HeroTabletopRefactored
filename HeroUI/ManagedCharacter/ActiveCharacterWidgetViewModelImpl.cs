@@ -90,6 +90,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.ActiveCharacter = activatedCharacter;
             if (activatedCharacter != null)
             {
+                (activatedCharacter as AnimatedAbility.AnimatedCharacter)?.LoadDefaultAbilities();
                 this.CharacterActionGroups = new ObservableCollection<CharacterActionGroupViewModel>();
                 foreach (CharacterActionGroup group in activatedCharacter.CharacterActionGroups)
                 {
@@ -109,7 +110,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                             break;
                         case CharacterActionType.Identity:
                             var identityActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<Identity>>();
-                            identityActionGroupViewModel.ActionGroup = group;
+                            identityActionGroupViewModel.ActionGroup = group; 
                             identityActionGroupViewModel.ShowActions = showActionsInGroup;
                             identityActionGroupViewModel.IsReadOnly = true;
                             identityActionGroupViewModel.LoadedActionName = loadedOptionExists ? actionName : "";
