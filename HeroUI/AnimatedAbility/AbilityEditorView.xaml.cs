@@ -614,7 +614,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                         if (draggedObject is ReferenceResource)
                         {
                             // Drag drop of Reference Resource
-                            this.viewModel.MoveReferenceResourceToAnimationElements(draggedObject as ReferenceResource, dropAnimationElement);
+                            this.viewModel.MoveReferenceResourceAfterAnimationElement(draggedObject as ReferenceResource, dropAnimationElement);
                         }
                         else
                         {

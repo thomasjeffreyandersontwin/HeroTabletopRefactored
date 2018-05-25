@@ -324,7 +324,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 currentReferenceElement = value;
                 NotifyOfPropertyChange(() => CurrentReferenceElement);
-                NotifyOfPropertyChange(() => CanUpdateReferenceType);
+                NotifyOfPropertyChange(() => CanUpdateReferenceTypeForReferenceElement);
             }
         }
 
@@ -541,7 +541,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.AddAnimationElement(animationElement);
         }
 
-        private void AddAnimationElement(AnimationElement animationElement)
+        public void AddAnimationElement(AnimationElement animationElement)
         {
             AnimationSequencer sequenceToAddTo = null;
             if (!this.IsSequenceAbilitySelected)
@@ -566,14 +566,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
         #endregion
 
         #region Remove Animation
-
-        //public bool CanRemoveAnimation
-        //{
-        //    get
-        //    {
-        //        return this.SelectedAnimationElement != null && !IS_ATTACK_EXECUTING;
-        //    }
-        //}
 
         public void RemoveAnimation()
         {
@@ -870,7 +862,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        private void RenameAbility(string updatedName)
+        public void RenameAbility(string updatedName)
         {
             if (this.OriginalName == updatedName)
             {
@@ -946,10 +938,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        public void DemoAnimatedAbility()
+        public async Task DemoAnimatedAbility()
         {
             AnimatedCharacter currentTarget = GetCurrentTarget();
-            this.ExecuteAnimatedAbility(this.CurrentAbility);
+            await this.ExecuteAnimatedAbility(this.CurrentAbility);
         }
 
         public void Handle(PlayAnimatedAbilityEvent message)
@@ -957,7 +949,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.ExecuteAnimatedAbility(message.AbilityToPlay);
         }
 
-        public void ExecuteAnimatedAbility(AnimatedAbility ability)
+        public async Task ExecuteAnimatedAbility(AnimatedAbility ability)
         {
             System.Action d = delegate ()
             {
@@ -981,11 +973,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     ability?.Play();
                 }
             };
-            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
-            adex.ExecuteAsyncDelegate();
+            //AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
+            //adex.ExecuteAsyncDelegate();
+            await Task.Run(d);
         }
 
-        public void DemoAnimation()
+        public async Task DemoAnimation()
         {
             System.Action d = delegate ()
             {
@@ -995,8 +988,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (this.SelectedAnimationElement != null)
                     this.SelectedAnimationElement.Play(currentTarget);
             };
-            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
-            adex.ExecuteAsyncDelegate();
+            //AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
+            //adex.ExecuteAsyncDelegate();
+            await Task.Run(d);
         }
 
         private AnimatedCharacter GetCurrentTarget()
@@ -1024,13 +1018,13 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (this.CurrentAbility.Target != null)
             {
                 CharacterCrowdMember member = this.CurrentAbility.Target as CharacterCrowdMember;
-                if (!member.IsSpawned)
+                if (member != null && !member.IsSpawned)
                 {
                     Crowd.Crowd parent = member.GetRosterParentCrowd();
                     this.EventAggregator.PublishOnUIThread(new AddToRosterEvent(member, parent));
                     member.SpawnToDesktop(false);
                 }
-                member.Target();
+                member?.Target();
             }
         }
         #endregion
@@ -1116,7 +1110,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         #endregion
 
         #region Copy/Link Reference Element
-        private bool CanUpdateReferenceType
+        private bool CanUpdateReferenceTypeForReferenceElement
         {
             get
             {
@@ -1124,7 +1118,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
-        public void UpdateReferenceType()
+        public void UpdateReferenceTypeForReferenceElement()
         {
             if (this.CurrentReferenceElement != null)
             {
@@ -1219,7 +1213,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #region Drag Drop
 
-        public void MoveReferenceResourceToAnimationElements(ReferenceResource movedResource, AnimationElement elementAfter)
+        public void MoveReferenceResourceAfterAnimationElement(ReferenceResource movedResource, AnimationElement elementAfter)
         {
             ReferenceElement refElement = this.CurrentAbility.GetNewAnimationElement(AnimationElementType.Reference) as ReferenceElement;
             refElement.Reference = movedResource;

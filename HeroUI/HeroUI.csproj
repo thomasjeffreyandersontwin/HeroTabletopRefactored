@@ -126,6 +126,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AnimatedAbility\AbilityEditorTestSuite.cs" />
     <Compile Include="AnimatedAbility\AbilityEditorView.xaml.cs">
       <DependentUpon>AbilityEditorView.xaml</DependentUpon>
     </Compile>

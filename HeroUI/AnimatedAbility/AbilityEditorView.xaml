@@ -249,7 +249,7 @@
             <TextBox Grid.Column="1" Grid.RowSpan="2" Height="Auto" Name="txtBoxAnimationResourceFilter" HorizontalAlignment="Stretch" Margin="5"
                      Text="{Binding AnimatedResourceMananger.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             <RadioButton Grid.Row="0" Grid.Column="2" Content="Link" IsChecked="{Binding Path=CopyReference, Converter={StaticResource InvertBooleanConverter}}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            <RadioButton x:Name="UpdateReferenceType" Grid.Row="1" Grid.Column="2" Content="Copy" IsChecked="{Binding Path=CopyReference}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <RadioButton x:Name="UpdateReferenceTypeForReferenceElement" Grid.Row="1" Grid.Column="2" Content="Copy" IsChecked="{Binding Path=CopyReference}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         </Grid>
         <TreeView x:Name="treeViewAnimations" Grid.Row="3" Grid.Column="0" ItemsSource="{Binding CurrentAbility.AnimationElements}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
                   PreviewMouseDown="treeViewAnimations_OnPreviewMouseDown" PreviewKeyUp="treeViewAnimations_PreviewKeyUp" BorderBrush="#FF1144FF" BorderThickness="1" Margin="5" MaxWidth="300"

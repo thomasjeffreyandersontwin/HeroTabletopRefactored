@@ -18,7 +18,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         event EventHandler EditModeLeave;
         event EventHandler SelectionChanged;
         event EventHandler<CustomEventArgs<ExpansionUpdateEvent>> ExpansionUpdateNeeded;
-
+        AbilityClipboard AbilityClipboard { get; set; }
         AnimatedAbility CurrentAbility { get; set; }
         AnimationElement SelectedAnimationElementRoot { get; set; }
         AnimatedResourceManager AnimatedResourceMananger { get; set; }
@@ -29,8 +29,21 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         bool IsSequenceAbilitySelected { get; set; }
         bool IsShowingAbilityEditor { get; set; }
+        void AddAnimationElement(AnimationElement animationElement);
+        void RemoveAnimation();
+        void RenameAbility(string updatedName);
+        Task DemoAnimatedAbility();
+        Task DemoAnimation();
+        void CloneAnimation();
+        void CutAnimation();
+        void PasteAnimation();
+        void UpdateReferenceTypeForReferenceElement();
         void MoveSelectedAnimationElementAfter(AnimationElement animationElement);
-        void MoveReferenceResourceToAnimationElements(ReferenceResource movedResource, AnimationElement elementAfter);
+        void MoveReferenceResourceAfterAnimationElement(ReferenceResource movedResource, AnimationElement elementAfter);
+        void ToggleAttack();
+        void ToggleAreaEffectAttack();
+        void ConfigureAttack();
+        void ConfigureOnHit();
         void LoadResources();
         IEventAggregator EventAggregator { get; set; }
     }

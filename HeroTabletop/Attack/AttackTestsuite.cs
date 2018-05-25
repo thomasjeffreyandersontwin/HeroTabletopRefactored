@@ -465,6 +465,7 @@ namespace HeroVirtualTabletop.Attack
         }
 
         public AnimatedAttack MockAttack => CustomizedMockFixture.Create<AnimatedAttack>();
+        public AreaEffectAttack MockAreaAttack => CustomizedMockFixture.Create<AreaEffectAttack>();
         public AnimatedAttack AttackUnderTestWithMockCharacter
         {
             get

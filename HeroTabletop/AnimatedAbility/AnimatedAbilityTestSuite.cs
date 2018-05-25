@@ -969,7 +969,27 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 return abilityActionList;
             }
         }
+        public AnimationElement MockAnimationElement => CustomizedMockFixture.Create<AnimationElement>();
+        public SequenceElement MockSequenceElement
+        {
+            get
+            {
+                var element = CustomizedMockFixture.Create<SequenceElement>();
+                element.AnimationElementType = AnimationElementType.Sequence;
+                return element;
+            }
+        }
+        public ReferenceElement MockReferenceElement
+        {
+            get
+            {
+                var element = CustomizedMockFixture.Create<ReferenceElement>();
+                element.AnimationElementType = AnimationElementType.Reference;
+                return element;
+            }
+        }
 
+        public ReferenceResource MockReferenceResource => CustomizedMockFixture.Create<ReferenceResource>();
         public AnimationElement FakeAnimationElementUnderTest => new FakeAnimatedElement(MockAnimatedCharacter);
         public List<AnimationElement> MockAnimationElementList => CustomizedMockFixture.CreateMany<AnimationElement>(4).ToList();
 
@@ -1140,6 +1160,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public AnimationSequencer MockAnimationSequencer => CustomizedMockFixture.Create<AnimationSequencer>();
 
         public AnimatedAbility MockAnimatedAbility => CustomizedMockFixture.Create<AnimatedAbility>();
+        public AnimatedResourceManager MockAnimatedResourceManager => new Mock<AnimatedResourceManager>().Object;
+        public AbilityClipboard MockAbilityClipboard => CustomizedMockFixture.Create<AbilityClipboard>();
         public AnimatedAbility AnimatedAbilityUnderTestWithPersistentElements
         {
             get
