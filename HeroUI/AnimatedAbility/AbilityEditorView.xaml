@@ -18,7 +18,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
              mc:Ignorable="d" Loaded="AbilityEditorView_Loaded">
-    <UserControl.Resources>    
+    <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
@@ -27,6 +27,7 @@
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
             <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <local:BooleanToVisibilityInvertConverter x:Key="BooleanToVisibilityInvertConverter"/>
+            <local:WindowsKeyToVirtualKeyConverter x:Key="WindowsKeyToVirtualKeyConverter"/>
             <local:StringComparerToVisibilityConverter x:Key="resourcesTypeConverter"></local:StringComparerToVisibilityConverter>
             <ObjectDataProvider x:Key="Keys" MethodName="GetValues"
                             ObjectType="{x:Type system:Enum}">
@@ -186,7 +187,7 @@
             <TextBlock Text="Activation Key" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultStyle}"/>
             <ComboBox Grid.Row="1" Grid.Column="1" Margin="2" IsEnabled="{Binding CanEditAbilityOptions}"
                           Name="cbBoxActivateOnKey" ItemsSource="{Binding AvailableKeys}"
-                          SelectedValue="{Binding Path=CurrentAbility.ActivateOnKey}">
+                          SelectedValue="{Binding Path=CurrentAbility.ActivationKey, Converter={StaticResource WindowsKeyToVirtualKeyConverter}}">
                 <behaviors:CommandBehaviorCollection.Behaviors>
                     <behaviors:BehaviorBinding Event="SelectionChanged" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=animatedability:AbilityEditorView}, Path=DataContext.SaveAbilityCommand}"/>
                 </behaviors:CommandBehaviorCollection.Behaviors>
@@ -238,18 +239,19 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition />
+                <ColumnDefinition Width="53*" />
+                <ColumnDefinition Width="124*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center" Grid.RowSpan="2">
+            <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="0,3,53.041,3.4">
                 <CheckBox x:Name="ChangePlayWithNext" IsEnabled="{Binding CanPlayWithNext}" IsChecked="{Binding SelectedAnimationElement.PlayWithNext}" Content="Play W/ Next" HorizontalAlignment="Left" />
                 <CheckBox Name="chkBoxPlayOnTargeted" IsChecked="{Binding PlayOnTargeted}" Content="Play On Targeted" HorizontalAlignment="Left" />
             </StackPanel>
             <!--<ComboBox Grid.Column="1" Name="cmbBoxAnimationResource" HorizontalAlignment="Stretch" Margin="5"/>-->
-            <TextBox Grid.Column="1" Grid.RowSpan="2" Height="Auto" Name="txtBoxAnimationResourceFilter" HorizontalAlignment="Stretch" Margin="5"
-                     Text="{Binding AnimatedResourceMananger.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-            <RadioButton Grid.Row="0" Grid.Column="2" Content="Link" IsChecked="{Binding Path=CopyReference, Converter={StaticResource InvertBooleanConverter}}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            <RadioButton x:Name="UpdateReferenceTypeForReferenceElement" Grid.Row="1" Grid.Column="2" Content="Copy" IsChecked="{Binding Path=CopyReference}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            <TextBox Grid.Column="1" Grid.RowSpan="2" Height="Auto" Name="txtBoxAnimationResourceFilter" HorizontalAlignment="Stretch" Margin="5.2,5,4.6,4.4"
+                     Text="{Binding AnimatedResourceMananger.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.ColumnSpan="2"></TextBox>
+            <RadioButton Grid.Row="0" Grid.Column="3" Content="Link" IsChecked="{Binding Path=CopyReference, Converter={StaticResource InvertBooleanConverter}}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0.4,2,0,2.2"/>
+            <RadioButton x:Name="UpdateReferenceTypeForReferenceElement" Grid.Row="1" Grid.Column="3" Content="Copy" IsChecked="{Binding Path=CopyReference}" GroupName="ReferenceAnimationGroup" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="{Binding IsReferenceAbilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0.4,2.8,0,2.4"/>
         </Grid>
         <TreeView x:Name="treeViewAnimations" Grid.Row="3" Grid.Column="0" ItemsSource="{Binding CurrentAbility.AnimationElements}" Style="{StaticResource ResourceKey=SearchableTreeView}" AllowDrop="True"
                   PreviewMouseDown="treeViewAnimations_OnPreviewMouseDown" PreviewKeyUp="treeViewAnimations_PreviewKeyUp" BorderBrush="#FF1144FF" BorderThickness="1" Margin="5" MaxWidth="300"

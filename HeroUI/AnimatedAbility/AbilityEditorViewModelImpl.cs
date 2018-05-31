@@ -17,6 +17,7 @@ using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Desktop;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -411,6 +412,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        private ObservableCollection<System.Windows.Forms.Keys> availableKeys;
+        public ObservableCollection<System.Windows.Forms.Keys> AvailableKeys
+        {
+            get
+            {
+                return availableKeys;
+            }
+            set
+            {
+                availableKeys = value;
+                NotifyOfPropertyChange(() => AvailableKeys);
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -429,11 +444,28 @@ namespace HeroVirtualTabletop.AnimatedAbility
             this.EventAggregator.Subscribe(this);
 
             this.RegisterKeyEventHandlers();
+            LoadAvailableKeys();
         }
 
         #endregion
 
         #region Methods
+
+        #region Load Keys
+
+        private void LoadAvailableKeys()
+        {
+            if (availableKeys == null)
+            {
+                availableKeys = new ObservableCollection<System.Windows.Forms.Keys>();
+                foreach (var key in Enum.GetValues(typeof(System.Windows.Forms.Keys)).Cast<System.Windows.Forms.Keys>())
+                {
+                    availableKeys.Add(key);
+                }
+            }
+        }
+
+        #endregion
 
         #region Open/Close Editor
 

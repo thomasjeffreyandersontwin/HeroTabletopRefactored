@@ -177,6 +177,29 @@ namespace HeroUI
         }
     }
 
+    public class WindowsKeyToVirtualKeyConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            System.Windows.Forms.Keys winKey = System.Windows.Forms.Keys.None;
+            if (value is System.Windows.Input.Key)
+            {
+                winKey = (System.Windows.Forms.Keys)KeyInterop.VirtualKeyFromKey((Key)value);
+            }
+            return winKey;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            System.Windows.Input.Key key = Key.None;
+            if (value is System.Windows.Forms.Keys)
+            {
+                key = KeyInterop.KeyFromVirtualKey((int)value);
+            }
+            return key;
+        }
+        
+    }
+
     public class DistanceCounterTextColorConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
