@@ -1241,6 +1241,7 @@ namespace HeroVirtualTabletop.Desktop
                 return mock;
             }
         }
+        public DesktopKeyEventHandler MockDesktopKeyEventHandler => CustomizedMockFixture.Create<DesktopKeyEventHandler>();
 
         public Position MockPosition => CustomizedMockFixture.Create<Position>();
 

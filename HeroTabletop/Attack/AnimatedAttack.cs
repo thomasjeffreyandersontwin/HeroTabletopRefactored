@@ -57,8 +57,19 @@ namespace HeroVirtualTabletop.Attack
             turnTowards(instructions.Defender.Position);
             Play(Attacker);
             playDefenderAnimation(instructions);
-            PlayKnockback(instructions);
-            playAttackEffectsOnDefender(instructions);
+            if (instructions.AttackHit)
+            {
+                PlayKnockback(instructions);
+                playAttackEffectsOnDefender(instructions);
+            }
+            else
+            {
+                foreach(var impact in instructions.Impacts.ToList())
+                {
+                    instructions.RemoveImpact(impact);
+                }
+                instructions.KnockbackDistance = 0;
+            }
             Stop();
             instructions.Defender.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK);
             return null;
@@ -149,7 +160,7 @@ namespace HeroVirtualTabletop.Attack
         public void Cancel(AttackInstructions instructions)
         {
             instructions.Impacts.Clear();
-            instructions.Defender.ResetAllAbiltitiesAndState();
+            instructions.Defender?.ResetAllAbiltitiesAndState();
             instructions.KnockbackDistance = 0;
             this.Attacker.ResetActiveAttack();
         }
@@ -205,9 +216,19 @@ namespace HeroVirtualTabletop.Attack
         {
             Play(Attacker);
             await playDefenderAnimationOnAllTargets(instructions);
-            playAttackEffectsOnDefenders(instructions);
+            if (instructions.AttackHit)
+            {
+                PlayKnockback(instructions);
+                playAttackEffectsOnDefenders(instructions);
+            }
+            else
+            {
+                instructions.Impacts.Clear();
+                instructions.KnockbackDistance = 0;
+            }
             Stop();
             instructions.Defenders.ForEach(d => d.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK));
+            
         }
         public List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions)
         {
@@ -331,7 +352,10 @@ namespace HeroVirtualTabletop.Attack
         public void AddImpact(string impactName)
         {
             if (!this.Impacts.Contains(impactName))
+            {
                 this.Impacts.Add(impactName);
+                NotifyOfPropertyChange(() => this.Impacts.Count);
+            }
             SetImpactToDefender(impactName);
         }
         public void SetImpactToDefender(string impactName)
@@ -383,7 +407,10 @@ namespace HeroVirtualTabletop.Attack
         public void RemoveImpact(string impactName)
         {
             if (this.Impacts.Contains(impactName))
+            {
                 this.Impacts.Remove(impactName);
+                NotifyOfPropertyChange(() => this.Impacts.Count);
+            }
             this.RemoveImpactFromDefender(impactName);
         }
         public void RemoveImpactFromDefender(string impactName)
@@ -515,6 +542,24 @@ namespace HeroVirtualTabletop.Attack
         }
     }
 
+    public class ImpactsCollectionToBooleanConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length != 3)
+                return false;
+            string stateName = values[0] as string;
+            ObservableCollection<string> impacts = values[1] as ObservableCollection<string>;
+            int stateCount = (int)values[2];
+
+            return impacts.Any(s => s == stateName);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class ActiveStateToVisibilityConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

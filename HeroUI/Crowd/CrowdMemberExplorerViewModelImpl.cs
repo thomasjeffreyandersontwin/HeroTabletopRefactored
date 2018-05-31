@@ -11,6 +11,8 @@ using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.ManagedCharacter;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.Desktop;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -118,6 +120,8 @@ namespace HeroVirtualTabletop.Crowd
                 NotifyOfPropertyChange(() => CrowdCollection);
             }
         }
+
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
 
         private CrowdClipboard crowdClipboard;
         public CrowdClipboard CrowdClipboard
@@ -242,14 +246,16 @@ namespace HeroVirtualTabletop.Crowd
         #endregion
 
         #region Constructor
-        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, IEventAggregator eventAggregator, BusyService busyService)
+        public CrowdMemberExplorerViewModelImpl(CrowdRepository repository, CrowdClipboard clipboard, DesktopKeyEventHandler desktopKeyHandler, IEventAggregator eventAggregator, BusyService busyService)
         {
             this.CrowdRepository = repository;
             this.CrowdClipboard = clipboard;
+            this.DesktopKeyEventHandler = desktopKeyHandler;
             this.EventAggregator = eventAggregator;
             this.busyService = busyService;
             this.CrowdRepository.CrowdRepositoryPath = Path.Combine(HeroUI.Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_CROWD_REPOSITORY_FILENAME);
             this.EventAggregator.Subscribe(this);
+            RegisterKeyHanders();
         }
 
         #endregion
@@ -481,6 +487,7 @@ namespace HeroVirtualTabletop.Crowd
             {
                 this.busyService.ShowBusy();
                 await this.CrowdRepository.LoadCrowds();
+                this.EventAggregator.Publish(new RepositoryLoadedEvent { RepositoryPath = this.CrowdRepository.CrowdRepositoryPath }, action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 this.crowdCollectionLoaded = true;
                 this.CrowdRepository.AddDefaultCharacter();
                 this.CrowdRepository.AddDefaultMovementsToCharacters();
@@ -911,6 +918,88 @@ namespace HeroVirtualTabletop.Crowd
         {
             CrowdMember selectedMember = (CrowdMember)this.SelectedCharacterCrowdMember ?? (CrowdMember)this.SelectedCrowdMember;
             selectedMember.RemoveAllActions();
+        }
+
+        #endregion
+
+        #region Desktop Key Handling
+
+        private void RegisterKeyHanders()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTERS_AND_CROWDS)
+            {
+                if (inputKey == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanCloneCrowdMember)
+                        method = this.CloneCrowdMember;
+                }
+                else if (inputKey == Key.X && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanCutCrowdMember)
+                        method = this.CutCrowdMember;
+                }
+                else if (inputKey == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanPasteCrowdMember)
+                        method = this.PasteCrowdMember;
+                }
+                else if (inputKey == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanLinkCrowdMember)
+                        method = this.LinkCrowdMember;
+                }
+                else if (inputKey == Key.E && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanEditCharacterCrowd)
+                        method = this.EditCharacterCrowd;
+                }
+                else if (inputKey == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanFlattenCopyCrowd)
+                        method = this.FlattenCopyCrowd;
+                }
+                else if (inputKey == Key.N && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanEnterFlattenNumber)
+                        method = this.EnterFlattenNumber;
+                }
+                else if (inputKey == Key.M && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanCloneMemberships)
+                        method = this.CloneMemberships;
+                }
+                else if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanAddCharacterCrowdMember)
+                        method = this.AddCharacterCrowdMember;
+                }
+                else if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+                {
+                    method = this.AddCrowd;
+                }
+                else if ((inputKey == Key.OemMinus || inputKey == Key.Subtract || inputKey == Key.Delete) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanDeleteCrowdMember)
+                        method = this.DeleteCrowdMember;
+                }
+                else if (inputKey == Key.R && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanAddToRoster)
+                        method = AddToRoster;
+                }
+                else if (inputKey == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = Save;
+                }
+            }
+
+            return method;
         }
 
         #endregion

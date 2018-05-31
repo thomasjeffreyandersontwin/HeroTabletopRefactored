@@ -1679,7 +1679,7 @@ namespace HeroVirtualTabletop.Roster
         {
             return null;
         }
-
+        public Key ActivationKey { get; set; }
         public void Stop(AnimatedCharacter target)
         {
             Stop();

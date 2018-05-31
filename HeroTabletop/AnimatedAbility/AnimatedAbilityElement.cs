@@ -438,6 +438,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void StopResource(AnimatedCharacter target)
         {
+            var originalTarget = Target;
+            Target = target;
             string fileStr = removePreviouslyLoadedFX(ModifiedCostumeText, true);
             File.Delete(ModifiedCostumeFilePath);
             File.AppendAllText(ModifiedCostumeFilePath, fileStr);
@@ -449,6 +451,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             target.Generator?.GenerateDesktopCommandText(DesktopCommand.LoadCostume, para);
             if (completeEvent)
                 target.Generator?.CompleteEvent();
+            Target = originalTarget;
         }
 
         public override AnimationElement Clone(AnimatedCharacter target)

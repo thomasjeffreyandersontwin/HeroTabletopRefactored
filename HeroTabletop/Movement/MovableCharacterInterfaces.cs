@@ -89,6 +89,7 @@ namespace HeroVirtualTabletop.Movement
         bool IsCharacterTurning { get; set; }
         void Rename(string newName);
         void Play(List<MovableCharacter> targets);
+        Key ActivationKey { get; set; }
     }
     public interface Movement: MovementCommands
     {

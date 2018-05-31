@@ -40,10 +40,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
         private void CreateActionGroups(CharacterEditorViewModel viewModel)
         {
             viewModel.CharacterActionGroups = new System.Collections.ObjectModel.ObservableCollection<HeroVirtualTabletop.ManagedCharacter.CharacterActionGroupViewModel>();
-            var identityGroup = new CharacterActionGroupViewModelImpl<Identity>(viewModel.EventAggregator);
-            var abilityGroup = new CharacterActionGroupViewModelImpl<AnimatedAbility.AnimatedAbility>(viewModel.EventAggregator);
-            var movementGroup = new CharacterActionGroupViewModelImpl<CharacterMovement>(viewModel.EventAggregator);
-            var customGroup = new CharacterActionGroupViewModelImpl<CharacterAction>(viewModel.EventAggregator);
+            var identityGroup = new CharacterActionGroupViewModelImpl<Identity>(TestObjectsFactory.MockDesktopKeyEventHandler, viewModel.EventAggregator);
+            var abilityGroup = new CharacterActionGroupViewModelImpl<AnimatedAbility.AnimatedAbility>(TestObjectsFactory.MockDesktopKeyEventHandler, viewModel.EventAggregator);
+            var movementGroup = new CharacterActionGroupViewModelImpl<CharacterMovement>(TestObjectsFactory.MockDesktopKeyEventHandler, viewModel.EventAggregator);
+            var customGroup = new CharacterActionGroupViewModelImpl<CharacterAction>(TestObjectsFactory.MockDesktopKeyEventHandler, viewModel.EventAggregator);
             viewModel.CharacterActionGroups.Add(identityGroup);
             viewModel.CharacterActionGroups.Add(abilityGroup);
             viewModel.CharacterActionGroups.Add(movementGroup);

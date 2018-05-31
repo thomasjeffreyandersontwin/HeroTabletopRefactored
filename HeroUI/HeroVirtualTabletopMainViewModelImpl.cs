@@ -23,7 +23,7 @@ namespace HeroUI
     public class HeroVirtualTabletopMainViewModelImpl : PropertyChangedBase, HeroVirtualTabletopMainViewModel, IShell,
         IHandle<EditIdentityEvent>, IHandle<EditCharacterEvent>, IHandle<EditAnimatedAbilityEvent>, IHandle<EditCharacterMovementEvent>,
         IHandle<ActivateCharacterEvent>, IHandle<ActivateGangEvent>, IHandle<DeActivateCharacterEvent>, IHandle<DeactivateGangEvent>,
-        IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>
+        IHandle<ConfigureAttackEvent>, IHandle<CancelAttackEvent>, IHandle<CloseAttackConfigurationWidgetEvent>, IHandle<RepositoryLoadedEvent>, IHandle<WindowClosedEvent>
     {
         #region Private Members
         private IEventAggregator eventAggregator;
@@ -35,6 +35,7 @@ namespace HeroUI
 
         private const string GAME_EXE_FILENAME = "cityofheroes.exe";
         private const string GAME_DATA_FOLDERNAME = "data";
+        private const string GAME_DATA_BACKUP_FOLDERNAME = "Backup";
         private const string GAME_KEYBINDS_FILENAME = "required_keybinds.txt";
         private const string GAME_KEYBINDS_ALT_FILENAME = "required_keybinds_alt.txt";
         private const string GAME_ENABLE_CAMERA_FILENAME = "enable_camera.txt";
@@ -74,6 +75,10 @@ namespace HeroUI
             set
             {
                 isCharacterExplorerExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.CHARACTERS_AND_CROWDS);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.CHARACTERS_AND_CROWDS);
                 NotifyOfPropertyChange(() => IsCharacterExplorerExpanded);
             }
         }
@@ -88,6 +93,10 @@ namespace HeroUI
             set
             {
                 isRosterExplorerExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.ROSTER);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.ROSTER);
                 NotifyOfPropertyChange(() => IsRosterExplorerExpanded);
             }
         }
@@ -102,6 +111,10 @@ namespace HeroUI
             set
             {
                 isCharacterEditorExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.CHARACTER_ACTION_GROUPS);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.CHARACTER_ACTION_GROUPS);
                 NotifyOfPropertyChange(() => IsCharacterEditorExpanded);
             }
         }
@@ -116,6 +129,10 @@ namespace HeroUI
             set
             {
                 isIdentityEditorExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.ROSTER);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.ROSTER);
                 NotifyOfPropertyChange(() => IsIdentityEditorExpanded);
             }
         }
@@ -130,6 +147,10 @@ namespace HeroUI
             set
             {
                 isAbilityEditorExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.ABILITIES);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.ABILITIES);
                 NotifyOfPropertyChange(() => IsAbilityEditorExpanded);
             }
         }
@@ -144,21 +165,11 @@ namespace HeroUI
             set
             {
                 isMovementEditorExpanded = value;
+                if (value)
+                    ActivateWindow(ActiveWindow.MOVEMENTS);
+                else
+                    ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.MOVEMENTS);
                 NotifyOfPropertyChange(() => IsMovementEditorExpanded);
-            }
-        }
-
-        private bool isCrowdFromModelsExpanded;
-        public bool IsCrowdFromModelsExpanded
-        {
-            get
-            {
-                return isCrowdFromModelsExpanded;
-            }
-            set
-            {
-                isCrowdFromModelsExpanded = value;
-                NotifyOfPropertyChange(() => IsCrowdFromModelsExpanded);
             }
         }
 
@@ -341,9 +352,6 @@ namespace HeroUI
                 case "MovementEditor":
                     this.IsMovementEditorExpanded = false;
                     break;
-                case "CrowdFromModelsView":
-                    this.IsCrowdFromModelsExpanded = false;
-                    break;
             }
         }
 
@@ -429,6 +437,7 @@ namespace HeroUI
                 LoadSoundFiles();
 
                 ClearTempFilesFromDataFolder();
+                DeleteOldBackupFiles();
 
                 // Load camera on start
                 camera.ActivateCameraIdentity();
@@ -606,6 +615,35 @@ namespace HeroUI
             }
         }
 
+        public void Handle(RepositoryLoadedEvent message)
+        {
+            //this.TakeWorkingRepoBackup(message.RepositoryPath);
+        }
+        private void TakeWorkingRepoBackup(string crowdRepositoryPath)
+        {
+            string backupDir = Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_DATA_BACKUP_FOLDERNAME);
+            if (!Directory.Exists(backupDir))
+                Directory.CreateDirectory(backupDir);
+            string backupFilePath = Path.Combine(backupDir, "Refactored_CrowdRepository_Backup" + String.Format("{0:MMddyyyy}", DateTime.Today) + ".data");
+            if (!File.Exists(backupFilePath))
+            {
+                File.Copy(crowdRepositoryPath, backupFilePath, true);
+            }
+
+        }
+        private void DeleteOldBackupFiles()
+        {
+            string backupDir = Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_DATA_BACKUP_FOLDERNAME);
+            string[] files = Directory.GetFiles(backupDir);
+
+            foreach (string file in files)
+            {
+                FileInfo fi = new FileInfo(file);
+                if (fi.LastAccessTime < DateTime.Now.AddMonths(-1))
+                    fi.Delete();
+            }
+        }
+
         #endregion
 
         #region Open Editors
@@ -698,6 +736,7 @@ namespace HeroUI
                 style.Setters.Add(new Setter(Window.LeftProperty, left));
                 style.Setters.Add(new Setter(Window.TopProperty, top));
                 popupService.ShowDialog("ActiveCharacterWidgetView", ActiveCharacterWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style, WindowStartupLocation.Manual);
+                ActivateWindow(ActiveWindow.ACTIVE_CHARACTER);
             }
         }
         private void ShowActivateGangWidgetPopup(List<ManagedCharacter> gangMembers)
@@ -712,6 +751,7 @@ namespace HeroUI
             {
                 System.Windows.Style style = ControlUtilities.GetCustomWindowStyle();
                 popupService.ShowDialog("AttackConfigurationWidgetView", AttackConfigurationWidgetViewModel, "", false, null, new SolidColorBrush(Colors.Transparent), style);
+                ActivateWindow(ActiveWindow.ATTACK);
             }
         }
 
@@ -719,11 +759,68 @@ namespace HeroUI
         {
             popupService.SavePosition("ActiveCharacterWidgetView", character != null ? character.Name : null);
             popupService.CloseDialog("ActiveCharacterWidgetView");
+            ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.ACTIVE_CHARACTER);
         }
 
         private void CloseAttackConfigurationWidgetPopup()
         {
             popupService.CloseDialog("AttackConfigurationWidgetView");
+            ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow.ATTACK);
+        }
+
+        #endregion
+
+        #region Set Active Window
+
+        public void Handle(WindowClosedEvent message)
+        {
+            ActivateAnotherWindowAfterCollapsingCurrentOne(message.ClosedWindow);
+        }
+
+        public void ActivateWindow(string windowName)
+        {
+            ActiveWindow window = (ActiveWindow)Enum.Parse(typeof(ActiveWindow), windowName);
+            ActivateWindow(window);
+        }
+        public void ActivateWindow(ActiveWindow window)
+        {
+            DesktopFocusManager.CurrentActiveWindow = window;
+        }
+
+        private void ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow collapsingWIndow)
+        {
+            if (popupService.IsOpen("AttackConfigurationWidgetView"))
+            {
+                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ATTACK;
+            }
+            else if (popupService.IsOpen("ActiveCharacterWidgetView"))
+            {
+                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ACTIVE_CHARACTER;
+            }
+            else if (IsRosterExplorerExpanded)
+            {
+                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ROSTER;
+            }
+            else if (IsCharacterEditorExpanded)
+            {
+                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.CHARACTER_ACTION_GROUPS;
+            }
+            else if (IsCharacterExplorerExpanded)
+            {
+                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.CHARACTERS_AND_CROWDS;
+            }
+            else if (IsAbilityEditorExpanded)
+            {
+                var abilityEditorVM = IoC.Get<AbilityEditorViewModel>();
+                if (abilityEditorVM.IsShowingAbilityEditor)
+                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
+            }
+            else if (IsMovementEditorExpanded)
+            {
+                var movementEditorVM = IoC.Get<MovementEditorViewModel>();
+                if (movementEditorVM.IsShowingMovementEditor)
+                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
+            }
         }
 
         #endregion

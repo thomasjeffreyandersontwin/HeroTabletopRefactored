@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using HeroVirtualTabletop.Crowd;
 using System.Linq;
 using HeroVirtualTabletop.Attack;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -57,6 +58,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 if (value is AnimatedCharacter)
                     Target = value as AnimatedCharacter;
+            }
+        }
+        private Key activationKey;
+        [JsonProperty]
+        public Key ActivationKey
+        {
+            get
+            {
+                return activationKey;
+            }
+            set
+            {
+                activationKey = value;
+                NotifyOfPropertyChange(() => ActivationKey);
             }
         }
         [JsonProperty]

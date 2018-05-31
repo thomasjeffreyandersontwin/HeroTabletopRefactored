@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HeroUI"
-             xmlns:ability="clr-namespace:HeroVirtualTabletop.AnimatedAbility"             
+             xmlns:ability="clr-namespace:HeroVirtualTabletop.AnimatedAbility;assembly=HeroVirtualTabletop"             
              xmlns:bindings="clr-namespace:Framework.WPF.Binding;assembly=Framework.WPF"
+             xmlns:attacks="clr-namespace:HeroVirtualTabletop.Attack;assembly=HeroVirtualTabletop"
              xmlns:attack="clr-namespace:HeroVirtualTabletop.Attack"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
@@ -18,6 +19,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/HeroResourceDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <attacks:ImpactsCollectionToBooleanConverter x:Key="ImpactsCollectionToBooleanConverter"/>
             <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
             <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <local:BooleanToVisibilityInvertConverter x:Key="BooleanToVisibilityInvertConverter"/>
@@ -58,22 +60,90 @@
                                             <RadioButton Content="Miss" IsChecked="{Binding Path=AttackHit, Converter={StaticResource InvertBooleanConverter}, Mode=OneWay}" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                            <CheckBox x:Name="Stunned" 
+                                            <CheckBox x:Name="Stunned"
                                                       cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                                     cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Stunned', Stunned.IsChecked)"
-                                                      Content="Stunned" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}"/>
+                                                      Content="Stunned" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}">
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxDefaultStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource ResourceKey=ImpactsCollectionToBooleanConverter}">
+                                                                        <Binding Source="{x:Static ability:DefaultAbilities.STUNNED}"></Binding>
+                                                                        <Binding Path="Impacts"></Binding>
+                                                                        <Binding Path="Impacts.Count"></Binding>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="IsChecked" Value="True"></Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>                                              
+                                                </CheckBox.Style>
+                                            </CheckBox>
                                             <CheckBox x:Name="Unconscious" 
                                                       cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                                     cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Unconscious', Unconscious.IsChecked)"
-                                                      Content="Unconscious" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}"/>
+                                                      Content="Unconscious" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}">
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxDefaultStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource ResourceKey=ImpactsCollectionToBooleanConverter}">
+                                                                        <Binding Source="{x:Static ability:DefaultAbilities.UNCONSCIOUS}"></Binding>
+                                                                        <Binding Path="Impacts"></Binding>
+                                                                        <Binding Path="Impacts.Count"></Binding>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="IsChecked" Value="True"></Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </CheckBox.Style>
+                                            </CheckBox>
                                             <CheckBox x:Name="Dying" 
                                                       cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                                     cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Dying', Dying.IsChecked)"
-                                                      Content="Dying" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}"/>
+                                                      Content="Dying" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}">
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxDefaultStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource ResourceKey=ImpactsCollectionToBooleanConverter}">
+                                                                        <Binding Source="{x:Static ability:DefaultAbilities.DYING}"></Binding>
+                                                                        <Binding Path="Impacts"></Binding>
+                                                                        <Binding Path="Impacts.Count"></Binding>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="IsChecked" Value="True"></Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </CheckBox.Style>
+                                            </CheckBox>
                                             <CheckBox x:Name="Dead" 
                                                       cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                                     cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Dead', Dead.IsChecked)"
-                                                      Content="Dead" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}"/>
+                                                      Content="Dead" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=AttackHit}">
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxDefaultStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource ResourceKey=ImpactsCollectionToBooleanConverter}">
+                                                                        <Binding Source="{x:Static ability:DefaultAbilities.DEAD}"></Binding>
+                                                                        <Binding Path="Impacts"></Binding>
+                                                                        <Binding Path="Impacts.Count"></Binding>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="IsChecked" Value="True"></Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </CheckBox.Style>
+                                            </CheckBox>
                                         </StackPanel>
                                         <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal">
                                             <TextBlock Text="Knockback Distance" Foreground="White"/>

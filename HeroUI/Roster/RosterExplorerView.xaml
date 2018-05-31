@@ -77,12 +77,12 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <WrapPanel>
-                <Button x:Name="SavePosition" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+Shift+P)"/>
+                <Button x:Name="SavePosition" Content="&#xF0C7;" ToolTip="Save Position (Ctrl+S)"/>
                 <Button x:Name="Place" Content="&#xf041;" ToolTip="Place (Ctrl+P)"/>
-                <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+S)"/>
+                <Button x:Name="Spawn" Content="&#xf08e;" ToolTip="Spawn (Ctrl+Z)"/>
                 <Button x:Name="ToggleTargeted" Content="&#xf05b;" ToolTip="Toggle Target (Ctrl+T)"/>
                 <Button x:Name="ToggleManeuverWithCamera" Content="&#xf030;" ToolTip="Maneuver with camera (Ctrl+M)"/>
-                <Button x:Name="CycleCommandsThroughCrowd" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Shift+C)">
+                <Button x:Name="CycleCommandsThroughCrowd" Content="&#xf1da;" ToolTip="Cycle Commands (Ctrl+Y)">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
@@ -100,10 +100,10 @@
             </WrapPanel>
             <WrapPanel Grid.Row="1">
                 <Button x:Name="MoveCameraToTarget" Content="&#xf064;" ToolTip="Move Camera to Target (Ctrl+F)"/>
-                <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+Shift+F)"/>
+                <Button x:Name="MoveToCamera" Content="&#xf112;" ToolTip="Move Target to Camera (Ctrl+V)"/>
                 <Button x:Name="Teleport" Content="&#xf122;" ToolTip="Teleport Target to Camera (Ctrl+L)"/>
-                <Button x:Name="ToggleActivate" Content="&#xf00c;" ToolTip="Toggle Activate Character (Ctrl+Enter)"/>
-                <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Shift+Minus/Del)"/>
+                <Button x:Name="ToggleActivate" Content="&#xf00c;" ToolTip="Toggle Activate Character (Ctrl+X)"/>
+                <Button x:Name="ClearFromDesktop" Content="&#xf235;" ToolTip="Clear From Desktop (Ctrl+Minus/Del)"/>
                 <Button x:Name="ResetOrientation" Content="&#xf1ae;" ToolTip="Reset Orientation (Ctrl+O)" />
             </WrapPanel>
             <WrapPanel Grid.Row="2">

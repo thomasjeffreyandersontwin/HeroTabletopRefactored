@@ -16,6 +16,11 @@ namespace HeroVirtualTabletop.Crowd
 
     }
 
+    public class RepositoryLoadedEvent
+    {
+        public string RepositoryPath { get; set; }
+    }
+
     public class RenameCrowdMemberEvent
     {
         public CrowdMember RenamedMember { get; set; }

@@ -174,14 +174,14 @@
                 <StackPanel.Resources>
                     <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
                 </StackPanel.Resources>
-                <Button x:Name="AddMovElement" Content="&#xf008;" ToolTip="Add Move (Alt+Plus+M)" />
-                <Button x:Name="AddFXElement" Content="&#xf0d0;" ToolTip="Add FX (Alt+Plus+F)"/>
-                <Button x:Name="AddSoundElement" Content="&#xf001;" ToolTip="Add Sound (Alt+Plus+S)"/>
-                <Button x:Name="AddReferenceElement" Content="&#xf08e;" ToolTip="Add Reference (Alt+Plus+R)" />
-                <Button x:Name="AddSequenceElement" Content="&#xf126;" ToolTip="Add Sequence (Alt+Plus+Q)"/>
-                <Button x:Name="AddPauseElement" Content="&#xf04c;" ToolTip="Add Pause (Alt+Plus+P)"/>
+                <Button x:Name="AddMovElement" Content="&#xf008;" ToolTip="Add Move (Ctrl+M)" />
+                <Button x:Name="AddFXElement" Content="&#xf0d0;" ToolTip="Add FX (Ctrl+F)"/>
+                <Button x:Name="AddSoundElement" Content="&#xf001;" ToolTip="Add Sound (Ctrl+S)"/>
+                <Button x:Name="AddReferenceElement" Content="&#xf08e;" ToolTip="Add Reference (Ctrl+R)" />
+                <Button x:Name="AddSequenceElement" Content="&#xf126;" ToolTip="Add Sequence (Ctrl+Q)"/>
+                <Button x:Name="AddPauseElement" Content="&#xf04c;" ToolTip="Add Pause (Ctrl+P)"/>
                 <Button x:Name="AddLoadIdentityElement" Content="&#xf129;" ToolTip="Add Identity (Ctrl+I)"/>
-                <Button x:Name="DemoAnimatedAbility" Content="&#xf04b;" ToolTip="Demo Ability (Alt+Enter)" />
+                <Button x:Name="DemoAnimatedAbility" Content="&#xf04b;" ToolTip="Demo Ability (Ctrl+Enter)" />
             </StackPanel>
             <TextBlock Text="Activation Key" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource TextBlockDefaultStyle}"/>
             <ComboBox Grid.Row="1" Grid.Column="1" Margin="2" IsEnabled="{Binding CanEditAbilityOptions}"
@@ -197,12 +197,12 @@
             <StackPanel.Resources>
                 <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
             </StackPanel.Resources>
-            <Button x:Name="CloneAnimation" Content="&#xf0c5;" ToolTip="Clone (Alt+Ctrl+C)"/>
-            <Button x:Name="CutAnimation" Content="&#xf0c4;" ToolTip="Cut (Alt+Ctrl+X)"/>
-            <Button x:Name="PasteAnimation" Content="&#xf0ea;" ToolTip="Paste (Alt+Ctrl+V)"/>
-            <Button x:Name="RemoveAnimation" Content="&#xf056;" ToolTip="Remove (Alt+Ctrl+Backspace)" />
-            <Button x:Name="DemoAnimation" Content="&#xf04b;" ToolTip="Demo Animation (Alt+Ctrl+Enter)" />
-            <Button x:Name="ConfigureAttack" Grid.Column="0" Content="&#xf0e7;" ToolTip="Attack (Alt+Ctrl+A)" Margin="2">
+            <Button x:Name="CloneAnimation" Content="&#xf0c5;" ToolTip="Clone (Ctrl+C)"/>
+            <Button x:Name="CutAnimation" Content="&#xf0c4;" ToolTip="Cut (Ctrl+X)"/>
+            <Button x:Name="PasteAnimation" Content="&#xf0ea;" ToolTip="Paste (Ctrl+V)"/>
+            <Button x:Name="RemoveAnimation" Content="&#xf056;" ToolTip="Remove (Ctrl+Minus/Del)" />
+            <Button x:Name="DemoAnimation" Content="&#xf04b;" ToolTip="Demo Animation (Ctrl+Enter)" />
+            <Button x:Name="ConfigureAttack" Grid.Column="0" Content="&#xf0e7;" ToolTip="Attack (Ctrl+A)" Margin="2">
                 <Button.Style >
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                         <Style.Triggers>
@@ -216,7 +216,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button x:Name="ConfigureOnHit" Grid.Column="1" Content="&#xf132;" ToolTip="On Hit (Alt+Ctrl+H)" Margin="2">
+            <Button x:Name="ConfigureOnHit" Grid.Column="1" Content="&#xf132;" ToolTip="On Hit (Ctrl+H)" Margin="2">
                 <Button.Style >
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                         <Style.Triggers>

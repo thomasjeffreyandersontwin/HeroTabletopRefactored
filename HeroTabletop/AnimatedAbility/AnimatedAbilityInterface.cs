@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Data;
 using Caliburn.Micro;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -158,6 +159,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         AnimatedAbility Clone(AnimatedCharacter target);
         void Rename(string newName);
         AnimatedAttack TransformToAttack();
+        Key ActivationKey { get; set; }
     }
    
     

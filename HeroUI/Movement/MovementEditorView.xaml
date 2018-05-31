@@ -112,7 +112,6 @@
                 <StackPanel.Resources>
                     <Style TargetType="Button" BasedOn="{StaticResource ResourceKey=IconButton}"></Style>
                 </StackPanel.Resources>
-                <Button x:Name="PlayMovement" Content="&#xf04b;" ToolTip="Demo Movement (Ctrl+Enter)" />
             </StackPanel>
             <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Right" Margin="0, 0, 5, 0">
                 <Button x:Name="AddMovement" Style="{StaticResource AddButtonStyle}" ToolTip="Add Movement (Ctrl+Plus)" />
@@ -141,9 +140,9 @@
                                         Content="{Binding Direction, Converter={StaticResource MovementDirectionToIconTextConverter}}" 
                                         cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                         cal:Message.Attach="LoadAbilityEditor($dataContext)"
-                                        HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Open Ability (Alt+Shift+A)"/>
+                                        HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Open Ability (Ctrl+A)"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Style="{StaticResource TextBlockDefaultStyle}" ToolTip="{Binding Ability.Name}"/>
-                                <Button Grid.Column="2" Style="{StaticResource ResourceKey=IconButtonSmall}" Content="&#xf04b;" ToolTip="Play Ability (Alt+Shift+D)" 
+                                <Button Grid.Column="2" Style="{StaticResource ResourceKey=IconButtonSmall}" Content="&#xf04b;" ToolTip="Play Ability (Ctrl+D)" 
                                         cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
                                         cal:Message.Attach="DemoDirectionalMovement($dataContext)"
                                         HorizontalAlignment="Right" />

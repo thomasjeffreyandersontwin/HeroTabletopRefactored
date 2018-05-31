@@ -281,7 +281,20 @@ namespace HeroVirtualTabletop.Movement
         {
             get;set;
         }
-
+        private Key activationKey;
+        [JsonProperty]
+        public Key ActivationKey
+        {
+            get
+            {
+                return activationKey;
+            }
+            set
+            {
+                activationKey = value;
+                NotifyOfPropertyChange(() => ActivationKey);
+            }
+        }
         public void Rename(string updatedName)
         {
             this.Name = updatedName;

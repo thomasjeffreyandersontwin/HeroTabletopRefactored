@@ -2206,6 +2206,61 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="CheckBoxDefaultStyle" TargetType="CheckBox">
+        <Setter Property="SnapsToDevicePixels" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MainBlueThemeColorBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <BulletDecorator Background="Transparent">
+                        <BulletDecorator.Bullet>
+                            <Border x:Name="Border"
+                                          Width="15"
+                                          Height="15"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="1"
+                                          ClipToBounds="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" />
+                                </Border.Effect>
+                                <Path x:Name="CheckMark"
+                                            Width="8"
+                                            Height="8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Data="M 0 0 L 8 8 M 0 8 L 8 0"
+                                            Stretch="Fill"
+                                            Stroke="{StaticResource  MainBlueThemeColorBrush}"
+                                            StrokeEndLineCap="Round"
+                                            StrokeStartLineCap="Round"
+                                            StrokeThickness="2" />
+                            </Border>
+                        </BulletDecorator.Bullet>
+                        <ContentPresenter Margin="4,0,0,0"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                RecognizesAccessKey="True" />
+                    </BulletDecorator>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="false">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="true">
+                            <Setter Property="BorderBrush" Value="White" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="BorderBrush" Value="Gray" />
+                            <Setter TargetName="CheckMark" Property="Stroke" Value="Gray" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <DataTemplate x:Key="DefaultWatermarkTemplate">
         <ContentControl Content="{Binding}" Foreground="Transparent" Focusable="False" Margin="0,0,3,0" />

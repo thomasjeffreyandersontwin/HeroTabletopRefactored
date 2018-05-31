@@ -124,10 +124,10 @@ namespace HeroVirtualTabletop.Movement
             set
             {
                 isShowingMovementEditor = value;
-                //if (value)
-                //    Helper.GlobalVariables_CurrentActiveWindowName = Constants.MOVEMENT_EDITOR;
-                //else
-                //    this.eventAggregator.GetEvent<PanelClosedEvent>().Publish(Constants.MOVEMENT_EDITOR);
+                if (value)
+                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
+                else
+                    this.EventAggregator?.Publish(new WindowClosedEvent { ClosedWindow = ActiveWindow.MOVEMENTS }, action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 NotifyOfPropertyChange(() => IsShowingMovementEditor);
             }
         }
@@ -196,6 +196,7 @@ namespace HeroVirtualTabletop.Movement
             this.EventAggregator.Subscribe(this);
 
             this.CurrentCharacterMovement = null;
+            this.RegisterKeyEventHandlers();
         }
 
         #region Event Handlers
@@ -417,8 +418,6 @@ namespace HeroVirtualTabletop.Movement
             characterMovement.Play(targets);
             // Disable Camera Control
             Camera.DisableMovement();
-
-            this.DesktopKeyEventHandler.AddKeyEventHandler(HandleDesktopKeyEvent);
             StartMovementTimer();
         }
         public void DeactivateMovement(List<MovableCharacter> targets, CharacterMovement characterMovement)
@@ -434,25 +433,8 @@ namespace HeroVirtualTabletop.Movement
             this.CurrentInputKey = Key.None;
             // Enable Camera
             Camera.EnableMovement();
-            // Unload Keyboard Hook
-            this.DesktopKeyEventHandler.RemoveKeyEventHandler(HandleDesktopKeyEvent);
             //this.Movement.StopMovement(this.Character);
             StopMovementTimer();
-        }
-
-        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
-        {
-            EventMethod method = null;
-            if (inputKey == Key.CapsLock)
-            {
-                method = ToggleCameraMode;
-            }
-            else 
-            {
-                CurrentInputKey = inputKey;
-            }
-
-            return method;
         }
 
         public void ToggleCameraMode()
@@ -520,7 +502,52 @@ namespace HeroVirtualTabletop.Movement
                 }
             });
         }
-        
+
+        #endregion
+
+        #region Desktop Key Event Handler
+
+        private void RegisterKeyEventHandlers()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if(this.CharacterMovementInAction != null && this.CharacterMovementInAction.IsActive)
+            {
+                if (inputKey == Key.CapsLock)
+                {
+                    method = ToggleCameraMode;
+                }
+                else
+                {
+                    CurrentInputKey = inputKey;
+                }
+            }
+            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.MOVEMENTS)
+            {
+                if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddMovement;
+                }
+                else if ((inputKey == Key.OemMinus || inputKey == Key.Subtract || inputKey == Key.Delete) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanRemoveMovement)
+                        method = this.RemoveMovement;
+                }
+                else if (inputKey == Key.D && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = () => { if(this.SelectedMovementMember != null)this.DemoDirectionalMovement(this.SelectedMovementMember); };
+                }
+                else if (inputKey == Key.A && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = () => { if (this.SelectedMovementMember != null) this.LoadAbilityEditor(this.SelectedMovementMember); };
+                }
+            }
+            return method;
+        }
         #endregion
     }
 }

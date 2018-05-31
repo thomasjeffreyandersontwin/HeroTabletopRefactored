@@ -16,6 +16,7 @@ using HeroVirtualTabletop.Roster;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Desktop;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
@@ -103,11 +104,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
         }
 
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
         public Roster.Roster Roster { get; set; }
         public AbilityClipboard AbilityClipboard { get; set; }
         public AnimatedResourceManager AnimatedResourceMananger { get; set; }
         public CrowdRepository CrowdRepository { get; set; }
-
         public string OriginalName { get; set; }
         private string editableAnimationElementName;
         public string EditableAnimationElementName
@@ -402,6 +403,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
             set
             {
                 isShowingAbilityEditor = value;
+                if (value)
+                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
+                else
+                    this.EventAggregator?.Publish(new WindowClosedEvent { ClosedWindow = ActiveWindow.ABILITIES}, action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 NotifyOfPropertyChange(() => IsShowingAbilityEditor);
             }
         }
@@ -410,17 +415,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         #region Constructor
 
-        public AbilityEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, AbilityClipboard abilityClipboard, Roster.Roster roster, IEventAggregator eventAggregator)
+        public AbilityEditorViewModelImpl(CrowdRepository crowdRepository, AnimatedResourceManager animatedResourceRepository, AbilityClipboard abilityClipboard, Roster.Roster roster, DesktopKeyEventHandler desktopKeyEventHandler, IEventAggregator eventAggregator)
         {
             this.CrowdRepository = crowdRepository;
             this.Roster = roster;
             this.AbilityClipboard = abilityClipboard;
+            this.DesktopKeyEventHandler = desktopKeyEventHandler;
             this.AnimatedResourceMananger = animatedResourceRepository;
             this.AnimatedResourceMananger.CrowdRepository = crowdRepository;
             this.AnimatedResourceMananger.GameDirectory = HeroUI.Properties.Settings.Default.GameDirectory;
 
             this.EventAggregator = eventAggregator;
             this.EventAggregator.Subscribe(this);
+
+            this.RegisterKeyEventHandlers();
         }
 
         #endregion
@@ -1413,6 +1421,85 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else
                 attacker.ActiveAttack.CompleteTheAttackCycle(attackInstructions);
+        }
+
+        #endregion
+
+        #region Desktop Key Handling
+
+        private void RegisterKeyEventHandlers()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(HandleDesktopKeyEvent);
+        }
+
+        internal EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ABILITIES)
+            {
+                if (inputKey == Key.M && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddMovElement;
+                }
+                else if (inputKey == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddFXElement;
+                }
+                else if (inputKey == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddSoundElement;
+                }
+                else if (inputKey == Key.Q && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddSequenceElement;
+                }
+                else if (inputKey == Key.R && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddReferenceElement;
+                }
+                else if (inputKey == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddPauseElement;
+                }
+                else if (inputKey == Key.I && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.AddLoadIdentityElement;
+                }
+                else if (inputKey == Key.Enter && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = async () => { await this.DemoAnimatedAbility(); };
+                }
+                else if (inputKey == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.CloneAnimation;
+                }
+                else if (inputKey == Key.X && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.CutAnimation;
+                }
+                else if (inputKey == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.PasteAnimation;
+                }
+                else if ((inputKey == Key.OemMinus || inputKey == Key.Subtract || inputKey == Key.Delete) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.RemoveAnimation;
+                }
+                else if (inputKey == Key.Enter && Keyboard.Modifiers == (ModifierKeys.Shift | ModifierKeys.Control))
+                {
+                    method = async () => { await this.DemoAnimation(); };
+                }
+                else if (inputKey == Key.A && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ConfigureAttack;
+
+                }
+                else if (inputKey == Key.H && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ConfigureOnHit;
+                }
+            }
+            return method;
         }
 
         #endregion

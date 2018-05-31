@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using HeroVirtualTabletop.Crowd;
 using Caliburn.Micro;
 using HeroVirtualTabletop.Movement;
+using HeroVirtualTabletop.Desktop;
+using System.Windows.Input;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
@@ -33,6 +35,8 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 NotifyOfPropertyChange(() => CharacterActionGroups);
             }
         }
+
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
 
         private CharacterCrowdMember editedCharacter;
         public CharacterCrowdMember EditedCharacter
@@ -67,10 +71,13 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
         }
 
-        public CharacterEditorViewModelImpl(IEventAggregator eventAggregator)
+        public CharacterEditorViewModelImpl(DesktopKeyEventHandler desktopKeyEventHandler, IEventAggregator eventAggregator)
         {
             this.EventAggregator = eventAggregator;
             this.EventAggregator.Subscribe(this);
+            this.DesktopKeyEventHandler = desktopKeyEventHandler;
+
+            this.RegisterKeyEventHandlers();
         }
 
         public void Handle(EditCharacterEvent message)
@@ -78,6 +85,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (message.EditedCharacter != null)
             {
                 message.EditedCharacter.LoadDefaultAbilities();
+                if(this.CharacterActionGroups != null)
+                {
+                    foreach (var actionGrpVM in this.CharacterActionGroups)
+                        actionGrpVM.UnregisterKeyEventHandlers();
+                }
+                
                 this.CharacterActionGroups = new ObservableCollection<CharacterActionGroupViewModel>();
                 foreach (var group in message.EditedCharacter?.CharacterActionGroups)
                 {
@@ -174,7 +187,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             }
             catch
             {
-                mixedActionGroup = new CharacterActionGroupViewModelImpl<CharacterAction>(this.EventAggregator);
+                mixedActionGroup = new CharacterActionGroupViewModelImpl<CharacterAction>(this.DesktopKeyEventHandler, this.EventAggregator);
             }
             mixedActionGroup.ActionGroup = actGroup;
             mixedActionGroup.NewActionGroupAdded = true;
@@ -195,6 +208,34 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.EditedCharacter.InsertActionGroup(targetIndex, sourceViewModel.ActionGroup);
 
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        }
+
+        #endregion
+
+        #region Desktop Key Handlers
+
+        private void RegisterKeyEventHandlers()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (this.EditedCharacter != null && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            {
+                if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanAddActionGroup)
+                        method = this.AddActionGroup;
+                }
+                else if ((inputKey == Key.OemMinus || inputKey == Key.Subtract || inputKey == Key.Delete) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanRemoveActionGroup)
+                        method = this.RemoveActionGroup;
+                }
+            }
+            return method;
         }
 
         #endregion

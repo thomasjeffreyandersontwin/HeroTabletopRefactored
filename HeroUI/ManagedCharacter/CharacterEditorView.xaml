@@ -43,8 +43,8 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Button Style="{StaticResource AddButtonStyle}" ToolTip="Add Action Group (Alt+Ctrl+Plus+O)" x:Name="AddActionGroup"/>
-                <Button Grid.Column="1" Style="{StaticResource RemoveButtonStyle}" ToolTip="Remove Action Group (Alt+Ctrl+Minus+O)" x:Name="RemoveActionGroup"/>
+                <Button Style="{StaticResource AddButtonStyle}" ToolTip="Add Action Group (Ctrl+Plus)" x:Name="AddActionGroup"/>
+                <Button Grid.Column="1" Style="{StaticResource RemoveButtonStyle}" ToolTip="Remove Action Group (Ctrl+Minus/Del)" x:Name="RemoveActionGroup"/>
             </Grid>
             <ListView Grid.Row="1" x:Name="listViewOptionGroup"
                     ItemsSource="{Binding CharacterActionGroups, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"

@@ -5,6 +5,9 @@
              xmlns:crowdUI="clr-namespace:HeroVirtualTabletop.Crowd;assembly=HeroUI"
              xmlns:managedcharacter="clr-namespace:HeroVirtualTabletop.ManagedCharacter;assembly=HeroVirtualTabletop"
              xmlns:local="clr-namespace:HeroUI"
+             xmlns:desktop="clr-namespace:HeroVirtualTabletop.Desktop"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:cal="http://www.caliburnproject.org"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Loaded="HeroVirtualTabletopMainView_Loaded">
@@ -34,60 +37,42 @@
                   IsExpanded="{Binding IsCharacterExplorerExpanded}"
                   >
             <GroupBox Header="Character Explorer" x:Name="grpBoxCharacterExplorer" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterExplorerExpanded}" 
+                <Border Background="Transparent" cal:Message.Attach="[Event PreviewMouseDown] = [Action ActivateWindow('CHARACTERS_AND_CROWDS')]">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterExplorerExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="CharacterExplorer">
-                    </ToggleButton>
-                    <Grid x:Name="charExplorerPanel" Grid.Row="1">
-                        <ContentControl x:Name="CrowdMemberExplorerViewModel" />
+                        </ToggleButton>
+                        <Grid x:Name="charExplorerPanel" Grid.Row="1">
+                            <ContentControl x:Name="CrowdMemberExplorerViewModel" />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Border>
             </GroupBox>
         </Expander>
-        <!--<Expander Grid.Column="1" Style="{StaticResource VerticalExpanderStyle}"
-                  OverridesDefaultStyle="True"
-                  Header="Create Crowd From Models"
-                  Expanded="Expander_ExpansionChanged" Collapsed="Expander_ExpansionChanged"
-                  Visibility="{Binding ElementName=crowdFromModelsPanel, Path=Children[0].DataContext.Visibility}"
-                  IsExpanded="{Binding IsCrowdFromModelsExpanded}"
-                  >
-
-            <GroupBox Header="Create Crowd From Models" x:Name="grpBoxCrowdFromModels" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCrowdFromModelsExpanded}" 
-                                  Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="CrowdFromModelsView">
-                    </ToggleButton>
-                    <Grid x:Name="crowdFromModelsPanel" Width="Auto" Grid.Row="1"/>
-                </Grid>
-            </GroupBox>
-        </Expander>-->
         <Expander Grid.Column="2" Style="{StaticResource VerticalExpanderStyle}"
                   OverridesDefaultStyle="True"
                   Header="Roster Explorer"
                   IsExpanded="{Binding IsRosterExplorerExpanded}"
                   >
-
             <GroupBox Header="Roster Explorer" x:Name="grpBoxRosterExplorer" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsRosterExplorerExpanded}" 
+                <Border Background="Transparent" cal:Message.Attach="[Event PreviewMouseDown] = [Action ActivateWindow('ROSTER')]">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsRosterExplorerExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="RosterExplorer">
-                    </ToggleButton>
-                    <Grid x:Name="rosterExplorerPanel" Grid.Row="1">
-                        <ContentControl x:Name="RosterExplorerViewModel" />
+                        </ToggleButton>
+                        <Grid x:Name="rosterExplorerPanel" Grid.Row="1">
+                            <ContentControl x:Name="RosterExplorerViewModel" />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Border>
             </GroupBox>
         </Expander>
         <Expander Grid.Column="3" Style="{StaticResource VerticalExpanderStyle}"
@@ -97,18 +82,20 @@
                   >
 
             <GroupBox Header="Character Editor" x:Name="grpBoxCharacterEditor" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterEditorExpanded}" 
+                <Border Background="Transparent" cal:Message.Attach="[Event PreviewMouseDown] = [Action ActivateWindow('CHARACTER_ACTION_GROUPS')]">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsCharacterEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="ChracterEditor">
-                    </ToggleButton>
-                    <Grid x:Name="charEditorPanel" Grid.Row="1">
-                        <ContentControl x:Name="CharacterEditorViewModel" />
+                        </ToggleButton>
+                        <Grid x:Name="charEditorPanel" Grid.Row="1">
+                            <ContentControl x:Name="CharacterEditorViewModel" />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Border>
             </GroupBox>
         </Expander>
         <Expander Grid.Column="4" Style="{StaticResource VerticalExpanderStyle}"
@@ -143,18 +130,20 @@
                   >
 
             <GroupBox Header="Power Editor" x:Name="grpBoxAbilityEditor" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsAbilityEditorExpanded}" 
+                <Border Background="Transparent" cal:Message.Attach="[Event PreviewMouseDown] = [Action ActivateWindow('ABILITIES')]">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsAbilityEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="AbilityEditor">
-                    </ToggleButton>
-                    <Grid x:Name="abilityEditorPanel" Grid.Row="1">
-                        <ContentControl x:Name="AbilityEditorViewModel" />
+                        </ToggleButton>
+                        <Grid x:Name="abilityEditorPanel" Grid.Row="1">
+                            <ContentControl x:Name="AbilityEditorViewModel" />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Border>
             </GroupBox>
         </Expander>
         <Expander Grid.Column="6" Style="{StaticResource VerticalExpanderStyle}"
@@ -166,18 +155,20 @@
                   >
 
             <GroupBox Header="Movement Editor" x:Name="grpBoxMovementEditor" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsMovementEditorExpanded}" 
+                <Border Background="Transparent" cal:Message.Attach="[Event PreviewMouseDown] = [Action ActivateWindow('MOVEMENTS')]">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{StaticResource ExpanderToggleButtonStyle}" Grid.Row="0" HorizontalAlignment="Right" IsChecked="{Binding IsMovementEditorExpanded}" 
                                   Background="Transparent" BorderBrush="Transparent" Command="{Binding CollapsePanelCommand}" CommandParameter="MovementEditor">
-                    </ToggleButton>
-                    <Grid x:Name="movementEditorPanel" Grid.Row="1">
-                        <ContentControl x:Name="MovementEditorViewModel" />
+                        </ToggleButton>
+                        <Grid x:Name="movementEditorPanel" Grid.Row="1">
+                            <ContentControl x:Name="MovementEditorViewModel" />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Border>
             </GroupBox>
         </Expander>
     </Grid>

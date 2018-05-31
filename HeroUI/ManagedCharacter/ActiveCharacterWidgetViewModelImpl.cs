@@ -91,6 +91,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
             if (activatedCharacter != null)
             {
                 (activatedCharacter as AnimatedAbility.AnimatedCharacter)?.LoadDefaultAbilities();
+                if(this.CharacterActionGroups != null)
+                {
+                    foreach (var actionGroupVM in this.CharacterActionGroups)
+                        actionGroupVM.UnregisterKeyEventHandlers();
+                }
+                
                 this.CharacterActionGroups = new ObservableCollection<CharacterActionGroupViewModel>();
                 foreach (CharacterActionGroup group in activatedCharacter.CharacterActionGroups)
                 {
@@ -119,7 +125,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                         case CharacterActionType.Movement:
                             var movementActionGroupViewModel = IoC.Get<CharacterActionGroupViewModelImpl<CharacterMovement>>();
                             movementActionGroupViewModel.ActionGroup = group;
-                            movementActionGroupViewModel.ShowActions = showActionsInGroup;
+                            movementActionGroupViewModel.ShowActions = showActionsInGroup;  
                             movementActionGroupViewModel.IsReadOnly = true;
                             movementActionGroupViewModel.LoadedActionName = loadedOptionExists ? actionName : "";
                             this.CharacterActionGroups.Add(movementActionGroupViewModel);

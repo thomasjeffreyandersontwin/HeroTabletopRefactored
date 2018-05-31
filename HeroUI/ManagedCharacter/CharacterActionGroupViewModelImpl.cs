@@ -4,6 +4,7 @@ using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Attack;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
+using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.Movement;
 using HeroVirtualTabletop.Roster;
 using System;
@@ -45,6 +46,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Public Properties
 
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
         public IEventAggregator EventAggregator { get; set; }
 
         private CharacterActionGroup actionGroup;
@@ -154,11 +156,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         #region Constructor
 
-        public CharacterActionGroupViewModelImpl(IEventAggregator eventAggregator)
+        public CharacterActionGroupViewModelImpl(DesktopKeyEventHandler desktopKeyEventHandler, IEventAggregator eventAggregator)
         {
             this.EventAggregator = eventAggregator;
             this.EventAggregator.Subscribe(this);
-
+            this.DesktopKeyEventHandler = desktopKeyEventHandler;
+            this.RegisterKeyEventHandlers();
             //this.Owner.PropertyChanged += Owner_PropertyChanged;
             //this.eventAggregator.GetEvent<AttackInitiatedEvent>().Subscribe(this.AttackInitiated);
             //this.eventAggregator.GetEvent<CloseActiveAttackEvent>().Subscribe(this.StopAttack);
@@ -183,20 +186,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
             switch (this.ActionGroup.Type)
             {
                 case CharacterActionType.Ability:
-                    this.AddActionTooltip = "Add Power (Alt+Ctrl+Plus+A)";
-                    this.RemoveActionTooltip = "Remove Power (Alt+Ctrl+Minus+A)";
+                    this.AddActionTooltip = "Add Power (Ctrl+P)";
+                    this.RemoveActionTooltip = "Remove Power (Ctrl+Shift+P)";
                     break;
                 case CharacterActionType.Identity:
                     this.AddActionTooltip = "Add Identity (Alt+Ctrl+Plus+I)";
                     this.RemoveActionTooltip = "Remove Identity (Alt+Ctrl+Minus+I)";
                     break;
                 case CharacterActionType.Movement:
-                    this.AddActionTooltip = "Add Movement (Alt+Ctrl+Plus+M)";
-                    this.RemoveActionTooltip = "Remove Movement (Alt+Ctrl+Minus+M)";
+                    this.AddActionTooltip = "Add Movement (Ctrl+M)";
+                    this.RemoveActionTooltip = "Remove Movement (Ctrl+Shift+M)";
                     break;
                 case CharacterActionType.Mixed:
                     this.AddActionTooltip = "Add Custom Action"; // Not needed
-                    this.RemoveActionTooltip = "Remove Custom Action (Alt+Ctrl+Minus+X)";
+                    this.RemoveActionTooltip = "Remove Custom Action (Ctrl+Shift+X)";
                     break;
             }
         }
@@ -516,6 +519,46 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     StopAction(obj);
                 }
             }
+        }
+
+        #endregion
+
+        #region Desktop Key Handling
+
+        private void RegisterKeyEventHandlers()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public void UnregisterKeyEventHandlers()
+        {
+            this.DesktopKeyEventHandler.RemoveKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (!this.IsReadOnly && Keyboard.Modifiers == ModifierKeys.Control && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            {
+                if (inputKey == Key.I && this.ActionGroup.Type == CharacterActionType.Identity)
+                    method = this.AddAction;
+                else if (inputKey == Key.M && this.ActionGroup.Type == CharacterActionType.Movement)
+                    method = this.AddAction;
+                else if (inputKey == Key.P && this.ActionGroup.Type == CharacterActionType.Ability)
+                    method = this.AddAction;
+            }
+            else if (!this.IsReadOnly && Keyboard.Modifiers == (ModifierKeys.Control|ModifierKeys.Shift) && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            {
+                if (inputKey == Key.I && this.ActionGroup.Type == CharacterActionType.Identity && this.CanRemoveAction)
+                    method = this.RemoveAction;
+                else if (inputKey == Key.M && this.ActionGroup.Type == CharacterActionType.Movement && this.CanRemoveAction)
+                    method = this.RemoveAction;
+                else if (inputKey == Key.P && this.ActionGroup.Type == CharacterActionType.Ability && this.CanRemoveAction)
+                    method = this.RemoveAction;
+                else if (inputKey == Key.X && this.ActionGroup.Type == CharacterActionType.Mixed && this.CanRemoveAction)
+                    method = this.RemoveAction;
+            }
+            return method;
         }
 
         #endregion

@@ -47,6 +47,8 @@ namespace HeroVirtualTabletop.Roster
         #region Public Properties
         public IEventAggregator EventAggregator { get; set; }
 
+        public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
+
         private Roster roster;
         public Roster Roster
         {
@@ -155,12 +157,13 @@ namespace HeroVirtualTabletop.Roster
 
         #region Constructor
         public RosterExplorerViewModelImpl(Roster roster, DesktopTargetObserver desktopTargetObserver, DesktopMouseEventHandler desktopMouseEventHandler, 
-            DesktopMouseHoverElement desktopMouseHoverElement, DesktopContextMenu desktopContextMenu, IEventAggregator eventAggregator)
+            DesktopMouseHoverElement desktopMouseHoverElement, DesktopContextMenu desktopContextMenu, DesktopKeyEventHandler desktopKeyEventHandler, IEventAggregator eventAggregator)
         {
             this.desktopMouseEventHandler = desktopMouseEventHandler;
             this.mouseHoverElement = desktopMouseHoverElement;
             this.desktopTargetObserver = desktopTargetObserver;
             this.desktopContextMenu = desktopContextMenu;
+            this.DesktopKeyEventHandler = desktopKeyEventHandler;
 
             this.Roster = roster;
             this.EventAggregator = eventAggregator;
@@ -168,6 +171,7 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Subscribe(this);
 
             this.RegisterMouseHandlers();
+            this.RegisterKeyHandlers();
             this.RegisterDesktopContextMenuEventHandlers();
         }
 
@@ -876,18 +880,6 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        private void PlayDefaultAbility()
-        {
-            if (this.Roster.AttackingCharacter != null)
-                return;
-            var abilityPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
-            if(abilityPlayingCharacter != null)
-            {
-                var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
-                this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
-            }
-        }
-
         private void TargetHoveredCharacter()
         {
             CharacterCrowdMember hoveredCharacter = GetHoveredCharacter();
@@ -905,6 +897,35 @@ namespace HeroVirtualTabletop.Roster
                 return this.Roster.Participants.FirstOrDefault(p => p.Name == this.mouseHoverElement.Name);
             }
             return null;
+        }
+
+        #endregion
+
+        #region Play Default Ability/Movement
+
+        public void PlayDefaultAbility()
+        {
+            if (this.Roster.AttackingCharacter != null)
+                return;
+            var abilityPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
+            if (abilityPlayingCharacter != null)
+            {
+                var abilityToPlay = abilityPlayingCharacter.DefaultAbility;
+                this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(abilityToPlay), (action) => Application.Current.Dispatcher.Invoke(action));
+            }
+        }
+
+        public void PlayDefaultMovement()
+        {
+            var movementPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
+            if(movementPlayingCharacter != null)
+            {
+                var characterMovement = movementPlayingCharacter.DefaultMovement;
+                if(characterMovement != null && characterMovement.IsActive)
+                    this.EventAggregator.Publish(new DeactivateMovementEvent(characterMovement), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                else
+                    this.EventAggregator.Publish(new ActivateMovementEvent(characterMovement), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+            }
         }
 
         #endregion
@@ -1239,6 +1260,208 @@ namespace HeroVirtualTabletop.Roster
         public void ResetDistanceCount()
         {
             this.Roster.DistanceCountingCharacter?.ResetDistanceCount();
+        }
+
+        #endregion
+
+        #region Desktop Key Event Handling
+
+        private void RegisterKeyHandlers()
+        {
+            this.DesktopKeyEventHandler.AddKeyEventHandler(this.HandleDesktopKeyEvent);
+        }
+
+        public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
+        {
+            EventMethod method = null;
+            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ROSTER || DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ACTIVE_CHARACTER)
+            {
+                if (inputKey == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanPlace)
+                        method = this.Place;
+                }
+                else if (inputKey == Key.S && Keyboard.Modifiers == (ModifierKeys.Control))
+                {
+                    if(this.CanSavePosition)
+                        method = this.SavePosition;
+                }
+                else if (inputKey == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.Spawn;
+                }
+                else if (inputKey == Key.T && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanToggleTargeted)
+                        method = this.ToggleTargeted;
+                }
+                else if (inputKey == Key.M && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanToggleManeuverWithCamera)
+                        method = this.ToggleManeuverWithCamera;
+                }
+                else if (inputKey == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanMoveCameraToTarget)
+                        method = this.MoveCameraToTarget;
+                }
+                else if (inputKey == Key.E && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanEditRosterMember)
+                        method = this.EditRosterMember;
+                }
+                else if (inputKey == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanMoveToCamera)
+                        method = this.MoveToCamera;
+                }
+                else if (inputKey == Key.Y && Keyboard.Modifiers == (ModifierKeys.Control))
+                {
+                    method = this.CycleCommandsThroughCrowd;
+                }
+                else if (inputKey == Key.X && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanToggleActivate)
+                        method = this.ToggleActivate;
+                }
+                else if (inputKey == Key.U && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanToggleGangMode)
+                        method = this.ToggleGangMode;
+                }
+                else if (inputKey == Key.Enter && Keyboard.Modifiers == ModifierKeys.None)
+                {
+                    //method = ConfirmAttack;
+                }
+                else if (inputKey == Key.O && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ResetOrientation;
+                }
+                else if ((inputKey == Key.OemMinus || inputKey == Key.Subtract || inputKey == Key.Delete) && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if(this.CanClearFromDesktop)
+                        method = this.ClearFromDesktop;
+                }
+                else if (inputKey == Key.D && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    //if (this.CanPlayDefaultMovement)
+                    //    method = this.PlayDefaultMovement;
+                }
+                else if (inputKey == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    if (this.CanTeleport)
+                        method = this.Teleport;
+                }
+                else if (inputKey == Key.H && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ToggleTargetOnHover;
+                }
+                else if (inputKey == Key.R && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ToggleRelativePositioning;
+                }
+                else if (inputKey == Key.J && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ToggleSpawnOnClick;
+                }
+                else if (inputKey == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ToggleCloneAndSpawn;
+                }
+                else if (inputKey == Key.B && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    method = this.ToggleOverheadMode;
+                }
+            }
+
+            if (this.Roster.ActiveCharacter != null)
+            {
+                if (inputKey == Key.F1)
+                {
+                    method = this.PlayDefaultAbility;
+                }
+                else if (inputKey == Key.F2)
+                {
+                    //method = this.PlayDefaultMovement;
+                }
+            }
+            CharacterCrowdMember targetedCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
+            if (Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift) && targetedCharacter != null && targetedCharacter.Abilities.Any(ab => ab.ActivationKey == inputKey))
+            {
+                var activeAbility = targetedCharacter.Abilities.First(ab => ab.ActivationKey == inputKey);
+                targetedCharacter.Target(false);
+                this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(activeAbility), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
+            else if (targetedCharacter != null && Keyboard.Modifiers == ModifierKeys.Alt)
+            {
+                CharacterMovement cm = null;
+                if (targetedCharacter.Movements.Any(m => m.ActivationKey == inputKey))
+                {
+                    cm = targetedCharacter.Movements.First(m => m.ActivationKey == inputKey);
+                }
+                else if (inputKey == Key.K)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Walk");
+                }
+                else if (inputKey == Key.U)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Run");
+                }
+                else if (inputKey == Key.S)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Swim");
+                }
+                else if (inputKey == Key.P)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Steampack");
+                }
+                else if (inputKey == Key.F)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Fly");
+                }
+                else if (inputKey == Key.B)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Beast");
+                }
+                else if (inputKey == Key.J)
+                {
+                    cm = targetedCharacter.Movements.FirstOrDefault(m => m.ActivationKey == Key.None && m.Name == "Ninja");
+                }
+                else if (inputKey == Key.T)
+                {
+                    method = Teleport;
+                }
+
+                if (cm != null)
+                {
+                    if (!cm.IsActive)
+                    {
+                        this.EventAggregator.Publish(new ActivateMovementEvent(cm), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                    }
+                    else
+                        this.EventAggregator.Publish(new DeactivateMovementEvent(cm), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                }
+            }
+            else if (inputKey == Key.Escape)
+            {
+                if (this.Roster.AttackingCharacter != null)
+                {
+                    if (this.Roster.CurrentAttackInstructions != null)
+                    {
+                        this.Roster.AttackingCharacter.ActiveAttack.Cancel(this.Roster.CurrentAttackInstructions);
+                        this.EventAggregator.Publish(new CancelAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
+                    }
+                }
+                else if (IsMovementOngoing)
+                {
+                    this.EventAggregator.Publish(new DeactivateMovementEvent(DefaultMovements.CurrentActiveMovementForMovingCharacters), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                }
+                else if (this.Roster.ActiveCharacter != null)
+                {
+                    method = this.ToggleActivate;
+                }
+            }
+            return method;
         }
 
         #endregion
