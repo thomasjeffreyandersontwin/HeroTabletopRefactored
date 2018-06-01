@@ -466,7 +466,7 @@ namespace HeroVirtualTabletop.Desktop
                     Speed = (float)distanceFromDestination / 30 / 3;
                 }
 
-                Speed *= (float)speed / 2; // Dividing by two to reduce the speed as high speeds tend to cause more errors
+                Speed *= (float)Speed / 2; // Dividing by two to reduce the speed as high speeds tend to cause more errors
             }   
         }
         public Vector3 ApplyGravity(Vector3 currentPositionVector)

@@ -226,7 +226,40 @@ namespace HeroVirtualTabletop.Movement
                         cmDefault.Speed = cm.Speed;
                         this.Movements.InsertAction(cmDefault);
                     }
-
+                    if (this.Movements.Any(m => m.Name == cm.Name && m.ActivationKey == Key.None))
+                    {
+                        CharacterMovement characterMovement = this.Movements.First(m => m.Name == cm.Name);
+                        switch (characterMovement.Name)
+                        {
+                            case "Walk":
+                                characterMovement.ActivationKey = Key.K;
+                                break;
+                            case "Run":
+                                characterMovement.ActivationKey = Key.U;
+                                break;
+                            case "Swim":
+                                characterMovement.ActivationKey = Key.S;
+                                break;
+                            case "Fly":
+                                characterMovement.ActivationKey = Key.F;
+                                break;
+                            case "Jump":
+                                characterMovement.ActivationKey = Key.J;
+                                break;
+                            case "Steam Jump Jetpack":
+                                characterMovement.ActivationKey = Key.P;
+                                break;
+                            case "Beast":
+                                characterMovement.ActivationKey = Key.B;
+                                break;
+                            case "Ninja Jump":
+                                characterMovement.ActivationKey = Key.M;
+                                break;
+                            case "Ice Slide":
+                                characterMovement.ActivationKey = Key.I;
+                                break;
+                        }
+                    }
                 }
             }
         }

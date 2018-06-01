@@ -17,6 +17,11 @@ namespace HeroVirtualTabletop.Desktop
     {
         void AddKeyEventHandler(HandleKeyEvent handleKeyEvent);
         void RemoveKeyEventHandler(HandleKeyEvent handleKeyEvent);
+        void SuspendKeyEventHandlersExcept(params HandleKeyEvent[] excludedHandleKeyEvents);
+        void ResumeKeyEventHandlersExcept(params HandleKeyEvent[] excludedHandleKeyEvents);
+        void SuspendAllKeyEventHandlers();
+        void ResumeAllKeyEventHandlers();
+
     }
     public class DesktopKeyEventHandlerImpl : DesktopKeyEventHandler
     {
@@ -24,9 +29,11 @@ namespace HeroVirtualTabletop.Desktop
         private IntPtr hookID;
         private Keys vkCode; 
         private List<HandleKeyEvent> _handleKeyEvents;
+        private List<HandleKeyEvent> _suspendedHandleKeyEvents;
         public DesktopKeyEventHandlerImpl()
         {
             _handleKeyEvents = new List<Desktop.HandleKeyEvent>();
+            _suspendedHandleKeyEvents = new List<Desktop.HandleKeyEvent>();
             ActivateKeyboardHook();
         }
 
@@ -56,6 +63,31 @@ namespace HeroVirtualTabletop.Desktop
                     _handleKeyEvents.Remove(handleKeyEvent);
                 }
             }
+        }
+
+        public void SuspendKeyEventHandlersExcept(params HandleKeyEvent[] excludedHandleKeyEvents)
+        {
+            foreach (var keyEvent in _handleKeyEvents.ToList())
+            {
+                if (!excludedHandleKeyEvents.Contains(keyEvent) && !_suspendedHandleKeyEvents.Contains(keyEvent))
+                    _suspendedHandleKeyEvents.Add(keyEvent);
+            }
+        }
+        public void ResumeKeyEventHandlersExcept(params HandleKeyEvent[] excludedHandleKeyEvents)
+        {
+            foreach(var keyEvent in _suspendedHandleKeyEvents.ToList())
+            {
+                if (!excludedHandleKeyEvents.Contains(keyEvent) && _suspendedHandleKeyEvents.Contains(keyEvent))
+                    _suspendedHandleKeyEvents.Remove(keyEvent);
+            }
+        }
+        public void SuspendAllKeyEventHandlers()
+        {
+            _suspendedHandleKeyEvents.AddRange(_handleKeyEvents);
+        }
+        public void ResumeAllKeyEventHandlers()
+        {
+            _suspendedHandleKeyEvents.Clear();
         }
 
         internal void DeactivateKeyboardHook()
@@ -114,7 +146,7 @@ namespace HeroVirtualTabletop.Desktop
                             {
                                 try
                                 {
-                                    foreach (HandleKeyEvent _handleKeyEvent in _handleKeyEvents)
+                                    foreach (HandleKeyEvent _handleKeyEvent in _handleKeyEvents.Where(handler => !_suspendedHandleKeyEvents.Contains(handler)))
                                     {
                                         EventMethod handler = _handleKeyEvent(vkCode, inputKey);
                                         if (handler != null)

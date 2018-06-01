@@ -318,7 +318,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void ResetDistanceCount()
         {
-            this.Position.ResetDistanceCount();
+            this.Position?.ResetDistanceCount();
         }
         public  virtual void CreateGhostShadow()
         {

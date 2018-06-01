@@ -1344,8 +1344,7 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else if (inputKey == Key.D && Keyboard.Modifiers == ModifierKeys.Control)
                 {
-                    //if (this.CanPlayDefaultMovement)
-                    //    method = this.PlayDefaultMovement;
+                    method = this.PlayDefaultMovement;
                 }
                 else if (inputKey == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
                 {
@@ -1382,7 +1381,7 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else if (inputKey == Key.F2)
                 {
-                    //method = this.PlayDefaultMovement;
+                    method = this.PlayDefaultMovement;
                 }
             }
             CharacterCrowdMember targetedCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;

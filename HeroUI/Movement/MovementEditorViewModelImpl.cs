@@ -419,6 +419,7 @@ namespace HeroVirtualTabletop.Movement
             // Disable Camera Control
             Camera.DisableMovement();
             StartMovementTimer();
+            this.DesktopKeyEventHandler.SuspendKeyEventHandlersExcept(this.HandleDesktopKeyEvent);
         }
         public void DeactivateMovement(List<MovableCharacter> targets, CharacterMovement characterMovement)
         {
@@ -435,6 +436,7 @@ namespace HeroVirtualTabletop.Movement
             Camera.EnableMovement();
             //this.Movement.StopMovement(this.Character);
             StopMovementTimer();
+            this.DesktopKeyEventHandler.ResumeAllKeyEventHandlers();
         }
 
         public void ToggleCameraMode()
@@ -515,11 +517,15 @@ namespace HeroVirtualTabletop.Movement
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if(this.CharacterMovementInAction != null && this.CharacterMovementInAction.IsActive)
+            if (this.CharacterMovementInAction != null && this.CharacterMovementInAction.IsActive)
             {
                 if (inputKey == Key.CapsLock)
                 {
                     method = ToggleCameraMode;
+                }
+                else if(inputKey == Key.Escape)
+                {
+                    this.EventAggregator.Publish(new DeactivateMovementEvent(DefaultMovements.CurrentActiveMovementForMovingCharacters), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 }
                 else
                 {
@@ -548,6 +554,7 @@ namespace HeroVirtualTabletop.Movement
             }
             return method;
         }
+        
         #endregion
     }
 }

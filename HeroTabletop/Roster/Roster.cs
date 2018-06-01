@@ -1190,8 +1190,16 @@ namespace HeroVirtualTabletop.Roster
             {
                 Position targetPosition = Participants.First().Camera.AdjustedPosition;
                 List<Position> positionsToPlaceAround = Participants.Select(p => p.Position).ToList();
-                Dictionary<Position, Position> destinationMap = targetPosition.GetOptimalDestinationMapForPositions(positionsToPlaceAround);
-                foreach(CharacterCrowdMember part in Participants)
+                Dictionary<Position, Position> destinationMap = null;
+                if (this.Roster.UseOptimalPositioning)
+                {
+                    destinationMap = targetPosition.GetOptimalDestinationMapForPositions(positionsToPlaceAround);
+                }
+                else
+                {
+                    destinationMap = targetPosition.GetRelativeDestinationMapForPositions(positionsToPlaceAround);
+                }
+                foreach (CharacterCrowdMember part in Participants)
                 {
                     Position pos = destinationMap[part.Position];
                     part.MoveForwardTo(pos);
