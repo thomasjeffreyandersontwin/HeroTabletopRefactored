@@ -293,33 +293,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.GhostShadow.Position.Vector = this.Position.Vector;
                 this.GhostShadow.Position.RotationMatrix = this.Position.RotationMatrix;
             }
+            else if(this.GhostShadow != null && this.GhostShadow.IsSpawned)
+            {
+                this.RemoveGhost();
+            }
         }
 
-        public void Teleport(Position position = null)
-        {
-            if (this.MemoryInstance == null || !this.MemoryInstance.IsReal)
-                return;
-            if (position == null)
-                position = this.Camera.AdjustedPosition;
-            this.Position?.MoveTo(position);
-            this.AlignGhost();
-            this.UpdateDistanceCount();
-        }
-
-        public void UpdateDistanceCount()
-        {
-            this.Position.UpdateDistanceCount();
-        }
-
-        public void UpdateDistanceCount(Position position)
-        {
-            this.Position.UpdateDistanceCount(position);
-        }
-
-        public void ResetDistanceCount()
-        {
-            this.Position?.ResetDistanceCount();
-        }
         public  virtual void CreateGhostShadow()
         {
             this.GhostShadow = new ManagedCharacterImpl(this.Targeter, this.Generator, this.Camera);
@@ -360,6 +339,39 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.GhostShadow = null;
             }
         }
+        #endregion
+
+        #region Teleport
+
+        public void Teleport(Position position = null)
+        {
+            if (this.MemoryInstance == null || !this.MemoryInstance.IsReal)
+                return;
+            if (position == null)
+                position = this.Camera.AdjustedPosition;
+            this.Position?.MoveTo(position);
+            this.AlignGhost();
+            this.UpdateDistanceCount();
+        }
+
+        #endregion
+
+        #region Distance Counter
+        public void UpdateDistanceCount()
+        {
+            this.Position.UpdateDistanceCount();
+        }
+
+        public void UpdateDistanceCount(Position position)
+        {
+            this.Position.UpdateDistanceCount(position);
+        }
+
+        public void ResetDistanceCount()
+        {
+            this.Position?.ResetDistanceCount();
+        }
+
         #endregion
         public CharacterActionList<Identity> Identities
         {
