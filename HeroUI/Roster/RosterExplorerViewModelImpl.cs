@@ -490,6 +490,16 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        public void ToggleActivateAfterChangingDesktopSelection()
+        {
+            System.Action d = delegate ()
+            {
+                ToggleActivate();
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
+            adex.ExecuteAsyncDelegate();
+        }
+
         public void ToggleActivate()
         {
             bool canActivate = false;
@@ -758,12 +768,7 @@ namespace HeroVirtualTabletop.Roster
                 this.SelectedParticipants.Clear();
             this.SelectedParticipants.Add(character);
             this.UpdateRosterSelection();
-            if (!this.desktopContextMenu.IsDisplayed && this.Roster.AttackingCharacter != null && character != this.Roster.AttackingCharacter && this.Roster.CurrentAttackInstructions.Defender == null)
-            {
-                this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
-                this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), 
-                    (act) => Application.Current.Dispatcher.Invoke(act));
-            }
+            
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 
@@ -778,126 +783,6 @@ namespace HeroVirtualTabletop.Roster
             NotifyOfPropertyChange(() => SelectedParticipants);
         }
 
-
-        #endregion
-
-        #region Desktop Mouse Event Handlers
-
-        private void RegisterMouseHandlers()
-        {
-            desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
-            //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
-            desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
-            desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
-            //desktopMouseEventHandler.OnMouseDoubleClick.Add(PlayDefaultAbility);
-            //desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
-        }
-
-        private void DisplayCharacterPopupMenu()
-        {
-            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
-        }
-        int numRetryPopupMenu = 3;
-        private void DisplayCharacterPopupMenue()
-        {
-            System.Action d = delegate ()
-            {
-                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)
-                if(this.Roster.AttackingCharacter == this.Roster.TargetedCharacter && numRetryPopupMenu > 0)
-                {
-                    numRetryPopupMenu--;
-                    DisplayCharacterPopupMenue();
-                }
-                else
-                {
-                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
-                    numRetryPopupMenu = 3;
-                }
-                if (this.Roster.DistanceCountingCharacter != null)
-                {
-                    var mousePosition = this.mouseHoverElement.Position;
-                    this.Roster.DistanceCountingCharacter.UpdateDistanceCount(mousePosition);
-                }
-            };
-            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
-            adex.ExecuteAsyncDelegate();
-        }
-
-        private void RespondToDesktopLeftClick()
-        {
-            if (desktopContextMenu.IsDisplayed == false && desktopMouseEventHandler.IsDesktopActive)
-            {
-                if (this.Roster.AttackingCharacter == null)
-                {
-                    Position mousePosition = this.mouseHoverElement.Position;
-                    if (IsMovementOngoing)
-                    {
-                        this.MovetoPosition(mousePosition);
-                    }
-                    else if (this.Roster.SpawnOnClick)
-                    {
-                        if (this.Roster.CloneAndSpawn)
-                        {
-                            this.CloneAndSpawn(mousePosition);
-                        }
-                        else
-                        {
-                            this.SpawnToPosition(mousePosition);
-                        }
-                    }  
-                }
-                else
-                {
-                    PlayAttackCycle();
-                }
-            }
-            else
-                desktopContextMenu.IsDisplayed = false;
-        }
-
-        int numRetryHover = 3;
-        private void PlayAttackCycle()
-        {
-            var hoveredCharacter = GetHoveredCharacter();
-            var mousePosition = this.mouseHoverElement.Position;
-            this.Roster.DistanceCountingCharacter?.UpdateDistanceCount(mousePosition);
-
-            if (hoveredCharacter == null && numRetryHover > 0)
-            {
-                numRetryHover--;
-                System.Action d = delegate ()
-                {
-                    PlayAttackCycle();
-                };
-                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 20);
-                adex.ExecuteAsyncDelegate();
-            }
-            else
-            {
-                numRetryHover = 3;
-                if(hoveredCharacter == this.Roster.AttackingCharacter || hoveredCharacter == null)
-                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(mousePosition);
-            }
-        }
-
-        private void TargetHoveredCharacter()
-        {
-            CharacterCrowdMember hoveredCharacter = GetHoveredCharacter();
-            if (hoveredCharacter != null)
-            {
-                this.Roster.TargetHoveredCharacter(hoveredCharacter);
-                if (this.Roster.TargetOnHover && this.Roster.TargetedCharacter != hoveredCharacter)
-                    this.SelectCharacter(hoveredCharacter);
-            }
-        }
-        private CharacterCrowdMember GetHoveredCharacter()
-        {
-            if (this.mouseHoverElement.CurrentHoveredInfo != "")
-            {
-                return this.Roster.Participants.FirstOrDefault(p => p.Name == this.mouseHoverElement.Name);
-            }
-            return null;
-        }
 
         #endregion
 
@@ -1155,6 +1040,17 @@ namespace HeroVirtualTabletop.Roster
             character.RemoveState(state);
         }
 
+        public void TargetAndExecuteAttack()
+        {
+            if (!this.desktopContextMenu.IsDisplayed && this.Roster.AttackingCharacter != null)
+            {
+                this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+                if(!(this.Roster.Selected.Participants.Count == 1 && this.Roster.Selected.Participants[0] == this.Roster.AttackingCharacter))
+                    this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions),
+                        (act) => Application.Current.Dispatcher.Invoke(act));
+            }
+        }
+
         #endregion
 
         #region Gang Mode
@@ -1260,6 +1156,163 @@ namespace HeroVirtualTabletop.Roster
         public void ResetDistanceCount()
         {
             this.Roster.DistanceCountingCharacter?.ResetDistanceCount();
+        }
+
+        #endregion
+
+        #region Desktop Mouse Event Handlers
+
+        private void RegisterMouseHandlers()
+        {
+            desktopMouseEventHandler.OnMouseLeftClick.Add(RespondToDesktopLeftClick);
+            //desktopMouseEventHandler.OnMouseLeftClickUp.Add(DropDraggedCharacter);
+            desktopMouseEventHandler.OnMouseRightClickUp.Add(DisplayCharacterPopupMenu);
+            desktopMouseEventHandler.OnMouseMove.Add(TargetHoveredCharacter);
+            desktopMouseEventHandler.OnMouseDoubleClick.Add(this.ToggleActivateAfterChangingDesktopSelection);
+            //desktopMouseEventHandler.OnMouseTripleClick.Add(ToggleManeuverWithCamera);
+        }
+
+        private void DisplayCharacterPopupMenu()
+        {
+            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+        }
+        int numRetryPopupMenu = 3;
+        private void DisplayCharacterPopupMenue()
+        {
+            System.Action d = delegate ()
+            {
+                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)
+                if (this.Roster.AttackingCharacter == this.Roster.TargetedCharacter && numRetryPopupMenu > 0)
+                {
+                    numRetryPopupMenu--;
+                    DisplayCharacterPopupMenue();
+                }
+                else
+                {
+                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+                    numRetryPopupMenu = 3;
+                }
+                if (this.Roster.DistanceCountingCharacter != null)
+                {
+                    var mousePosition = this.mouseHoverElement.Position;
+                    this.Roster.DistanceCountingCharacter.UpdateDistanceCount(mousePosition);
+                }
+            };
+            AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
+            adex.ExecuteAsyncDelegate();
+        }
+
+        private void RespondToDesktopLeftClick()
+        {
+            if (desktopContextMenu.IsDisplayed == false && desktopMouseEventHandler.IsDesktopActive)
+            {
+                if (this.Roster.AttackingCharacter == null)
+                {
+                    Position mousePosition = this.mouseHoverElement.Position;
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        System.Action d1 = delegate ()
+                        {
+                            this.PlayDefaultAbility();
+                        };
+                        AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d1, 500);
+                        adex.ExecuteAsyncDelegate();
+                    }
+                    else if (Keyboard.Modifiers == ModifierKeys.Alt)
+                    {
+                        System.Action d1 = delegate ()
+                        {
+                            this.PlayDefaultMovement();
+                        };
+                        AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d1, 500);
+                        adex.ExecuteAsyncDelegate();
+                    }
+                    else if (IsMovementOngoing)
+                    {
+                        this.MovetoPosition(mousePosition);
+                    }
+                    else if (this.Roster.SpawnOnClick)
+                    {
+                        if (this.Roster.CloneAndSpawn)
+                        {
+                            this.CloneAndSpawn(mousePosition);
+                        }
+                        else
+                        {
+                            this.SpawnToPosition(mousePosition);
+                        }
+                    }
+                }
+                else
+                {
+                    PlayAttackCycle();
+                }
+            }
+            else
+                desktopContextMenu.IsDisplayed = false;
+        }
+
+        int numRetryHover = 3;
+        private void PlayAttackCycle()
+        {
+            var hoveredCharacter = GetHoveredCharacter();
+            var mousePosition = this.mouseHoverElement.Position;
+            this.Roster.DistanceCountingCharacter?.UpdateDistanceCount(mousePosition);
+
+            if (hoveredCharacter == null && numRetryHover > 0)
+            {
+                numRetryHover--;
+                System.Action d = delegate ()
+                {
+                    PlayAttackCycle();
+                };
+                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 20);
+                adex.ExecuteAsyncDelegate();
+            }
+            else
+            {
+                numRetryHover = 3;
+                if (hoveredCharacter == this.Roster.AttackingCharacter || hoveredCharacter == null)
+                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(mousePosition);
+                else
+                {
+                    if(hoveredCharacter != null)
+                    {
+                        if (Keyboard.Modifiers == ModifierKeys.Shift)
+                        {
+                            this.SelectedParticipants.Clear();
+                            this.SelectedParticipants.Add(hoveredCharacter);
+                            this.SelectCharacter(hoveredCharacter);
+                            this.AddSelectedAsAttackTarget();
+                        }
+                        else
+                        {
+                            this.SelectCharacter(hoveredCharacter);
+                            TargetAndExecuteAttack();
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        private void TargetHoveredCharacter()
+        {
+            CharacterCrowdMember hoveredCharacter = GetHoveredCharacter();
+            if (hoveredCharacter != null)
+            {
+                this.Roster.TargetHoveredCharacter(hoveredCharacter);
+                if (this.Roster.TargetOnHover && this.Roster.TargetedCharacter != hoveredCharacter)
+                    this.SelectCharacter(hoveredCharacter);
+            }
+        }
+        private CharacterCrowdMember GetHoveredCharacter()
+        {
+            if (this.mouseHoverElement.CurrentHoveredInfo != "")
+            {
+                return this.Roster.Participants.FirstOrDefault(p => p.Name == this.mouseHoverElement.Name);
+            }
+            return null;
         }
 
         #endregion

@@ -1699,7 +1699,17 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
-            Reference?.Ability?.Play(target);
+            AnimatedAbility refAbility = Reference.Ability;
+            if (refAbility != null && target.Abilities.Any(a => a.Name == refAbility.Name))
+            {
+                AnimatedAbility targetAbility = target.Abilities.First(a => a.Name == refAbility.Name);
+                if(targetAbility.AnimationElements.Any(ae => ae is ReferenceElement && (ae as ReferenceElement).Reference?.Ability == refAbility))
+                {
+                    refAbility.Sequencer.Play(target);
+                }
+            }
+            else
+                Reference?.Ability?.Play(target);
         }
 
         public override bool Equals(object other)

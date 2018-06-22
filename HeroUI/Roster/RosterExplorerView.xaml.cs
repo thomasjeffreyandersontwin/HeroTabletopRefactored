@@ -1,4 +1,5 @@
 ﻿using HeroUI;
+using HeroVirtualTabletop.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,20 +80,30 @@ namespace HeroVirtualTabletop.Roster
         {
             if (e.ClickCount == 1)
             {
-                
+                if (!(Keyboard.Modifiers == ModifierKeys.Control || Keyboard.Modifiers == ModifierKeys.Shift || Keyboard.Modifiers == ModifierKeys.Alt))
+                {
+                    if (this.viewModel.Roster.AttackingCharacter != null) //&& !this.viewModel.IsPlayingAreaEffect)
+                    {
+                        Action d = delegate ()
+                        {
+                            this.viewModel.TargetAndExecuteAttack();
+                        };
+                        AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 50);
+                        adex.ExecuteAsyncDelegate();
+                    }
+                }
+                else if (Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    this.viewModel.PlayDefaultAbility();
+                }
+                else if (Keyboard.Modifiers == ModifierKeys.Alt)
+                {
+                    this.viewModel.PlayDefaultMovement();
+                }
             }
-            // This is the second mouse click.
             else if (e.ClickCount == 2)
             {
-                
-            }
-            else if (e.ClickCount == 3)
-            {
-                
-            }
-            else if (e.ClickCount == 4)
-            {
-                
+                this.viewModel.ToggleActivateAfterChangingDesktopSelection();
             }
         }
 
