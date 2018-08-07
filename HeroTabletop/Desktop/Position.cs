@@ -584,6 +584,18 @@ namespace HeroVirtualTabletop.Desktop
 
             set { }
         }
+        [JsonIgnore]
+        public Position HitPosition
+        {
+            get
+            {
+                Position hit = this.Duplicate();
+                hit.Y += 4.5f;
+                return hit;
+            }
+
+            set { }
+        }
         public float DistanceFrom(Position targetPos)
         {
             var targetV = targetPos.Vector;

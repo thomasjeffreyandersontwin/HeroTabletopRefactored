@@ -23,7 +23,8 @@ namespace HeroVirtualTabletop.Roster
     public class RosterExplorerViewModelImpl : PropertyChangedBase, RosterExplorerViewModel, IShell
         , IHandle<AddToRosterEvent>, IHandle<SyncWithRosterEvent>, IHandle<DeleteCrowdMemberEvent>, IHandle<RenameCrowdMemberEvent>
         , IHandle<ListenForDesktopTargetChangeEvent>, IHandle<StopListeningForDesktopTargetChangeEvent>
-        , IHandle<AttackStartedEvent>, IHandle<CancelAttackEvent>, IHandle<ActivateMovementEvent>, IHandle<DeactivateMovementEvent>
+        , IHandle<AttackStartedEvent>, IHandle<CancelAttackEvent>, IHandle<FinishAttackEvent>
+        , IHandle<ActivateMovementEvent>, IHandle<DeactivateMovementEvent>
     {
         #region Private Fields
 
@@ -790,7 +791,7 @@ namespace HeroVirtualTabletop.Roster
 
         public void PlayDefaultAbility()
         {
-            if (this.Roster.AttackingCharacter != null)
+            if (this.Roster.AttackingCharacters != null && this.Roster.AttackingCharacters.Count > 0)
                 return;
             var abilityPlayingCharacter = this.Roster.ActiveCharacter ?? this.Roster.TargetedCharacter;
             if (abilityPlayingCharacter != null)
@@ -1005,26 +1006,32 @@ namespace HeroVirtualTabletop.Roster
 
         public void Handle(AttackStartedEvent message)
         {
-            this.Roster.CurrentAttackInstructions = message.AttackInstructions;
+            //this.Roster.CurrentAttackInstructions = message.AttackInstructions;
             this.Roster.RestartDistanceCounting();
         }
 
         public void Handle(CancelAttackEvent message)
         {
+            this.Roster.CancelActiveAttack();
             this.Roster.RestartDistanceCounting();
+        }
+
+        public void Handle(FinishAttackEvent message)
+        {
+            this.Roster.ResetActiveAttack();
         }
 
         #endregion
 
         public void AddSelectedAsAttackTarget()
         {
-            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
+            this.Roster.AddAttackTargets();
         }
 
         public void AddSelectedAsAttackTargetAndExecute()
         {
-            this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
-            this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
+            this.Roster.AddAttackTargets();
+            this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.ConfiguringAttack, this.Roster.AttackingCharacters, this.Roster.CurrentAttackInstructions), (act) => Application.Current.Dispatcher.Invoke(act));
         }
 
         public void AddSelectedCrowdAsAttackTargetAndExecute()
@@ -1040,13 +1047,14 @@ namespace HeroVirtualTabletop.Roster
             character.RemoveState(state);
         }
 
+
         public void TargetAndExecuteAttack()
         {
-            if (!this.desktopContextMenu.IsDisplayed && this.Roster.AttackingCharacter != null)
+            if (!this.desktopContextMenu.IsDisplayed && this.Roster.AttackingCharacters != null && this.Roster.AttackingCharacters.Count > 0)
             {
-                this.Roster.Selected.AddAsAttackTarget(this.Roster.CurrentAttackInstructions);
-                if(!(this.Roster.Selected.Participants.Count == 1 && this.Roster.Selected.Participants[0] == this.Roster.AttackingCharacter))
-                    this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions),
+                this.Roster.AddAttackTargets();
+                if (!(this.Roster.Selected.Participants.Count == 1 && this.Roster.AttackingCharacters.Contains(this.Roster.Selected.Participants[0])))
+                    this.EventAggregator.Publish(new ConfigureAttackEvent(this.Roster.ConfiguringAttack, this.Roster.AttackingCharacters, this.Roster.CurrentAttackInstructions),
                         (act) => Application.Current.Dispatcher.Invoke(act));
             }
         }
@@ -1174,22 +1182,24 @@ namespace HeroVirtualTabletop.Roster
 
         private void DisplayCharacterPopupMenu()
         {
-            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+            bool areaAttack = this.Roster.ConfiguringAttack is AreaEffectAttack;
+            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, areaAttack);
         }
         int numRetryPopupMenu = 3;
         private void DisplayCharacterPopupMenue()
         {
             System.Action d = delegate ()
             {
-                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)
-                if (this.Roster.AttackingCharacter == this.Roster.TargetedCharacter && numRetryPopupMenu > 0)
+                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)  
+                if (this.Roster.AttackingCharacters.Contains(this.Roster.TargetedCharacter) && numRetryPopupMenu > 0)
                 {
                     numRetryPopupMenu--;
                     DisplayCharacterPopupMenue();
                 }
                 else
                 {
-                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacter != null ? Roster.AttackingCharacter.Name : null, Roster.AttackingCharacter?.ActiveAttack is AreaEffectAttack);
+                    bool areaAttack = this.Roster.CurrentAttackInstructions.Attacker.ActiveAttack is AreaEffectAttack;
+                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, areaAttack);
                     numRetryPopupMenu = 3;
                 }
                 if (this.Roster.DistanceCountingCharacter != null)
@@ -1206,7 +1216,7 @@ namespace HeroVirtualTabletop.Roster
         {
             if (desktopContextMenu.IsDisplayed == false && desktopMouseEventHandler.IsDesktopActive)
             {
-                if (this.Roster.AttackingCharacter == null)
+                if (this.Roster.AttackingCharacters == null || this.Roster.AttackingCharacters.Count == 0)
                 {
                     Position mousePosition = this.mouseHoverElement.Position;
                     if (Keyboard.Modifiers == ModifierKeys.Control)
@@ -1272,8 +1282,11 @@ namespace HeroVirtualTabletop.Roster
             else
             {
                 numRetryHover = 3;
-                if (hoveredCharacter == this.Roster.AttackingCharacter || hoveredCharacter == null)
-                    this.Roster.AttackingCharacter.ActiveAttack.FireAtDesktop(mousePosition);
+                if (this.Roster.AttackingCharacters.Contains(hoveredCharacter) || hoveredCharacter == null)
+                {
+                    var activeAttack = this.Roster.ConfiguringAttack;
+                    activeAttack?.FireAtDesktop(mousePosition);
+                }
                 else
                 {
                     if(hoveredCharacter != null)
@@ -1496,12 +1509,12 @@ namespace HeroVirtualTabletop.Roster
             }
             else if (inputKey == Key.Escape)
             {
-                if (this.Roster.AttackingCharacter != null)
+                if (this.Roster.AttackingCharacters != null && this.Roster.AttackingCharacters.Count > 0)
                 {
                     if (this.Roster.CurrentAttackInstructions != null)
                     {
-                        this.Roster.AttackingCharacter.ActiveAttack.Cancel(this.Roster.CurrentAttackInstructions);
-                        this.EventAggregator.Publish(new CancelAttackEvent(this.Roster.AttackingCharacter, this.Roster.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
+                        this.Roster.CancelActiveAttack();
+                        this.EventAggregator.Publish(new CancelAttackEvent(this.Roster.ConfiguringAttack, this.Roster.AttackingCharacters, this.Roster.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
                     }
                 }
                 else if (IsMovementOngoing)

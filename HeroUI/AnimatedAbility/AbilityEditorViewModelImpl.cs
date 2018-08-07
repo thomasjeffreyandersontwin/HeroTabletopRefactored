@@ -1443,16 +1443,34 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void Handle(LaunchAttackEvent message)
         {
-            AnimatedCharacter attacker = message.Attacker;
             AttackInstructions attackInstructions = message.AttackInstructions;
-            if (attackInstructions is AreaAttackInstructions)
+            if(attackInstructions is GangAreaAttackInstructions)
             {
-                AreaAttackInstructions areaInstructions = attackInstructions as AreaAttackInstructions;
-                AreaEffectAttack areaAttack = attacker.ActiveAttack as AreaEffectAttack;
-                areaAttack.CompleteTheAttackCycle(areaInstructions);
+                GangAreaAttackInstructions instructions = message.AttackInstructions as GangAreaAttackInstructions;
+                (message.AttackToExecute as GangAreaAttack).CompleteTheAttackCycle(instructions);
+            }
+            else if(attackInstructions is GangAttackInstructions)
+            {
+                GangAttackInstructions instructions = message.AttackInstructions as GangAttackInstructions;
+                (message.AttackToExecute as GangAttack).CompleteTheAttackCycle(instructions);
+            }
+            else if(attackInstructions is MultiAttackInstructions)
+            {
+                if (attackInstructions is AreaAttackInstructions)
+                {
+                    AreaAttackInstructions areaInstructions = attackInstructions as AreaAttackInstructions;
+                    (message.AttackToExecute as AreaEffectAttack).CompleteTheAttackCycle(areaInstructions);
+                }
+                else
+                {
+                    MultiAttackInstructions instructions = message.AttackInstructions as MultiAttackInstructions;
+                    (message.AttackToExecute as MultiAttack).CompleteTheAttackCycle(instructions);
+                }
             }
             else
-                attacker.ActiveAttack.CompleteTheAttackCycle(attackInstructions);
+                message.AttackToExecute.CompleteTheAttackCycle(attackInstructions);
+
+            this.EventAggregator.Publish(new FinishAttackEvent(message.AttackToExecute), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
         }
 
         #endregion

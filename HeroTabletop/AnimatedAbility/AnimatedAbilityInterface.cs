@@ -38,6 +38,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public const string DODGE = "Dodge";
         public const string STUNNED = "Stunned";
         public const string UNCONSCIOUS = "Unconscious";
+        public const string KNOCKEDBACK = "KnockedBack";
         public const string HIT = "Hit";
         public const string MISS = "Miss";
         public const string DEAD = "Dead";

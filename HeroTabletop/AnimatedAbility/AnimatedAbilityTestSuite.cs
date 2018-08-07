@@ -1247,6 +1247,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     .With(x => x.ParentSequence, MockAnimatedAbility)
                     .With(x => x.Reference, ReferenceResourceUnderTestWithMockElements)
                     .Create();
+                Mock.Get(r.Target).SetupGet(x => x.Abilities).Returns(MockAbilities);
+                
                 var list = CustomizedMockFixture.CreateMany<AnimationElement>().ToList();
                 foreach (var e in list)
                     r.Reference.Ability.AnimationElements.Add(e);
@@ -1294,6 +1296,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 defaultCharacter.Abilities.InsertAction(defaultAbility);
 
                 repo.Characters.Add(defaultCharacter);
+                HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DefaultCharacter = defaultCharacter;
 
                 var character = AnimatedCharacterUnderTest;
                 character.Repository = repo;

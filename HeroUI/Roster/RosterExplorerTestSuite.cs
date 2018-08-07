@@ -23,7 +23,7 @@ namespace HeroVirtualTabletop.Roster
             {
                 TestObjectsFactory.StandardizedFixture.Customize<RosterImpl>(y => y
                     .Without(x => x.TargetedCharacter)
-                    .Without(x => x.AttackingCharacter)
+                    .Without(x => x.AttackingCharacters)
                     .Without(x => x.LastSelectedCharacter)
                     .Without(x => x.Participants)
                     .Without(x => x.Selected)

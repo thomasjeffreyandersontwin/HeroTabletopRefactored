@@ -132,6 +132,7 @@
     </Compile>
     <Compile Include="AnimatedAbility\AbilityEditorViewModel.cs" />
     <Compile Include="AnimatedAbility\AbilityEditorViewModelImpl.cs" />
+    <Compile Include="Attack\AttackConfigurationModels.cs" />
     <Compile Include="Desktop\DesktopFocusManager.cs" />
     <Compile Include="ManagedCharacter\ActiveCharacterWidgetView.xaml.cs">
       <DependentUpon>ActiveCharacterWidgetView.xaml</DependentUpon>

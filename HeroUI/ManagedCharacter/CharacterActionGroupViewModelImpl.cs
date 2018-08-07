@@ -17,7 +17,8 @@ using System.Windows.Input;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
-    public class CharacterActionGroupViewModelImpl<T> : PropertyChangedBase, IHandle<RemoveActionEvent>, CharacterActionGroupViewModel where T : CharacterAction
+    public class CharacterActionGroupViewModelImpl<T> : PropertyChangedBase, IHandle<RemoveActionEvent>, IHandle<FinishAttackEvent>
+                                                                            , CharacterActionGroupViewModel where T : CharacterAction
     {
         #region Private Fields
 
@@ -477,6 +478,18 @@ namespace HeroVirtualTabletop.ManagedCharacter
                     //owner.ActiveMovement = null;
                     this.CharacterActionList.Active = default(T);
                     this.EventAggregator.Publish(new DeactivateMovementEvent(characterMovement), act => System.Windows.Application.Current.Dispatcher.Invoke(act));
+                }
+            }
+        }
+
+        public void Handle(FinishAttackEvent message)
+        {
+            if(this.ActionGroup.Type == CharacterActionType.Ability)
+            {
+                var active = this.CharacterActionList.Active as AnimatedAbility.AnimatedAbility;
+                if (active != null && active.Name == message.FinishedAttack.Name)
+                {
+                    this.CharacterActionList.Active = default(T);
                 }
             }
         }

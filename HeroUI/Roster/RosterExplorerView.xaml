@@ -22,7 +22,7 @@
             </ResourceDictionary.MergedDictionaries>
             <local:BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
             <local:DistanceCounterTextColorConverter x:Key="DistanceCounterTextColorConverter"/>
-            <characters:CharacterComparer x:Key="characterComparer"/>
+            <attacks:AttackingCharacterComparer x:Key="AttackingCharacterComparer"/>
             <attacks:AttackInstructionsDefenderWithTargetCharacterComparer x:Key="AttackInstructionsDefenderWithTargetCharacterComparer"/>
             <attacks:UnderAttackAnimatableCharacterStateToVisibilityConverter x:Key="UnderAttackAnimatableCharacterStateToVisibilityConverter"/>
             <attacks:ActiveStateToVisibilityConverter x:Key="ActiveStateToVisibilityConverter"/>
@@ -338,8 +338,8 @@
                                         <Style.Triggers>
                                             <DataTrigger Value="True">
                                                 <DataTrigger.Binding>
-                                                    <MultiBinding Converter="{StaticResource ResourceKey=characterComparer}">
-                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}" Path="DataContext.Roster.AttackingCharacter"></Binding>
+                                                    <MultiBinding Converter="{StaticResource ResourceKey=AttackingCharacterComparer}">
+                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}" Path="DataContext.Roster.AttackingCharacters"></Binding>
                                                         <Binding RelativeSource="{RelativeSource Self}" Path="DataContext"></Binding>
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
@@ -362,6 +362,8 @@
                                                     <MultiBinding Converter="{StaticResource ResourceKey=AttackInstructionsDefenderWithTargetCharacterComparer}">
                                                         <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}" Path="DataContext.Roster.CurrentAttackInstructions"></Binding>
                                                         <Binding RelativeSource="{RelativeSource Self}" Path="DataContext"></Binding>
+                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}" Path="DataContext.Roster.CurrentAttackInstructions.Defender"></Binding>
+                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type roster:RosterExplorerView}}" Path="DataContext.Roster.CurrentAttackInstructions.IndividualTargetInstructions.Count"></Binding>
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
                                                 <Setter Property="Visibility" Value="Visible"></Setter>
@@ -495,6 +497,37 @@
                                         <cal:ActionMessage MethodName="UpdateCharacterState">
                                             <cal:Parameter Value="$dataContext" />
                                             <cal:Parameter Value="Dead" />
+                                        </cal:ActionMessage>
+                                    </local:InputBindingTrigger>
+                                </i:Interaction.Triggers>
+                            </TextBlock>
+                            <TextBlock FontFamily="{StaticResource FontFamily_FontAwesome}"  
+                                       Text="&#xf263;" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource ResourceKey=ActiveStateToVisibilityConverter}">
+                                                        <Binding Source="{x:Static abilities:DefaultAbilities.KNOCKEDBACK}"></Binding>
+                                                        <Binding RelativeSource="{RelativeSource Self}" Path="DataContext"></Binding>
+                                                        <Binding Path="ActiveStates.Count"></Binding>
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <i:Interaction.Triggers>
+                                    <local:InputBindingTrigger>
+                                        <local:InputBindingTrigger.InputBinding>
+                                            <MouseBinding MouseAction="LeftClick"/>
+                                        </local:InputBindingTrigger.InputBinding>
+                                        <cal:ActionMessage MethodName="UpdateCharacterState">
+                                            <cal:Parameter Value="$dataContext" />
+                                            <cal:Parameter Value="KnockedBack" />
                                         </cal:ActionMessage>
                                     </local:InputBindingTrigger>
                                 </i:Interaction.Triggers>

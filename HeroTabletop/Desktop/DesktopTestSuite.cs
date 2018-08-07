@@ -1218,6 +1218,7 @@ namespace HeroVirtualTabletop.Desktop
             {
                 var instance = CustomizedMockFixture.Create<DesktopMemoryCharacter>();
                 instance.Position.JustMissedPosition = MockPosition;
+                instance.Position.HitPosition = MockPosition;
                 Mock.Get<DesktopMemoryCharacter>(instance).SetupGet(x => x.IsReal).Returns(true);
                 return instance;
             }

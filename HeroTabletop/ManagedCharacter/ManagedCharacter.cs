@@ -515,7 +515,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         }
         public void SyncGhostWithGame()
         {
-            if(this.ActiveIdentity.Type == SurfaceType.Model)
+            if(this.ActiveIdentity != null && this.ActiveIdentity.Type == SurfaceType.Model)
             {
                 if (this.GhostShadow == null)
                     this.CreateGhostShadow();

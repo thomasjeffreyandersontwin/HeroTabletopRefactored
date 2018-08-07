@@ -24,17 +24,31 @@ namespace HeroVirtualTabletop.Attack
         public DesktopKeyEventHandler DesktopKeyEventHandler { get; set; }
         public IEventAggregator EventAggregator { get; set; }
 
-        private AnimatedCharacter attacker;
-        public AnimatedCharacter Attacker
+        private AnimatedAttack configuringAttack;
+        public AnimatedAttack ConfiguringAttack
         {
             get
             {
-                return attacker;
+                return configuringAttack;
             }
             set
             {
-                attacker = value;
-                NotifyOfPropertyChange(() => Attacker);
+                configuringAttack = value;
+                NotifyOfPropertyChange(() => ConfiguringAttack);
+            }
+        }
+
+        private List<AnimatedCharacter> attackers;
+        public List<AnimatedCharacter> Attackers
+        {
+            get
+            {
+                return attackers;
+            }
+            set
+            {
+                attackers = value;
+                NotifyOfPropertyChange(() => Attackers);
                 NotifyOfPropertyChange(() => IsConfiguringAreaEffect);
             }
         }
@@ -43,7 +57,7 @@ namespace HeroVirtualTabletop.Attack
         {
             get
             {
-                return this.Attacker.ActiveAttack is AreaEffectAttack;
+                return this.ConfiguringAttack is AreaEffectAttack;
             }
         }
 
@@ -76,6 +90,20 @@ namespace HeroVirtualTabletop.Attack
             }
         }
 
+        private ObservableCollection<DefenderAttackInstructions> defenderAttackInstructions;
+        public ObservableCollection<DefenderAttackInstructions> DefenderAttackInstructions
+        {
+            get
+            {
+                return defenderAttackInstructions;
+            }
+            set
+            {
+                defenderAttackInstructions = value;
+                NotifyOfPropertyChange(() => DefenderAttackInstructions);
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -96,18 +124,53 @@ namespace HeroVirtualTabletop.Attack
 
         public void ChangeCenterTarget(object state)
         {
-            AttackInstructions ins = state as AttackInstructions;
-            if (ins.IsCenterOfAreaEffectAttack)
+            DefenderAttackInstructions dins = state as DefenderAttackInstructions;
+            if (dins.IsAttackCenter)
             {
+                AttackInstructions ins = this.AttackInstructionsCollection.FirstOrDefault(ai => ai.Defender == dins.Defender);
+                ins.IsCenterOfAreaEffectAttack = true;
                 foreach (AttackInstructions ai in this.AttackInstructionsCollection.Where(instr => instr != ins))
                 {
                     ai.IsCenterOfAreaEffectAttack = false;
                 }
             }
-            
         }
 
-        public void UpdateAttackImpacts(AttackInstructions instructions, string impactName, bool isEffectEnabled)
+        public void ChangeAttackHit(AttackerHitInfo attackHitInfo)
+        {
+            DefenderAttackInstructions defenderInstructions = this.DefenderAttackInstructions.FirstOrDefault(d => d.Defender == attackHitInfo.AttackInstructionsForAttacker.Defender);
+            if(attackHitInfo.AttackInstructionsForAttacker.AttackHit)
+                defenderInstructions.DefenderHitByAttack = attackHitInfo.AttackInstructionsForAttacker.AttackHit;
+            else
+            {
+                if(!defenderInstructions.AttackerHitInfo.Any(ah => ah != attackHitInfo && ah.AttackInstructionsForAttacker.AttackHit))
+                    defenderInstructions.DefenderHitByAttack = attackHitInfo.AttackInstructionsForAttacker.AttackHit;
+            }
+        }
+
+        private void UpdateAttackImpactsForAllInstructions(string impactName, bool isEffectEnabled)
+        {
+            foreach (var defenderIns in this.DefenderAttackInstructions)
+            {
+                UpdateAttackImpacts(defenderIns, impactName, isEffectEnabled);
+            }
+        }
+
+        public void UpdateAttackImpacts(DefenderAttackInstructions defenderInstructions, string impactName, bool isEffectEnabled)
+        {
+            if(this.CurrentAttackInstructions is MultiAttackInstructions)
+            {
+                MultiAttackInstructions multiInstructions = this.CurrentAttackInstructions as MultiAttackInstructions;
+                foreach (var ins in multiInstructions.IndividualTargetInstructions.Where(i => i.Defender == defenderInstructions.Defender))
+                    ChangeImpact(ins, impactName, isEffectEnabled);
+            }
+            else
+            {
+                ChangeImpact(this.CurrentAttackInstructions, impactName, isEffectEnabled);
+            }
+        }
+
+        private void ChangeImpact(AttackInstructions instructions, string impactName, bool isEffectEnabled)
         {
             if (isEffectEnabled)
                 instructions.AddImpact(impactName);
@@ -117,16 +180,50 @@ namespace HeroVirtualTabletop.Attack
 
         public void Handle(ConfigureAttackEvent message)
         {
-            this.Attacker = message.Attacker;
+            this.ConfiguringAttack = message.AttackToConfigure;
+            this.Attackers = message.Attackers;
             this.CurrentAttackInstructions = message.AttackInstructions;
-            if (CurrentAttackInstructions is AreaAttackInstructions)
+            this.SetDefenderInstructions();
+        }
+
+        private void SetDefenderInstructions()
+        {
+            this.DefenderAttackInstructions = new ObservableCollection<DefenderAttackInstructions>();
+
+            if (CurrentAttackInstructions is MultiAttackInstructions)
             {
-                AreaAttackInstructions areaAttackInstructions = CurrentAttackInstructions as AreaAttackInstructions;
-                this.AttackInstructionsCollection = areaAttackInstructions.IndividualTargetInstructions;
-                
+                MultiAttackInstructions multiAttackInstructions = CurrentAttackInstructions as MultiAttackInstructions;
+
+                this.AttackInstructionsCollection = multiAttackInstructions.IndividualTargetInstructions;
+
+
+                foreach (var defender in multiAttackInstructions.Defenders)
+                {
+                    DefenderAttackInstructions defenderAttackInstructions = new DefenderAttackInstructions();
+                    defenderAttackInstructions.Defender = defender;
+                    defenderAttackInstructions.AttackerHitInfo = new ObservableCollection<AttackerHitInfo>();
+                    if (this.Attackers.Count > 1)
+                        defenderAttackInstructions.HasMultipleAttackers = true;
+                    foreach (var attacker in this.Attackers)
+                    {
+                        AttackInstructions instructionForAttacker = multiAttackInstructions.IndividualTargetInstructions.FirstOrDefault(i => i.Defender == defender && i.Attacker == attacker);
+                        defenderAttackInstructions.AttackerHitInfo.Add(new AttackerHitInfo { Attacker = attacker, AttackInstructionsForAttacker = instructionForAttacker });
+                    }
+
+                    this.DefenderAttackInstructions.Add(defenderAttackInstructions);
+                }
+
             }
             else
+            {
                 this.AttackInstructionsCollection = new ObservableCollection<AttackInstructions> { CurrentAttackInstructions };
+                DefenderAttackInstructions defenderAttackInstructions = new DefenderAttackInstructions();
+                defenderAttackInstructions.Defender = CurrentAttackInstructions.Defender;
+                defenderAttackInstructions.AttackerHitInfo = new ObservableCollection<AttackerHitInfo>();
+                defenderAttackInstructions.AttackerHitInfo.Add(new AttackerHitInfo { AttackInstructionsForAttacker = CurrentAttackInstructions });
+
+                this.DefenderAttackInstructions.Add(defenderAttackInstructions);
+            }
         }
 
         public void LaunchAttack()
@@ -134,18 +231,55 @@ namespace HeroVirtualTabletop.Attack
             //// Change mouse pointer to back to bulls eye
             //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
             //Mouse.OverrideCursor = cursor;
+            SetAttackParameters();
 
             this.EventAggregator.Publish(new CloseAttackConfigurationWidgetEvent(), action => Application.Current.Dispatcher.Invoke(action));
-            this.EventAggregator.Publish(new LaunchAttackEvent(this.Attacker, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
+            this.EventAggregator.Publish(new LaunchAttackEvent(this.ConfiguringAttack, this.Attackers, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
         }
        
         public void CancelAttack()
         {
-            if (IsConfiguringAreaEffect)
-                (this.Attacker.ActiveAttack as AreaEffectAttack).Cancel(this.CurrentAttackInstructions as AreaAttackInstructions);
-            else
-                this.Attacker.ActiveAttack.Cancel(this.CurrentAttackInstructions);
-            this.EventAggregator.Publish(new CancelAttackEvent(this.Attacker, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
+            this.ConfiguringAttack.Cancel(this.CurrentAttackInstructions);
+            this.EventAggregator.Publish(new CancelAttackEvent(this.ConfiguringAttack, this.Attackers, this.CurrentAttackInstructions), action => Application.Current.Dispatcher.Invoke(action));
+        }
+
+        private void SetAttackParameters()
+        {
+            foreach(var defenderInstructions in this.DefenderAttackInstructions)
+            {
+                if (defenderInstructions.DefenderHitByAttack)
+                {
+                    if (!defenderInstructions.HasMultipleAttackers)
+                    {
+                        this.CurrentAttackInstructions.AttackHit = true;
+                        defenderInstructions.AttackerHitInfo[0].AttackInstructionsForAttacker.AttackHit = true;
+                    }
+                }
+                
+                if (defenderInstructions.DefenderKnockbackDistance > 0)
+                {
+                    var instructionToSetKnockback = defenderInstructions.AttackerHitInfo.LastOrDefault(hi => hi.AttackInstructionsForAttacker.AttackHit);
+                    if (instructionToSetKnockback != null)
+                    {
+                        instructionToSetKnockback.AttackInstructionsForAttacker.KnockbackDistance = defenderInstructions.DefenderKnockbackDistance;
+                        ChangeImpact(instructionToSetKnockback.AttackInstructionsForAttacker, DefaultAbilities.KNOCKEDBACK, true);
+                    }
+                    else
+                    {
+                        this.CurrentAttackInstructions.KnockbackDistance = defenderInstructions.DefenderKnockbackDistance;
+                        ChangeImpact(this.CurrentAttackInstructions, DefaultAbilities.KNOCKEDBACK, true);
+                    }
+                }
+            }
+            if (this.CurrentAttackInstructions is GangAreaAttackInstructions)
+            {
+                GangAreaAttackInstructions gangAreaInstructions = this.CurrentAttackInstructions as GangAreaAttackInstructions;
+                foreach (var attacker in this.Attackers)
+                {
+                    AreaAttackInstructions areaInstructions = gangAreaInstructions.AttackInstructionsMap[attacker];
+                    areaInstructions.AttackHit = this.DefenderAttackInstructions.Any(d => d.AttackerHitInfo.Any(h => h.Attacker == attacker && d.DefenderHitByAttack));
+                }
+            }
         }
 
         #endregion
@@ -204,22 +338,22 @@ namespace HeroVirtualTabletop.Attack
                         else if (inputKey == Key.S)
                         {
                             //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsStunned = true;
-                            this.UpdateAttackImpacts(this.CurrentAttackInstructions, DefaultAbilities.STUNNED, true);
+                            this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.STUNNED, true);
                         }
                         else if (inputKey == Key.U)
                         {
                             //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsUnconcious = true;
-                            this.UpdateAttackImpacts(this.CurrentAttackInstructions, DefaultAbilities.UNCONSCIOUS, true);
+                            this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.UNCONSCIOUS, true);
                         }
                         else if (inputKey == Key.Y)
                         {
                             //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsDying = true;
-                            this.UpdateAttackImpacts(this.CurrentAttackInstructions, DefaultAbilities.DYING, true);
+                            this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.DYING, true);
                         }
                         else if (inputKey == Key.D)
                         {
                             //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsDead = true;
-                            this.UpdateAttackImpacts(this.CurrentAttackInstructions, DefaultAbilities.DEAD, true);
+                            this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.DEAD, true);
                         }
                         else if (inputKey == Key.T)
                         {

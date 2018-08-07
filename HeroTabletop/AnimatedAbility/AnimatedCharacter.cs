@@ -167,24 +167,28 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public void ResetActiveAttack()
         {
-            if (Abilities.Active == ActiveAttack)
+            if (Abilities.Active != null && (Abilities.Active == ActiveAttack || Abilities.Active.Name == ActiveAttack.Name))
+            {
+                (Abilities.Active as AnimatedAttack).IsActive = false;
                 Abilities.Active = null;
+            }
             ActiveAttack = null;
         }
 
         public void AddAsAttackTarget(AttackInstructions instructions)
         {
-            if(instructions is AreaAttackInstructions)
+            if(instructions is MultiAttackInstructions)
             {
-                AreaAttackInstructions areaAttackInstructions = instructions as AreaAttackInstructions;
-                if(areaAttackInstructions.IndividualTargetInstructions.FirstOrDefault(iti => iti.Defender == this) == null)
-                {
-                    areaAttackInstructions.IndividualTargetInstructions.Add(
-                    new AttackInstructionsImpl
-                    {
-                        Defender = this
-                    });
-                }
+                //(instructions as MultiAttackInstructions).AddTarget()
+                //AreaAttackInstructions areaAttackInstructions = instructions as AreaAttackInstructions;
+                //if(areaAttackInstructions.IndividualTargetInstructions.FirstOrDefault(iti => iti.Defender == this) == null)
+                //{
+                //    areaAttackInstructions.IndividualTargetInstructions.Add(
+                //    new AttackInstructionsImpl
+                //    {
+                //        Defender = this
+                //    });
+                //}
             }
             else
             {
@@ -236,13 +240,38 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void RemoveState(AnimatableCharacterState state, bool playImmediately = true)
         {
             ActiveStates.Remove(state);
-            state.Ability.Stop(this);
+            state.Ability?.Stop(this);
             state.AbilityAlreadyPlayed = false;
             bool canPlayStopAbility = checkIfStopAbilityShouldBePlayedForAttackImpacts(state);
             var stopAbility = state.Ability.StopAbility;
             if(canPlayStopAbility && playImmediately)
                 stopAbility?.Play(this);
+            RemoveStatesWithLowerSeverity(state);
             NotifyOfPropertyChange(() => ActiveStates.Count);
+        }
+
+        private void RemoveStatesWithLowerSeverity(AnimatableCharacterState state)
+        {
+            if (state.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS)
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.STUNNED);
+            else if(state.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING)
+            {
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.STUNNED);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS);
+            }
+            else if (state.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DEAD)
+            {
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.STUNNED);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING);
+            }
+            else if(state.StateName == HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.KNOCKEDBACK)
+            {
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.STUNNED);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.UNCONSCIOUS);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DYING);
+                RemoveStateFromActiveStates(HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.DEAD);
+            }
         }
         public void ResetAllAbiltitiesAndState()
         {

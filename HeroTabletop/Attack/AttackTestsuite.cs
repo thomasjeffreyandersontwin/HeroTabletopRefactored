@@ -44,6 +44,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = false;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -65,6 +66,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -85,6 +87,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attack.Attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -104,6 +107,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attack.Attacker;
             instructions.Impacts.Add(AttackEffects.Stunned);
             instructions.Impacts.Add(AttackEffects.Unconscious);
             instructions.Impacts.Add(AttackEffects.Dead);
@@ -161,6 +165,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
 
@@ -192,6 +197,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -215,6 +221,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = true;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -226,7 +233,7 @@ namespace HeroVirtualTabletop.Attack
                 string[] para =
                 {
                     Path.GetFileNameWithoutExtension(fx.ModifiedCostumeFilePath),
-                    $"x={defender.Position.X} y={defender.Position.Y} z={defender.Position.Z}"
+                    $"x={defender.Position.HitPosition.X} y={defender.Position.HitPosition.Y} z={defender.Position.HitPosition.Z}"
                 };
 
                 Mock.Get(attacker.Generator).Verify(
@@ -257,6 +264,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
             instructions.AttackHit = false;
+            instructions.Attacker = attacker;
             attack.CompleteTheAttackCycle(instructions);
 
             //assert
@@ -334,7 +342,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             foreach (var defender in defenders)
             {
-                var individualInstructions = instructions.AddTarget(defender);
+                var individualInstructions = instructions.AddTarget(attack.Attacker, defender);
                 individualInstructions.AttackHit = true;
             }
             attack.CompleteTheAttackCycle(instructions);
@@ -359,7 +367,7 @@ namespace HeroVirtualTabletop.Attack
             var instructions = attack.StartAttackCycle();
             foreach (var defender in defenders)
             {
-                var individualInstructions = instructions.AddTarget(defender);
+                var individualInstructions = instructions.AddTarget(attack.Attacker, defender);
                 individualInstructions.AttackHit = false;
             }
             var hit = instructions.IndividualTargetInstructions[1];
@@ -383,7 +391,7 @@ namespace HeroVirtualTabletop.Attack
 
         [TestMethod]
         [TestCategory("Attack")]
-        public void AddTargetToListOfDefendersUpdatesStateOfTheTargetToUnderAttack()
+        public void AddTargetToListOfDefenders_UpdatesStateOfTheTargetToUnderAttack()
         {
             // arrange
             var attack = TestObjectsFactory.AreaEffectAttackUnderTestWithCharacterUnderTestAndMockElements;
@@ -394,7 +402,7 @@ namespace HeroVirtualTabletop.Attack
 
             foreach (var defender in defenders)
             {
-                instructions.AddTarget(defender).AttackHit = true;
+                instructions.AddTarget(attack.Attacker, defender).AttackHit = true;
             }
 
             //act
@@ -424,6 +432,34 @@ namespace HeroVirtualTabletop.Attack
         }
     }
 
+    public class MultiAttackTestSuite
+    {
+        public void CompleteAttackCycle_AttackerAttacksEveryDefender()
+        {
+
+        }
+    }
+
+    public class GangAttackTestSuite
+    {
+        public void CompleteAttackCycle_EachGangMemberAttacksEachDefender()
+        {
+
+        }
+
+        public void CompleteAttackCycle_MissingAttackersPlayFirst()
+        {
+
+        }
+    }
+
+    public class GangAreaAttackTestSuite
+    {
+        public void CompleteAttackCycle_EachGangMemberAttacksAllTheDefendersOnce()
+        {
+
+        }
+    }
     public class KnockbackTestSuite
     {
         public void CompleteAttackThatHits_PlaysKnockbackOnlyAndNoAttackEffectsIfAttackDoesKnockback()
@@ -431,14 +467,6 @@ namespace HeroVirtualTabletop.Attack
         }
 
         public void AttackWithKnockback_SendsTheCharacterInADirectionAwayFromTheAttackersFacing()
-        {
-        }
-
-        public void CompleteAttackThatHits_PlayHiOrMisstAnimationOneAnimationElementAtATimeAcrossAllDefenders()
-        {
-        }
-
-        public void AreaEffectWithKnockback_SendsTheCharacterInADirectionAwayFromTheCenterOfTheattack()
         {
         }
     }

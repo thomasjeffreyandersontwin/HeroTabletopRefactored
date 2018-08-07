@@ -6,19 +6,6 @@ using System.ComponentModel;
 
 namespace HeroVirtualTabletop.Attack
 {
-    public interface AttackInstructions: INotifyPropertyChanged
-    {
-        AnimatedCharacter Defender { get; set; }
-        ObservableCollection<string> Impacts { get; }
-        int KnockbackDistance { get; set; }
-        bool AttackHit { get; set; }
-        bool IsCenterOfAreaEffectAttack { get; set; }
-        void AddImpact(string impactName);
-        void SetImpactToDefender(string impactName);
-        void RemoveImpact(string impactName);
-        void RemoveImpactFromDefender(string impactName);
-
-    }
     public class AttackEffects
     {
         public static string Stunned => "Stunned";
@@ -33,12 +20,51 @@ namespace HeroVirtualTabletop.Attack
 
         public static string Dying => "Dying";
     }
+    public interface AttackInstructions: INotifyPropertyChanged
+    {
+        AnimatedCharacter Attacker { get; set; }
+        AnimatedCharacter Defender { get; set; }
+        ObservableCollection<string> Impacts { get; }
+        int KnockbackDistance { get; set; }
+        bool AttackHit { get; set; }
+        bool IsCenterOfAreaEffectAttack { get; set; }
+        void AddImpact(string impactName);
+        void SetImpactToDefender(string impactName);
+        void RemoveImpact(string impactName);
+        void RemoveImpactFromDefender(string impactName);
+        bool HasMultipleAttackers { get; }
+    }
+
+    public interface MultiAttackInstructions : AttackInstructions
+    {
+        ObservableCollection<AttackInstructions> IndividualTargetInstructions { get; }
+        List<AnimatedCharacter> Defenders { get; }
+        List<AnimatedCharacter> DefendersHit { get; }
+        List<AnimatedCharacter> DefendersMissed { get; }
+        AttackInstructions AddTarget(AnimatedCharacter attacker, AnimatedCharacter defender);
+        List<AnimatedCharacter> GetDefendersByImpactBasedOnSeverity(string impactName);
+        void Clear();
+    }
+
+    public interface AreaAttackInstructions : MultiAttackInstructions
+    {
+        Position AttackCenter { get; }
+    }
+
+    public interface GangAttackInstructions: MultiAttackInstructions
+    {
+        Dictionary<AnimatedCharacter, List<AttackInstructions>> AttackInstructionsMap { get; }
+        Dictionary<AnimatedCharacter, List<AnimatedCharacter>> AttackersMap { get; }
+    }
+    public interface GangAreaAttackInstructions: AreaAttackInstructions
+    {
+        Dictionary<AnimatedCharacter, AreaAttackInstructions> AttackInstructionsMap { get; }
+    }
+
     public interface AnimatedAttack : AnimatedAbility.AnimatedAbility
     {
         AnimatedAbility.AnimatedAbility OnHitAnimation { get; set; }
-
         Position TargetDestination { set; }
-
         bool IsActive { get; set; }
         AnimatedCharacter Attacker { get; set; }
         AttackInstructions StartAttackCycle();
@@ -49,23 +75,8 @@ namespace HeroVirtualTabletop.Attack
         void Cancel(AttackInstructions instructions);
         AreaEffectAttack TransformToAreaEffectAttack();
         AnimatedAbility.AnimatedAbility TransformToAbility();
+        void InitiateFrom(AnimatedAttack attackToCopy);
     }
-    
-    public interface AreaAttackInstructions : AttackInstructions
-    {
-        ObservableCollection<AttackInstructions> IndividualTargetInstructions { get; }
-        Position AttackCenter { get; }
-        List<AnimatedCharacter> Defenders { get; }
-        List<AnimatedCharacter> DefendersHit { get; }
-        List<AnimatedCharacter> DefendersMissed { get; }
-        List<AnimatedCharacter> GetDefendersByImpactBasedOnSeverity(string impactName);
-        AttackInstructions AddTarget(AnimatedCharacter defender);
-
-    }
-
-
-
-
 
     public interface AreaEffectAttack : AnimatedAttack
     {
@@ -74,6 +85,32 @@ namespace HeroVirtualTabletop.Attack
         List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions);
         List<KnockbackCollisionInfo> CompleteTheAttackCycle(AreaAttackInstructions instructions);
         void Cancel(AreaAttackInstructions instructions);
+    }
+
+    public interface MultiAttack : AnimatedAttack
+    {
+        new MultiAttackInstructions StartAttackCycle();
+        List<KnockbackCollisionInfo> PlayCompleteAttackCycle(MultiAttackInstructions instructions);
+        List<KnockbackCollisionInfo> CompleteTheAttackCycle(MultiAttackInstructions instructions);
+        void Cancel(MultiAttackInstructions instructions);
+    }
+
+    public interface GangAttack : AnimatedAttack
+    {
+        List<AnimatedCharacter> GangMembers { get; set; }
+        new GangAttackInstructions StartAttackCycle();
+        List<KnockbackCollisionInfo> PlayCompleteAttackCycle(GangAttackInstructions instructions);
+        List<KnockbackCollisionInfo> CompleteTheAttackCycle(GangAttackInstructions instructions);
+        void Cancel(GangAttackInstructions instructions);
+    }
+
+    public interface GangAreaAttack : AnimatedAttack
+    {
+        List<AnimatedCharacter> GangMembers { get; set; }
+        new GangAreaAttackInstructions StartAttackCycle();
+        List<KnockbackCollisionInfo> PlayCompleteAttackCycle(GangAreaAttackInstructions instructions);
+        List<KnockbackCollisionInfo> CompleteTheAttackCycle(GangAreaAttackInstructions instructions);
+        void Cancel(GangAreaAttackInstructions instructions);
     }
 
     public enum KnockbackCollisionType
@@ -87,5 +124,4 @@ namespace HeroVirtualTabletop.Attack
         KnockbackCollisionType Type { get; set; }
         string CharacterName { get; set; }
     }
-
 }

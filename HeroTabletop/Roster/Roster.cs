@@ -85,6 +85,89 @@ namespace HeroVirtualTabletop.Roster
                 NotifyOfPropertyChange(() => Participants);
             }
         }
+        private CharacterCrowdMember activeCharacter;
+        public CharacterCrowdMember ActiveCharacter
+        {
+            get
+            {
+                if (Participants.Any(p => p.IsGangLeader))
+                    activeCharacter = this.Participants.First(p => p.IsGangLeader);
+                else
+                    activeCharacter = this.Participants.FirstOrDefault(p => p.IsActive);
+                return activeCharacter;
+            }
+        }
+
+        private List<AnimatedCharacter> attackingCharacters;
+        public List<AnimatedCharacter> AttackingCharacters
+        {
+            get
+            {
+                return attackingCharacters;
+            }
+            set
+            {
+                attackingCharacters = value;
+                if (attackingCharacters == null)
+                    CurrentAttackInstructions = null;
+                NotifyOfPropertyChange(() => AttackingCharacters);
+            }
+        }
+        private CharacterCrowdMember targetedCharacter;
+        public CharacterCrowdMember TargetedCharacter
+        {
+            get
+            {
+                DesktopMemoryCharacter memoryInstance = new DesktopMemoryCharacterImpl();
+                if (targetedCharacter == null || targetedCharacter.Name != memoryInstance.Name)
+                {
+                    if (memoryInstance.IsReal)
+                        targetedCharacter = Participants.FirstOrDefault(p => p.Name == memoryInstance.Name);
+                }
+
+                return targetedCharacter;
+            }
+            set
+            {
+                targetedCharacter = value;
+            }
+        }
+        private CharacterCrowdMember lastSelectedCharacter;
+        public CharacterCrowdMember LastSelectedCharacter
+        {
+            get
+            {
+                if (lastSelectedCharacter == null)
+                    lastSelectedCharacter = Selected.Participants.LastOrDefault();
+
+                return lastSelectedCharacter;
+            }
+            set
+            {
+                //if(value != null)
+                //    SelectParticipant(value);
+                lastSelectedCharacter = value;
+            }
+        }
+
+        private CharacterCrowdMember distanceCountingCharacter;
+        public CharacterCrowdMember DistanceCountingCharacter
+        {
+            get
+            {
+                return distanceCountingCharacter;
+            }
+            set
+            {
+                distanceCountingCharacter = value;
+                NotifyOfPropertyChange(() => DistanceCountingCharacter);
+            }
+        }
+
+        public AnimatedAttack ConfiguringAttack
+        {
+            get;set;
+        }
 
         private AttackInstructions currentAttackInstructions;
         public AttackInstructions CurrentAttackInstructions
@@ -259,7 +342,17 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
+        public List<AnimatedCharacter> DefendingCharacters
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         public RosterSelection Selected { get; set; }
+
+        #region Roster Selections
         public void SelectParticipant(CharacterCrowdMember participant)
         {
             List<CharacterCrowdMember> rosterSelections = GetCharactersToOperateOn(participant);
@@ -293,27 +386,7 @@ namespace HeroVirtualTabletop.Roster
                     SelectParticipant(this.TargetedCharacter);
             }
         }
-        private void SetActivationsForGangMode(bool gangModeOn)
-        {
-            CharacterCrowdMember firstSelected = this.Selected.Participants.FirstOrDefault();
-            Crowd.Crowd gangCrowd = firstSelected.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == firstSelected.RosterParent.Name) as Crowd.Crowd;
-            if (this.ActiveCharacter.RosterParent.Name == gangCrowd.Name)
-            {
-                if (gangModeOn)
-                    ActivateCrowdAsGang(gangCrowd);
-                else
-                {
-                    CharacterCrowdMember characterToRemainActivated = this.TargetedCharacter ?? this.ActiveCharacter;
-                    foreach (CharacterCrowdMember characterCrowdMember in this.Participants.Where(c => c.RosterParent.Name == gangCrowd.Name && c != characterToRemainActivated))
-                    {
-                        characterCrowdMember.DeActivate();
-                        characterCrowdMember.IsGangLeader = false;
-                    }
-                    characterToRemainActivated.IsGangLeader = false;
-                    this.IsGangInOperation = false;
-                }
-            }
-        }
+        
         private List<CharacterCrowdMember> GetCharactersToOperateOn(CharacterCrowdMember ccm)
         {
             List<CharacterCrowdMember> characters = new List<CharacterCrowdMember>();
@@ -329,6 +402,10 @@ namespace HeroVirtualTabletop.Roster
             return characters.Distinct().ToList();
         }
 
+        #endregion
+
+        #region Sync With Game
+
         public void SyncParticipantWithGame(CharacterCrowdMember participant)
         {
             //StopListeningForTargetChanged();
@@ -336,10 +413,15 @@ namespace HeroVirtualTabletop.Roster
             //StartListeningForTargetChanged();
         }
 
+        #endregion
+
+        #region Sort
         public void Sort()
         {
             this.Participants = new ObservableCollection<CharacterCrowdMember>(this.Participants.OrderBy(t => t, new RosterMemberComparer()));
         }
+
+        #endregion
 
         #region Activate/Deactivate character/gang
         public void Activate()
@@ -436,6 +518,34 @@ namespace HeroVirtualTabletop.Roster
         }
 
         #endregion
+
+        #region Gang Mode 
+
+        private void SetActivationsForGangMode(bool gangModeOn)
+        {
+            CharacterCrowdMember firstSelected = this.Selected.Participants.FirstOrDefault();
+            Crowd.Crowd gangCrowd = firstSelected.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == firstSelected.RosterParent.Name) as Crowd.Crowd;
+            if (this.ActiveCharacter.RosterParent.Name == gangCrowd.Name)
+            {
+                if (gangModeOn)
+                    ActivateCrowdAsGang(gangCrowd);
+                else
+                {
+                    CharacterCrowdMember characterToRemainActivated = this.TargetedCharacter ?? this.ActiveCharacter;
+                    foreach (CharacterCrowdMember characterCrowdMember in this.Participants.Where(c => c.RosterParent.Name == gangCrowd.Name && c != characterToRemainActivated))
+                    {
+                        characterCrowdMember.DeActivate();
+                        characterCrowdMember.IsGangLeader = false;
+                    }
+                    characterToRemainActivated.IsGangLeader = false;
+                    this.IsGangInOperation = false;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Roster Add/Remove Participants
         public void AddCharacterCrowdMemberAsParticipant(CharacterCrowdMember participant)
         {
             if (!Participants.Contains(participant))
@@ -443,7 +553,7 @@ namespace HeroVirtualTabletop.Roster
                 var group = createRosterGroup(participant.Parent);
                 group.InsertElement(participant);
                 participant.RosterParent = getRosterParentFromGroup(group);
-                participant.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                participant.PropertyChanged += RosterParticipant_PropertyChanged;
                 Participants.Add(participant);
                 NotifyOfPropertyChange(() => Participants);
             }
@@ -536,59 +646,10 @@ namespace HeroVirtualTabletop.Roster
                 group.RemoveElement(participant);               
             }
             Participants.Remove(participant);
-            participant.PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+            participant.PropertyChanged -= RosterParticipant_PropertyChanged;
             participant.RosterParent = null;
             participant.DeActivate();
         }
-
-        public void RenameRosterMember(CrowdMember crowdMember)
-        {
-            if (crowdMember is Crowd.Crowd)
-            {
-                RosterParent rosterParent = (from p in Participants.Where(x => x.RosterParent.Name == crowdMember.OldName) select p.RosterParent).FirstOrDefault();
-                if (rosterParent != null)
-                {
-                    rosterParent.Name = crowdMember.Name;
-                    rosterParent.RosterGroup.Name = crowdMember.Name;
-                }
-            }
-        }
-
-        public void CreateGroupFromCrowd(Crowd.Crowd crowd)
-        {
-            var group = createRosterGroup(crowd);
-            foreach (CrowdMember member in crowd.Members)
-            {
-                if (member is Crowd.Crowd)
-                {
-                    CreateGroupFromCrowd(member as Crowd.Crowd);
-                }
-                else
-                {
-                    group.InsertElement((CharacterCrowdMember)member);
-                    (member as CharacterCrowdMember).RosterParent = getRosterParentFromGroup(group);
-                    member.PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
-                    Participants.Add((CharacterCrowdMember)member);
-                }
-            }
-            NotifyOfPropertyChange(() => Participants);
-        }
-        private RosterGroup createRosterGroup(Crowd.Crowd crowd)
-        {
-            RosterGroup group = null;
-            if (Groups.ContainsKey(crowd.Name) == false)
-            {
-                @group = new RostergroupImpl { Name = crowd.Name };
-                Groups.InsertElement(group);
-            }
-            else
-            {
-                @group = Groups[crowd.Name];
-            }
-
-            return @group;
-        }
-
         public void RemoveRosterMember(CrowdMember deletedMember)
         {
             if (deletedMember is CharacterCrowdMember)
@@ -616,7 +677,7 @@ namespace HeroVirtualTabletop.Roster
         public void RemoveParticipants(List<CharacterCrowdMember> participantsToRemove)
         {
             List<CharacterCrowdMember> members = this.Participants.ToList();
-            foreach(var memberToRemove in participantsToRemove)
+            foreach (var memberToRemove in participantsToRemove)
             {
                 var groupName = memberToRemove.RosterParent.Name;
                 if (Groups.ContainsKey(groupName))
@@ -625,17 +686,77 @@ namespace HeroVirtualTabletop.Roster
                     group.RemoveElement(memberToRemove);
                 }
                 members.Remove(memberToRemove);
-                memberToRemove.PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                memberToRemove.PropertyChanged -= RosterParticipant_PropertyChanged;
                 memberToRemove.RosterParent = null;
                 memberToRemove.DeActivate();
             }
             this.Participants = new ObservableCollection<CharacterCrowdMember>(members);
-        } 
+        }
+        #endregion
+
+        #region Rename Roster Member
+        public void RenameRosterMember(CrowdMember crowdMember)
+        {
+            if (crowdMember is Crowd.Crowd)
+            {
+                RosterParent rosterParent = (from p in Participants.Where(x => x.RosterParent.Name == crowdMember.OldName) select p.RosterParent).FirstOrDefault();
+                if (rosterParent != null)
+                {
+                    rosterParent.Name = crowdMember.Name;
+                    rosterParent.RosterGroup.Name = crowdMember.Name;
+                }
+            }
+        }
+        #endregion
+
+        #region Create Group From Crowd
+        public void CreateGroupFromCrowd(Crowd.Crowd crowd)
+        {
+            var group = createRosterGroup(crowd);
+            foreach (CrowdMember member in crowd.Members)
+            {
+                if (member is Crowd.Crowd)
+                {
+                    CreateGroupFromCrowd(member as Crowd.Crowd);
+                }
+                else
+                {
+                    group.InsertElement((CharacterCrowdMember)member);
+                    (member as CharacterCrowdMember).RosterParent = getRosterParentFromGroup(group);
+                    member.PropertyChanged += RosterParticipant_PropertyChanged;
+                    Participants.Add((CharacterCrowdMember)member);
+                }
+            }
+            NotifyOfPropertyChange(() => Participants);
+        }
+        #endregion
+
+        #region Create/Remove Roster Group
+        private RosterGroup createRosterGroup(Crowd.Crowd crowd)
+        {
+            RosterGroup group = null;
+            if (Groups.ContainsKey(crowd.Name) == false)
+            {
+                @group = new RostergroupImpl { Name = crowd.Name };
+                Groups.InsertElement(group);
+            }
+            else
+            {
+                @group = Groups[crowd.Name];
+            }
+
+            return @group;
+        }
 
         public void RemoveGroup(RosterGroup group)
         {
             NotifyOfPropertyChange(() => Participants);
         }
+
+        #endregion
+
+        #region Select/Unselect Group/Participants
+
         public void SelectGroup(RosterGroup group)
         {
             foreach (var p in group.Values)
@@ -650,10 +771,7 @@ namespace HeroVirtualTabletop.Roster
                 UnSelectParticipant(p);
             }
         }
-        public void ClearAllSelections()
-        {
-            Selected.Participants.Clear();
-        }
+        
         public void SelectAllParticipants()
         {
             foreach (RosterGroup g in Groups.Values)
@@ -665,7 +783,17 @@ namespace HeroVirtualTabletop.Roster
                 }
             }
         }
-        
+
+        #endregion
+
+        #region Clear Selections
+        public void ClearAllSelections()
+        {
+            Selected.Participants.Clear();
+        }
+        #endregion
+
+        #region Save as Crowd
         public Crowd.Crowd SaveAsCrowd()
         {
             CrowdRepository repo = new CrowdRepositoryImpl();
@@ -682,8 +810,11 @@ namespace HeroVirtualTabletop.Roster
             return rosterClone;
         }
 
+        #endregion
+
+        #region Property Changed Event Handlers
         //character event subscription methods
-        private void EnsureOnlyOneActiveOrAttackingCharacterInRoster(object sender, PropertyChangedEventArgs e)
+        private void RosterParticipant_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             AnimatedCharacter characterThatChanged = sender as AnimatedCharacter;
             //updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "ActiveCharacter", "IsActive");
@@ -691,24 +822,27 @@ namespace HeroVirtualTabletop.Roster
             updateRosterCharacterStateBasedOnCharacterChange(e.PropertyName, characterThatChanged, "LastSelectedCharacter", "IsSelected");
             if (e.PropertyName == "ActiveAttack")
             {
-                if (characterThatChanged != AttackingCharacter)
+                var attackingCharacter = this.AttackingCharacters != null ? this.AttackingCharacters.FirstOrDefault(ac => ac.ActiveAttack != null) : null;
+                if (characterThatChanged != attackingCharacter)
                 {
                     if (characterThatChanged.ActiveAttack != null)
                     {
-                        if (AttackingCharacter != null)
+                        if (attackingCharacter != null)
                         {
-                            ((AnimatedCharacter)AttackingCharacter).ActiveAttack?.Stop();
+                            ((AnimatedCharacter)attackingCharacter).ActiveAttack?.Cancel(this.CurrentAttackInstructions);
                         }
                     }
-                    AttackingCharacter = characterThatChanged as CharacterCrowdMember;
+                    var mainAttacker = this.Participants.First(p => p.Name == characterThatChanged.Name);
+                    SetAttackingCharacters(mainAttacker);
+                    SetConfiguringAttack(mainAttacker);
                 }
                 else
                 {
-                    if (AttackingCharacter == characterThatChanged)
+                    if (attackingCharacter == characterThatChanged)
                     {
                         if (characterThatChanged.ActiveAttack != null)
                             characterThatChanged.ActiveAttack = null;
-                        AttackingCharacter = null;
+                        AttackingCharacters = null;
                     }
                 }
             }
@@ -737,126 +871,46 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (rosterStateToChange == characterThatChanged)
                 {
-                    (characterThatChanged as CrowdMember).PropertyChanged -= EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                    (characterThatChanged as CrowdMember).PropertyChanged -= RosterParticipant_PropertyChanged;
                     propertyInfoForCharacterThatchanged.SetValue(characterThatChanged, false);
                     // characterThatChanged.IsActive = false;
                     propertyInfoforStateToChange.SetValue(this, null);
-                    (characterThatChanged as CrowdMember).PropertyChanged += EnsureOnlyOneActiveOrAttackingCharacterInRoster;
+                    (characterThatChanged as CrowdMember).PropertyChanged += RosterParticipant_PropertyChanged;
                 }
             }
 
         }
-        private CharacterCrowdMember activeCharacter;
-        public CharacterCrowdMember ActiveCharacter
-        {
-            get
-            {
-                if (Participants.Any(p => p.IsGangLeader))
-                    activeCharacter = this.Participants.First(p => p.IsGangLeader);
-                else
-                    activeCharacter = this.Participants.FirstOrDefault(p => p.IsActive);
-                return activeCharacter;
-            }
-        }
-        
-        private CharacterCrowdMember attackingCharacter;
-        public CharacterCrowdMember AttackingCharacter
-        {
-            get
-            {
-                return attackingCharacter;
-            }
-            set
-            {
-                attackingCharacter = value;
-                if (attackingCharacter == null)
-                    CurrentAttackInstructions = null;
-                NotifyOfPropertyChange(() => AttackingCharacter);
-            }
-        }
-        private CharacterCrowdMember targetedCharacter;
-        public CharacterCrowdMember TargetedCharacter
-        {
-            get
-            {
-                DesktopMemoryCharacter memoryInstance = new DesktopMemoryCharacterImpl();
-                if (targetedCharacter == null || targetedCharacter.Name != memoryInstance.Name)
-                {
-                    if (memoryInstance.IsReal)
-                        targetedCharacter = Participants.FirstOrDefault(p => p.Name == memoryInstance.Name);
-                }
-                
-                return targetedCharacter;
-            }
-            set
-            {
-                targetedCharacter = value;
-            }
-        }
-        private CharacterCrowdMember lastSelectedCharacter;
-        public CharacterCrowdMember LastSelectedCharacter
-        {
-            get
-            {
-                if (lastSelectedCharacter == null)
-                    lastSelectedCharacter = Selected.Participants.LastOrDefault();
 
-                return lastSelectedCharacter;
-            }
-            set
-            {
-                //if(value != null)
-                //    SelectParticipant(value);
-                lastSelectedCharacter = value;
-            }
-        }
+        #endregion
 
-        private CharacterCrowdMember distanceCountingCharacter;
-        public CharacterCrowdMember DistanceCountingCharacter
-        {
-            get
-            {
-                return distanceCountingCharacter;
-            }
-            set
-            {
-                distanceCountingCharacter = value;
-                NotifyOfPropertyChange(() => DistanceCountingCharacter);
-            }
-        }
-
-        public void GroupSelectedParticpants()
-        {
-            throw new NotImplementedException();
-        }
-
+        #region Distance Counting
         public void RestartDistanceCounting()
         {
             if (this.Selected.Participants.Count > 0)
             {
-                if (this.AttackingCharacter != null)
+                if (this.AttackingCharacters != null && this.AttackingCharacters.Count > 0)
                 {
-                    this.DistanceCountingCharacter = this.AttackingCharacter;
-                    //if (this.AttackingCharacters.Count > 1 && this.IsGangInOperation)
-                    //{
-                    //    this.CurrentDistanceCountingCharacter = Participants.First(p => (p as Character).IsGangLeader) as Character;
-                    //}
-                    //else
-                    //{
-                    //    this.CurrentDistanceCountingCharacter = this.AttackingCharacters.First();
-                    //}
+                    //this.DistanceCountingCharacter = this.AttackingCharacter;
+                    if (this.AttackingCharacters.Count > 1 && this.IsGangInOperation)
+                    {
+                        this.DistanceCountingCharacter = Participants.First(p => (p as CharacterCrowdMember).IsGangLeader) as CharacterCrowdMember;
+                    }
+                    else
+                    {
+                        this.DistanceCountingCharacter = this.AttackingCharacters.First() as CharacterCrowdMember;
+                    }
                     foreach (var c in Selected.Participants)
                     {
-                        //if (!AttackingCharacters.Contains(c))
-                        //{
-                        //    this.CurrentDistanceCountingCharacter.UpdateDistanceCount(c.CurrentPositionVector);
-                        //    break;
-                        //}
-                        if(c != this.AttackingCharacter)
+                        if (!AttackingCharacters.Contains(c))
                         {
                             this.DistanceCountingCharacter.UpdateDistanceCount(c.Position);
                             break;
                         }
+                        //if(c != this.AttackingCharacter)
+                        //{
+                        //    this.DistanceCountingCharacter.UpdateDistanceCount(c.Position);
+                        //    break;
+                        //}
                     }
                 }
                 else
@@ -882,6 +936,10 @@ namespace HeroVirtualTabletop.Roster
                 }
             }
         }
+
+        #endregion
+
+        #region Target Hovered Character
         public void TargetHoveredCharacter(CharacterCrowdMember hoveredCharacter)
         {
             if (this.TargetOnHover)
@@ -901,7 +959,155 @@ namespace HeroVirtualTabletop.Roster
                 this.DistanceCountingCharacter.UpdateDistanceCount();
             }
         }
+        #endregion
 
+        #region Attack Integration
+
+        private void SetConfiguringAttack(AnimatedCharacter mainAttacker)
+        {
+            if(mainAttacker.ActiveAttack != null)
+            {
+                if (this.CurrentAttackInstructions is GangAreaAttackInstructions)
+                {
+                    this.ConfiguringAttack = new GangAreaAttackImpl();
+                    this.ConfiguringAttack.InitiateFrom(mainAttacker.ActiveAttack);
+                    (this.ConfiguringAttack as GangAreaAttack).GangMembers = this.AttackingCharacters;
+                }
+                else if (this.CurrentAttackInstructions is GangAttackInstructions)
+                {
+                    this.ConfiguringAttack = new GangAttackImpl();
+                    this.ConfiguringAttack.InitiateFrom(mainAttacker.ActiveAttack);
+                    (this.ConfiguringAttack as GangAttack).GangMembers = this.AttackingCharacters;
+                }
+                else if (this.CurrentAttackInstructions is MultiAttackInstructions && !(this.CurrentAttackInstructions is AreaAttackInstructions))
+                {
+                    this.ConfiguringAttack = new MultiAttackImpl();
+                    this.ConfiguringAttack.InitiateFrom(mainAttacker.ActiveAttack);
+                }
+                else
+                {
+                    this.ConfiguringAttack = mainAttacker.ActiveAttack;
+                }
+            }
+        }
+
+        private void SetAttackingCharacters(CharacterCrowdMember mainAttacker)
+        {
+            this.AttackingCharacters = new List<AnimatedCharacter>();
+            if(mainAttacker.ActiveAttack != null)
+            {
+                Crowd.Crowd attackerParent = this.CrowdRepository.AllMembersCrowd.Members.FirstOrDefault(c => c is Crowd.Crowd && c.Name == mainAttacker.RosterParent.Name) as Crowd.Crowd;
+                if (mainAttacker.IsGangLeader)
+                {
+                    foreach (CharacterCrowdMember c in this.Participants.Where(p => p.IsActive && p.IsSpawned))
+                    {
+                        this.AttackingCharacters.Add(c);
+                    }
+                    CreateGangInstructions(mainAttacker);
+                }
+                else if (this.IsGangInOperation && attackerParent.IsGang)
+                {
+                    foreach (CharacterCrowdMember c in this.Participants.Where(p => p.RosterParent.Name == attackerParent.Name && p.IsSpawned))
+                    {
+                        this.AttackingCharacters.Add(c);
+                    }
+                    CreateGangInstructions(mainAttacker);
+                }
+                else
+                {
+                    this.AttackingCharacters.Add(mainAttacker);
+                    CreateSimpleInstructions(mainAttacker);
+                }
+            }
+            
+            NotifyOfPropertyChange(() => AttackingCharacters);
+        }
+
+        private void CreateSimpleInstructions(AnimatedCharacter mainAttacker)
+        {
+            AttackInstructions instructions = null;
+            if (mainAttacker.ActiveAttack is AreaEffectAttack)
+            {
+                instructions = new AreaAttackInstructionsImpl();
+                instructions.Attacker = mainAttacker;
+            }
+            else
+            {
+                instructions = new AttackInstructionsImpl();
+            }
+            instructions.Attacker = mainAttacker;
+            this.CurrentAttackInstructions = instructions;
+        }
+        private void CreateMultiInstructions(AnimatedCharacter mainAttacker)
+        {
+            if (!(this.CurrentAttackInstructions is MultiAttackInstructions))
+            {
+                MultiAttackInstructions multiAttackInstructions = new MultiAttackInstructionsImpl();
+                multiAttackInstructions.Attacker = mainAttacker;
+                this.CurrentAttackInstructions = multiAttackInstructions;
+                SetConfiguringAttack(mainAttacker);
+            }
+        }
+
+        private void CreateGangInstructions(AnimatedCharacter mainAttacker)
+        {
+            if (!(mainAttacker.ActiveAttack is AreaEffectAttack))
+            {
+                GangAttackInstructions gangAttackInstructions = new GangAttackInstructionsImpl();
+                gangAttackInstructions.Attacker = mainAttacker;
+                this.CurrentAttackInstructions = gangAttackInstructions;
+            }
+            else
+            {
+                GangAreaAttackInstructions gangAreaAttackInstructions = new GangAreaAttackInstructionsImpl();
+                gangAreaAttackInstructions.Attacker = mainAttacker;
+                this.CurrentAttackInstructions = gangAreaAttackInstructions;
+            }
+        }
+
+        public void AddAttackTargets()
+        {
+            var attackingCharacter = this.AttackingCharacters.FirstOrDefault(ac => ac.ActiveAttack != null);
+            if (this.Selected.Participants.Count > 1 && !(attackingCharacter.ActiveAttack is AreaEffectAttack) && !(this.ConfiguringAttack is GangAttack) && !(this.ConfiguringAttack is GangAreaAttack))
+            {
+                // Multi Attack / Attack to Gang
+                CreateMultiInstructions(attackingCharacter);
+            }
+
+            //this.Selected.AddAsAttackTarget(this.CurrentAttackInstructions);
+            if (this.CurrentAttackInstructions is MultiAttackInstructions)
+            {
+                foreach (var attacker in this.AttackingCharacters)
+                {
+                    foreach (var defender in this.Selected.Participants)
+                    {
+                        (this.CurrentAttackInstructions as MultiAttackInstructions).AddTarget(attacker, defender);
+                    }
+                }
+            }
+            else
+            {
+                this.CurrentAttackInstructions.Defender = this.Selected.Participants.First();
+            }
+            //var map = (this.CurrentAttackInstructions as GangAttackInstructions).AttackersMap;
+            //NotifyOfPropertyChange(() => this.CurrentAttackInstructions);
+        }
+
+        public void CancelActiveAttack()
+        {
+            this.ConfiguringAttack?.Cancel(this.CurrentAttackInstructions);
+            this.ResetActiveAttack();
+        }
+
+        public void ResetActiveAttack()
+        {
+            this.AttackingCharacters?.Clear();
+            this.CurrentAttackInstructions = null;
+            this.ConfiguringAttack = null;
+            NotifyOfPropertyChange(() => AttackingCharacters);
+        }
+
+        #endregion
     }
     public class RostergroupImpl : OrderedCollectionImpl<CharacterCrowdMember>, RosterGroup
     {
@@ -1250,11 +1456,9 @@ namespace HeroVirtualTabletop.Roster
 
         public void AddAsAttackTarget(AttackInstructions instructions)
         {
-            foreach(var p in this.Participants.Where(x => x != this.Roster.AttackingCharacter))
+            foreach(var p in this.Participants.Where(x => !this.Roster.AttackingCharacters.Contains(x)))
             {
                 p.AddAsAttackTarget(instructions);
-                Roster.CurrentAttackInstructions = instructions;
-                //NotifyOfPropertyChange(() => Roster.CurrentAttackInstructions);
             }
         }
 
@@ -1829,6 +2033,11 @@ namespace HeroVirtualTabletop.Roster
         public void Cancel(AttackInstructions instructions)
         {
             Attacker.ActiveAttack.Cancel(instructions);
+        }
+
+        public void InitiateFrom(AnimatedAttack attackToCopy)
+        {
+            throw new NotImplementedException();
         }
     }
     public class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions

@@ -62,7 +62,7 @@ namespace HeroVirtualTabletop.Desktop
         event EventHandler<CustomEventArgs<Object>> ActivateCharacterOptionMenuItemSelected;
         event EventHandler<CustomEventArgs<Object>> SpreadNumberSelected;
 
-        void GenerateAndDisplay(AnimatedCharacter character, string attackingCharacterName, bool showAreaAttackMenu);
+        void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterNames, bool showAreaAttackMenu);
         bool IsDisplayed { get; set; }
         void Configure();
     }
@@ -107,7 +107,7 @@ namespace HeroVirtualTabletop.Desktop
         public bool IsDisplayed { get; set; }
 
         public bool ShowAreaAttackMenu { get; set; }
-        public string AttackingCharacterName { get; set; }
+        public List<string> AttackingCharacterNames { get; set; }
 
         public event EventHandler<CustomEventArgs<Object>> AttackContextMenuDisplayed;
         public event EventHandler<CustomEventArgs<Object>> DefaultContextMenuDisplayed;
@@ -242,10 +242,10 @@ namespace HeroVirtualTabletop.Desktop
             ContextCommandFileWatcher.EnableRaisingEvents = true;
         }
 
-        public void GenerateAndDisplay(AnimatedCharacter character, string attackingCharacterName, bool showAreaAttackMenu)
+        public void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterName, bool showAreaAttackMenu)
         {
             Character = character;
-            AttackingCharacterName = attackingCharacterName;
+            AttackingCharacterNames = attackingCharacterName;
             ShowAreaAttackMenu = showAreaAttackMenu;
             GenerateAndDisplay();
             ContextCommandFileWatcher.EnableRaisingEvents = true;
@@ -321,7 +321,7 @@ namespace HeroVirtualTabletop.Desktop
             {
                 if (ShowAreaAttackMenu)
                 {
-                    if (AttackingCharacterName != Character.Name)
+                    if (!AttackingCharacterNames.Contains(Character.Name))
                     {
                         System.Threading.Thread.Sleep(200); // Delay so that the file write completes before calling the pop menu
                         DisplayAttackMenu();

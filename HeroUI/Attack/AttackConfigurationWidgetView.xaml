@@ -26,7 +26,7 @@
             <bindings:BindingProxy x:Key="BindingProxy" Data="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=attack:AttackConfigurationWidgetView}, Path=DataContext}"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <GroupBox Header="Configure Active Attack" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+    <!--<GroupBox Header="Configure Active Attack" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -161,7 +161,126 @@
                 <Button cal:Message.Attach="CancelAttack"  Margin="2"  Content="Cancel" Style="{StaticResource ButtonDefaultStyle}"/>
             </StackPanel>
         </Grid>
-    </GroupBox>
+    </GroupBox>-->
+    <GroupBox Header="{Binding ConfiguringAttack.Name}" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+        <Border Background="Transparent">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
 
+                <StackPanel Grid.Row="0" Orientation="Vertical" Width="250" Visibility="{Binding ShowAttackSummaryText, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock  Text="{Binding AttackSummaryText}" Foreground="White" Background="Transparent" FontWeight="Bold" TextWrapping="Wrap" />
+                </StackPanel>
+                <ListView Grid.Row="1" Margin="1" Name="lvAttackConfig" ItemsSource="{Binding DefenderAttackInstructions}" Background="Transparent" BorderBrush="Transparent" ItemContainerStyle="{StaticResource ListBoxtemStyleNoHighlighting}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel>
+                                <GroupBox Header="{Binding Defender.Name}" Foreground="White" Style="{StaticResource GroupBoxWithBlueBorderStyle}">
+                                    <GroupBox.Content>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Grid.Row="0" Grid.Column="0" Content="Center Target" 
+                                                      IsChecked="{Binding Path=IsAttackCenter}" 
+                                                  cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                  cal:Message.Attach="ChangeCenterTarget($dataContext)"
+                                                  IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=attack:AttackConfigurationWidgetView}, 
+                                            Path=DataContext.IsConfiguringAreaEffect}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Visibility="{Binding HasMultipleAttackers, Converter={StaticResource BooleanToVisibilityInvertConverter}}">
+                                                <RadioButton Content="Hit" IsChecked="{Binding Path=DefenderHitByAttack}" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White"/>
+                                                <RadioButton Content="Miss" IsChecked="{Binding Path=DefenderHitByAttack, Converter={StaticResource InvertBooleanConverter}, Mode=OneWay}" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Visibility="{Binding HasMultipleAttackers, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <ListView Margin="1"  ItemsSource="{Binding AttackerHitInfo}" Background="Transparent" BorderBrush="Transparent" ItemContainerStyle="{StaticResource ListBoxtemStyleNoHighlighting}">
+                                                    <ListView.ItemTemplate> 
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Attacker.Name}" Foreground="White"/>
+                                                                <RadioButton Content="Hit" IsChecked="{Binding AttackInstructionsForAttacker.AttackHit}" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                                             cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                                             cal:Message.Attach="ChangeAttackHit($dataContext)"
+                                                                             Foreground="White" ToolTip="Hit (H)"/>
+                                                                <RadioButton Content="Miss" IsChecked="{Binding AttackInstructionsForAttacker.AttackHit, Converter={StaticResource InvertBooleanConverter}}" 
+                                                                             cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                                             cal:Message.Attach="ChangeAttackHit($dataContext)"
+                                                                             HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" ToolTip="Miss (M)"/>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ListView.ItemTemplate>
+                                                </ListView>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                                <CheckBox x:Name="Stunned"
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                    cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Stunned', Stunned.IsChecked)"
+                                                      Content="Stunned" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=DefenderHitByAttack}"
+                                                          IsChecked="{Binding DefenderStunned}">
+                                                </CheckBox>
+                                                <CheckBox x:Name="Unconscious" 
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                    cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Unconscious', Unconscious.IsChecked)"
+                                                      Content="Unconscious" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=DefenderHitByAttack}"
+                                                          IsChecked="{Binding DefenderUnconscious}">
+                                                </CheckBox>
+                                                <CheckBox x:Name="Dying" 
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                    cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Dying', Dying.IsChecked)"
+                                                      Content="Dying" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=DefenderHitByAttack}"
+                                                          IsChecked="{Binding DefenderDying}">
+                                                </CheckBox>
+                                                <CheckBox x:Name="Dead" 
+                                                      cal:Action.TargetWithoutContext="{Binding Source={StaticResource BindingProxy}, Path=Data}"
+                                                    cal:Message.Attach="UpdateAttackImpacts($dataContext, 'Dead', Dead.IsChecked)"
+                                                      Content="Dead" Foreground="White"  HorizontalAlignment="Left" IsEnabled="{Binding Path=DefenderHitByAttack}"
+                                                          IsChecked="{Binding DefenderDead}">
+                                                </CheckBox>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal">
+                                                <TextBlock Text="Knockback Distance" Foreground="White"/>
+                                                <xctk:IntegerUpDown Increment="1" DefaultValue="0" Minimum="0" Value="{Binding DefenderKnockbackDistance}" 
+                                                                    IsEnabled="{Binding Path=DefenderHitByAttack}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </GroupBox.Content>
+                                </GroupBox>
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <CheckBox IsChecked="{Binding MoveAttackersToDefender}" Content="Move to target before attacking" Foreground="White"  HorizontalAlignment="Left" 
+                                                          ToolTip="Move to target before attacking (T)"/>
+                </StackPanel>
+                <!--<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="2">
+                    <Button x:Name="btnOk"  Margin="2" Content="OK" Command="{Binding SetActiveAttackCommand}" Style="{StaticResource ButtonDefaultStyle}"/>
+                    <Button x:Name="btnCancel"  Margin="2"  Content="Cancel" Command="{Binding CancelActiveAttackCommand}" Style="{StaticResource ButtonDefaultStyle}"/>
+                </StackPanel>-->
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="2">
+                    <Button cal:Message.Attach="LaunchAttack"  Margin="2" Content="OK" Style="{StaticResource ButtonDefaultStyle}"/>
+                    <Button cal:Message.Attach="CancelAttack"  Margin="2"  Content="Cancel" Style="{StaticResource ButtonDefaultStyle}"/>
+                </StackPanel>
+            </Grid>
+            <!--<behaviors:CommandBehaviorCollection.Behaviors>
+                <behaviors:BehaviorBinding Event="PreviewMouseDown" Command="{Binding ActivatePanelCommand}" CommandParameter="ActiveAttackWidget"/>
+            </behaviors:CommandBehaviorCollection.Behaviors>-->
+        </Border>
+        <!--<behaviors:CommandBehaviorCollection.Behaviors>
+            <behaviors:BehaviorBinding Event="GotFocus" Command="{Binding ActivatePanelCommand}" CommandParameter="ActiveAttackWidget"/>
+            <behaviors:BehaviorBinding Event="LostFocus" Command="{Binding DeactivatePanelCommand}" CommandParameter="ActiveAttackWidget"/>
+        </behaviors:CommandBehaviorCollection.Behaviors>-->
+    </GroupBox>
 
 </UserControl>

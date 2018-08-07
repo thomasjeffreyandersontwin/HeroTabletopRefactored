@@ -73,6 +73,7 @@ namespace HeroVirtualTabletop.Desktop
         float Unit { get; set; }
         Vector3 Vector { get; set; }
         Position JustMissedPosition { get; set; }
+        Position HitPosition { get; set; }
         Position Duplicate(uint targetPointer = 0);
         Position DistanceCountingStartPosition { get; set; }
         float DistanceCount { get; set; }

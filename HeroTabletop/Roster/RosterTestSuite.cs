@@ -106,16 +106,17 @@ namespace HeroVirtualTabletop.Roster
 
         [TestMethod]
         [TestCategory("Roster")]
-        public void CharacterStartsAttack_RosterAttackingCharacterWillReturnTheAttackingCharacter()
+        public void CharacterStartsAttack_RosterAttackingCharactersWillReturnTheAttackingCharacters()
         {
             Roster r = TestObjectsFactory.RosterUnderTest;
             AnimatedAttack a = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
             a.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            a.Attacker.IsGangLeader = false;
 
             r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)a.Attacker);
 
             a.StartAttackCycle();
-            Assert.AreEqual(a.Target, r.AttackingCharacter);
+            Assert.IsTrue(r.AttackingCharacters.Contains(a.Target));
         }
 
         [TestMethod]
@@ -126,6 +127,7 @@ namespace HeroVirtualTabletop.Roster
             Roster r = TestObjectsFactory.RosterUnderTest;
             AnimatedAttack first = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
             first.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            first.Attacker.IsGangLeader = false;
 
             r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)first.Attacker);
             first.StartAttackCycle();
@@ -133,6 +135,7 @@ namespace HeroVirtualTabletop.Roster
             //arrange
             AnimatedAttack second = TestObjectsFactory.AttackUnderTestWithCharacterUnderTest;
             second.Attacker = (AnimatedCharacter)TestObjectsFactory.CharacterCrowdMemberUnderTest;
+            second.Attacker.IsGangLeader = false;
 
             //act
             r.AddCharacterCrowdMemberAsParticipant((CharacterCrowdMember)second.Attacker);
@@ -1032,7 +1035,7 @@ namespace HeroVirtualTabletop.Roster
         }
         public Roster RosterUnderTest => StandardizedFixture.Build<RosterImpl>()
             .Without(x => x.TargetedCharacter)
-            .Without(x => x.AttackingCharacter)
+            .Without(x => x.AttackingCharacters)
             .Without(x => x.LastSelectedCharacter)
             .Without(x => x.Participants)
             .Without(x => x.Selected)
@@ -1134,6 +1137,7 @@ namespace HeroVirtualTabletop.Roster
                 g.Name = "Crowd 1";
                 Crowd.Crowd crowd = rosterUnderTest.Participants[0].Parent;
                 crowd.Name = "Crowd 1";
+                crowd.IsGang = false;
                 RosterParent parent1 = new RosterParentImpl { Name = g.Name, Order = g.Order, RosterGroup = g };
                 //rosterUnderTest.Participants.ForEach(x => x.RosterParent = g);
                 foreach (var x in rosterUnderTest.Participants)

@@ -82,7 +82,7 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (!(Keyboard.Modifiers == ModifierKeys.Control || Keyboard.Modifiers == ModifierKeys.Shift || Keyboard.Modifiers == ModifierKeys.Alt))
                 {
-                    if (this.viewModel.Roster.AttackingCharacter != null) //&& !this.viewModel.IsPlayingAreaEffect)
+                    if (this.viewModel.Roster.AttackingCharacters != null && this.viewModel.Roster.AttackingCharacters.Count > 0) //&& !this.viewModel.IsPlayingAreaEffect)
                     {
                         Action d = delegate ()
                         {

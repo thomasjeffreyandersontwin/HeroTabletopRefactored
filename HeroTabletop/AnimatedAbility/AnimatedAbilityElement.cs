@@ -1707,6 +1707,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 {
                     refAbility.Sequencer.Play(target);
                 }
+                else
+                {
+                    targetAbility.Play(target);
+                }
             }
             else
                 Reference?.Ability?.Play(target);

@@ -52,14 +52,14 @@ namespace HeroVirtualTabletop.Roster
         void Sort();
         Crowd.Crowd SaveAsCrowd();
         CharacterCrowdMember ActiveCharacter { get; }
-        CharacterCrowdMember AttackingCharacter { get; }
+        List<AnimatedCharacter> AttackingCharacters { get; }
         CharacterCrowdMember LastSelectedCharacter { get; }
         CharacterCrowdMember DistanceCountingCharacter { get;  }
         void RestartDistanceCounting();
         bool SelectedParticipantsInGangMode { get; set; }
         bool IsGangInOperation { get; set; }
         CharacterCrowdMember TargetedCharacter { get; set; }
-        void GroupSelectedParticpants();
+        AnimatedAttack ConfiguringAttack { get; }
         AttackInstructions CurrentAttackInstructions { get; set; }
         bool UseOptimalPositioning { get; set; }
         bool OverheadMode { get; set; }
@@ -68,6 +68,9 @@ namespace HeroVirtualTabletop.Roster
         bool TargetOnHover { get; set;  }
         void TargetHoveredCharacter(CharacterCrowdMember hoveredCharacter);
         List<MovableCharacter> MovingCharacters { get; }
+        void AddAttackTargets();
+        void CancelActiveAttack();
+        void ResetActiveAttack();
     }
 
     public interface RosterGroup: OrderedElement, OrderedCollection<CharacterCrowdMember>

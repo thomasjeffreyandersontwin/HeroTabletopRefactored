@@ -20,34 +20,49 @@ namespace HeroVirtualTabletop.Attack
 
     public class ConfigureAttackEvent
     {
-        public AnimatedCharacter Attacker { get; set; }
+        public AnimatedAttack AttackToConfigure { get; set; }
+        public List<AnimatedCharacter> Attackers { get; set; }
         public AttackInstructions AttackInstructions { get; set; }
-        public ConfigureAttackEvent(AnimatedCharacter attacker, AttackInstructions instructions)
+        public ConfigureAttackEvent(AnimatedAttack attackToConfigure, List<AnimatedCharacter> attackers, AttackInstructions instructions)
         {
-            this.Attacker = attacker;
+            this.AttackToConfigure = attackToConfigure;
+            this.Attackers = attackers;
             this.AttackInstructions = instructions;
         }
     }
 
     public class LaunchAttackEvent
     {
-        public AnimatedCharacter Attacker { get; set; }
+        public AnimatedAttack AttackToExecute { get; set; }
+        public List<AnimatedCharacter> Attackers { get; set; }
         public AttackInstructions AttackInstructions { get; set; }
-        public LaunchAttackEvent(AnimatedCharacter attacker, AttackInstructions instructions)
+        public LaunchAttackEvent(AnimatedAttack attackToExecute, List<AnimatedCharacter> attackers, AttackInstructions instructions)
         {
-            this.Attacker = attacker;
+            this.AttackToExecute = attackToExecute;
+            this.Attackers = attackers;
             this.AttackInstructions = instructions;
         }
     }
 
     public class CancelAttackEvent
     {
-        public AnimatedCharacter Attacker { get; set; }
+        public AnimatedAttack AttackToExecute { get; set; }
+        public List<AnimatedCharacter> Attackers { get; set; }
         public AttackInstructions AttackInstructions { get; set; }
-        public CancelAttackEvent(AnimatedCharacter attacker, AttackInstructions instructions)
+        public CancelAttackEvent(AnimatedAttack attackToExecute, List<AnimatedCharacter> attackers, AttackInstructions instructions)
         {
-            this.Attacker = attacker;
+            this.AttackToExecute = attackToExecute;
+            this.Attackers = attackers;
             this.AttackInstructions = instructions;
+        }
+    }
+
+    public class FinishAttackEvent
+    {
+        public AnimatedAttack FinishedAttack { get; set; }
+        public FinishAttackEvent(AnimatedAttack finishedAttack)
+        {
+            this.FinishedAttack = finishedAttack;
         }
     }
 

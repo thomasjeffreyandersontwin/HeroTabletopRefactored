@@ -405,7 +405,7 @@ namespace HeroVirtualTabletop.Crowd
                 {
                     if (SelectedCharacterCrowdMember != null)
                     {
-                        if (SelectedCharacterCrowdMember.Name != DefaultAbilities.CHARACTERNAME)
+                        //if (SelectedCharacterCrowdMember.Name != DefaultAbilities.CHARACTERNAME)
                             canDeleteCharacterOrCrowd = true;
                     }
                     else if(SelectedCrowdMember != null)
