@@ -680,6 +680,8 @@ namespace HeroVirtualTabletop.Movement
             {
                 var movableCharacter = CustomizedMockFixture.Create<MovableCharacter>();
                 var actionGroups = GetStandardCharacterActionGroup(movableCharacter);
+                Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.Identities).Returns(() => actionGroups[0] as CharacterActionList<Identity>);
+                Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.Abilities).Returns(() => actionGroups[1] as CharacterActionList<AnimatedAbility.AnimatedAbility>);
                 Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.Movements).Returns(() => actionGroups[2] as CharacterActionList<CharacterMovement>);
                 Mock.Get<MovableCharacter>(movableCharacter).SetupGet(x => x.ActiveMovement).Returns(() => MockCharacterMovement);
 

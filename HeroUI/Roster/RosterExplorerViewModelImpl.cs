@@ -1454,7 +1454,7 @@ namespace HeroVirtualTabletop.Roster
             if (Keyboard.Modifiers == (ModifierKeys.Alt | ModifierKeys.Shift) && targetedCharacter != null && targetedCharacter.Abilities.Any(ab => ab.ActivationKey == inputKey))
             {
                 var activeAbility = targetedCharacter.Abilities.First(ab => ab.ActivationKey == inputKey);
-                targetedCharacter.Target(false);
+                targetedCharacter.Target();
                 this.EventAggregator.Publish(new PlayAnimatedAbilityEvent(activeAbility), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             }
             else if (targetedCharacter != null && Keyboard.Modifiers == ModifierKeys.Alt)

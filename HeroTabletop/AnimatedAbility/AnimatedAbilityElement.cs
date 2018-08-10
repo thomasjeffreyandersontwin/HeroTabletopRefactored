@@ -124,7 +124,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             completeEvent = true;
             if (target.IsTargeted == false)
-                target.Target(false);
+                target.Target();
             PlayResource(target);
         }
 
@@ -145,7 +145,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Stop(AnimatedCharacter target)
         {
             if (target.IsTargeted == false)
-                target.Target(false);
+                target.Target();
             StopResource(target);
         }
 
@@ -209,7 +209,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             completeEvent = false;
             foreach (var target in targets)
             {
-                target.Target(false);
+                target.Target();
                 PlayResource(target);
             }
             completeEvent = true;
@@ -428,7 +428,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             foreach (var target in targets)
             {
                 Target = target;
-                target.Target(false);
+                target.Target();
                 PlayResource(target);
             }
             completeEvent = true;
@@ -495,7 +495,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 if (Target == null)
                     return;
             }
-            Target.Target(false);
+            Target.Target();
             if (!File.Exists(CostumeFilePath))
                 return;
             if (File.Exists(ModifiedCostumeFilePath) && (Target.LoadedFXs == null || Target.LoadedFXs.Count == 0))
@@ -514,7 +514,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (Target.LoadedFXs != null && !Target.LoadedFXs.Contains(this))
                 Target.LoadedFXs.Add(this);
             if (playingOnGhost)
-                target.Target(false);
+                target.Target();
             Target = originalTarget;
         }
 
@@ -1773,7 +1773,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             completeEvent = false;
             foreach (var target in targets)
             {
-                target.Target(false);
+                target.Target();
                 PlayResource(target);
             }
             completeEvent = true;
@@ -1784,7 +1784,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override void StopResource(AnimatedCharacter target)
         {
             var targetToPlay = target ?? this.Target;
-            targetToPlay.Target(false);
+            targetToPlay.Target();
             target.ActiveIdentity.Play();
         }
 
@@ -1794,7 +1794,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             var generator = targetToPlay.Generator;
             if (this.Reference != null)
             {
-                targetToPlay.Target(false);
+                targetToPlay.Target();
                 this.Reference.Identity.Play(false);
             }
             if (completeEvent)

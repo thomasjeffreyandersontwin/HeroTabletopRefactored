@@ -153,6 +153,33 @@ namespace HeroVirtualTabletop.Attack
             foreach (var defenderIns in this.DefenderAttackInstructions)
             {
                 UpdateAttackImpacts(defenderIns, impactName, isEffectEnabled);
+                switch (impactName)
+                {
+                    case DefaultAbilities.STUNNED:
+                        defenderIns.DefenderStunned = isEffectEnabled;
+                        break;
+                    case DefaultAbilities.UNCONSCIOUS:
+                        defenderIns.DefenderUnconscious = isEffectEnabled;
+                        break;
+                    case DefaultAbilities.DYING:
+                        defenderIns.DefenderDying = isEffectEnabled;
+                        break;
+                    case DefaultAbilities.DEAD:
+                        defenderIns.DefenderDead = isEffectEnabled;
+                        break;
+                }
+            }
+        }
+
+        private void UpdateAttackHitForAllInstructions(bool hit)
+        {
+            foreach (var defenderIns in this.DefenderAttackInstructions)
+            {
+                defenderIns.DefenderHitByAttack = hit;
+                foreach(var hitInfo in defenderIns.AttackerHitInfo)
+                {
+                    hitInfo.AttackInstructionsForAttacker.AttackHit = hit;
+                }
             }
         }
 
@@ -307,84 +334,54 @@ namespace HeroVirtualTabletop.Attack
                     || inputKey == Key.Y || inputKey == Key.D || inputKey == Key.K || inputKey == Key.N || inputKey == Key.T
                     || (inputKey >= Key.D0 && inputKey <= Key.D9) || (inputKey >= Key.NumPad0 && inputKey <= Key.NumPad9))
                 {
-                    //foreach (var defender in this.DefendingCharacters)
+                    //foreach (var defenderIns in this.DefenderAttackInstructions)
                     {
                         if (inputKey == Key.H)
                         {
-                            //if (!defender.AttackConfigurationMap[AttackConfigKey].Item2.HasMultipleAttackers)
-                            //    defender.AttackConfigurationMap[AttackConfigKey].Item2.IsHit = true;
-                            //else
-                            //{
-                            //    foreach (var ar in defender.AttackConfigurationMap[AttackConfigKey].Item2.AttackResults)
-                            //    {
-                            //        ar.IsHit = true;
-                            //    }
-                            //}
-                            this.CurrentAttackInstructions.AttackHit = true;
+                            UpdateAttackHitForAllInstructions(true);
                         }
                         else if (inputKey == Key.M)
                         {
-                            //if (!defender.AttackConfigurationMap[AttackConfigKey].Item2.HasMultipleAttackers)
-                            //    defender.AttackConfigurationMap[AttackConfigKey].Item2.IsHit = false;
-                            //else
-                            //{
-                            //    foreach (var ar in defender.AttackConfigurationMap[AttackConfigKey].Item2.AttackResults)
-                            //    {
-                            //        ar.IsHit = false;
-                            //    }
-                            //}
-                            this.CurrentAttackInstructions.AttackHit = false;
+                            UpdateAttackHitForAllInstructions(false);
                         }
                         else if (inputKey == Key.S)
                         {
-                            //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsStunned = true;
                             this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.STUNNED, true);
                         }
                         else if (inputKey == Key.U)
                         {
-                            //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsUnconcious = true;
                             this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.UNCONSCIOUS, true);
                         }
                         else if (inputKey == Key.Y)
                         {
-                            //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsDying = true;
                             this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.DYING, true);
                         }
                         else if (inputKey == Key.D)
                         {
-                            //defender.AttackConfigurationMap[AttackConfigKey].Item2.IsDead = true;
                             this.UpdateAttackImpactsForAllInstructions(DefaultAbilities.DEAD, true);
                         }
                         else if (inputKey == Key.T)
                         {
-                            //defender.AttackConfigurationMap[AttackConfigKey].Item2.MoveAttackerToTarget = true;
+                            foreach (var defenderIns in this.DefenderAttackInstructions)
+                                defenderIns.MoveAttackersToDefender = true;
                         }
                         else if ((inputKey >= Key.D0 && inputKey <= Key.D9) || (inputKey >= Key.NumPad0 && inputKey <= Key.NumPad9))
                         {
                             var intkey = (inputKey >= Key.D0 && inputKey <= Key.D9) ? inputKey - Key.D0 : inputKey - Key.NumPad0;
-                            //if (defender.AttackConfigurationMap[AttackConfigKey].Item2.KnockBackDistance > 0)
-                            //{
-                            //    string current = defender.AttackConfigurationMap[AttackConfigKey].Item2.KnockBackDistance.ToString();
-                            //    current += intkey.ToString();
-                            //    defender.AttackConfigurationMap[AttackConfigKey].Item2.KnockBackDistance = Convert.ToInt32(current);
-                            //}
-                            //else
-                            //{
-                            //    defender.AttackConfigurationMap[AttackConfigKey].Item2.KnockBackDistance = intkey;
-                            //}
-                            if(this.CurrentAttackInstructions.KnockbackDistance > 0)
+                            foreach (var defenderIns in this.DefenderAttackInstructions)
                             {
-                                string current = this.CurrentAttackInstructions.KnockbackDistance.ToString();
-                                current += intkey.ToString();
-                                this.CurrentAttackInstructions.KnockbackDistance = Convert.ToInt32(current);
-                            }
-                            else
-                            {
-                                this.CurrentAttackInstructions.KnockbackDistance = intkey;
+                                if (defenderIns.DefenderKnockbackDistance > 0)
+                                {
+                                    string current = defenderIns.DefenderKnockbackDistance.ToString();
+                                    current += intkey.ToString();
+                                    defenderIns.DefenderKnockbackDistance = Convert.ToInt32(current);
+                                }
+                                else
+                                {
+                                    defenderIns.DefenderKnockbackDistance = intkey;
+                                }
                             }
                         }
-
-                        //defender.RefreshAttackConfigurationParameters();
                     }
                 }
             }

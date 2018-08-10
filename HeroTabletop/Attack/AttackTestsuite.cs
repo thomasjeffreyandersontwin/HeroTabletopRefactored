@@ -432,42 +432,169 @@ namespace HeroVirtualTabletop.Attack
         }
     }
 
+    [TestClass]
     public class MultiAttackTestSuite
     {
+        public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
+        [TestMethod]
         public void CompleteAttackCycle_AttackerAttacksEveryDefender()
         {
+            // arrange
+            var attack = TestObjectsFactory.MultiAttackUnderTest;
+            var defenders = TestObjectsFactory.MockGangMembers;
 
+            //act
+            var instructions = attack.StartAttackCycle();
+            foreach(var gm in defenders)
+            {
+                var instr = instructions.AddTarget(attack.Attacker, gm);
+                instr.AttackHit = true;
+            }
+            instructions.Attacker = attack.Attacker;
+            attack.CompleteTheAttackCycle(instructions);
+
+            //assert
+            var onHit = attack.OnHitAnimation;
+            foreach(var defender in defenders)
+                Mock.Get(onHit).Verify(x => x.Play(defender));
         }
     }
 
+    [TestClass]
     public class GangAttackTestSuite
     {
+        public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
+        [TestMethod]
         public void CompleteAttackCycle_EachGangMemberAttacksEachDefender()
         {
+            // arrange
+            var attack = TestObjectsFactory.GangAttackUnderTest;
+            var attackers = TestObjectsFactory.MockGangMembers;
+            var defenders = TestObjectsFactory.MockGangMembers;
 
-        }
+            //act
+            var instructions = attack.StartAttackCycle();
+            foreach(var attacker in attackers)
+                foreach (var defender in defenders)
+                {
+                    var instr = instructions.AddTarget(attacker, defender);
+                    instr.AttackHit = true;
+                }
+            instructions.Attacker = attack.Attacker;
+            attack.CompleteTheAttackCycle(instructions);
 
-        public void CompleteAttackCycle_MissingAttackersPlayFirst()
-        {
+            //assert
+            var onHit = attack.OnHitAnimation;
+            foreach (var attacker in attackers)
+                foreach (var defender in defenders)
+                    Mock.Get(attacker).Verify(x => x.TurnTowards(defender.Position), Times.Once);
 
+            foreach (var defender in defenders)
+                Mock.Get(onHit).Verify(x => x.Play(defender), Times.Exactly(attackers.Count));
         }
     }
 
+    [TestClass]
     public class GangAreaAttackTestSuite
     {
+        public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
+        [TestMethod]
         public void CompleteAttackCycle_EachGangMemberAttacksAllTheDefendersOnce()
         {
+            // arrange
+            var attack = TestObjectsFactory.GangAreaAttackUnderTest;
+            var attackers = TestObjectsFactory.MockGangMembers;
+            var defenders = TestObjectsFactory.MockGangMembers;
+            var centerTarget = defenders.First();
 
+            //act
+            var instructions = attack.StartAttackCycle();
+            foreach (var attacker in attackers)
+                foreach (var defender in defenders)
+                {
+                    var instr = instructions.AddTarget(attacker, defender);
+                    instr.AttackHit = true;
+                    if (defender == centerTarget)
+                        instr.IsCenterOfAreaEffectAttack = true;
+                }
+            instructions.Attacker = attack.Attacker;
+            attack.CompleteTheAttackCycle(instructions);
+
+            //assert
+            var onHit = attack.OnHitAnimation;
+            foreach (var attacker in attackers)
+                Mock.Get(attacker).Verify(x => x.TurnTowards(centerTarget.Position.HitPosition), Times.Once);
+
+            Mock.Get(onHit).Verify(x => x.Play(defenders), Times.Exactly(attackers.Count));
         }
     }
+    [TestClass]
     public class KnockbackTestSuite
     {
-        public void CompleteAttackThatHits_PlaysKnockbackOnlyAndNoAttackEffectsIfAttackDoesKnockback()
-        {
-        }
+        /// <summary>
+        /// Core Knockback Movement Tests are in Movement Test Suite, this class only contains attack relevant tests.
+        /// </summary>
 
-        public void AttackWithKnockback_SendsTheCharacterInADirectionAwayFromTheAttackersFacing()
+        public AttackTestObjectsFactory TestObjectsFactory = new AttackTestObjectsFactory();
+        public Movement.MovableCharacterTestObjectFactory MovableCharacterTestObjectsFactory = new Movement.MovableCharacterTestObjectFactory();
+        [TestMethod]
+        public void AttackWithKnockback_ExecutesKnockbackOnTheDefendingCharacter()
         {
+            // arrange
+            var attack = TestObjectsFactory.AttackUnderTestWithMockOnHitAnimations;
+            var attacker = MovableCharacterTestObjectsFactory.MockMovableCharacter;
+            attack.Attacker = attacker;
+            var defender = MovableCharacterTestObjectsFactory.MockMovableCharacterWithActionGroupsAndActiveMovement;
+            defender.MemoryInstance = TestObjectsFactory.MockMemoryInstance;
+            Mock.Get(defender).SetupGet(d => d.Position).Returns(TestObjectsFactory.MockPosition);
+
+            //act
+            var instructions = attack.StartAttackCycle();
+            instructions.Defender = defender;
+            instructions.AttackHit = true;
+            instructions.Attacker = attack.Attacker;
+            instructions.KnockbackDistance = 3;
+            attack.CompleteTheAttackCycle(instructions);
+
+            // assert
+            Mock.Get<Movement.MovableCharacter>(attacker)
+                .Verify(mc => mc.ExecuteKnockback(It.Is<List<Movement.MovableCharacter>>(x => x.Contains(defender)), instructions.KnockbackDistance));
+        }
+        [TestMethod]
+        public void AttackWithKnockback_PlaysKnockbackOnlyAndNoAttackEffects()
+        {
+            // arrange
+            var attack = TestObjectsFactory.AttackUnderTestWithMockOnHitAnimations;
+            var attacker = MovableCharacterTestObjectsFactory.MockMovableCharacter;
+            attack.Attacker = attacker;
+            var defender = MovableCharacterTestObjectsFactory.MockMovableCharacterWithActionGroupsAndActiveMovement;
+            defender.MemoryInstance = TestObjectsFactory.MockMemoryInstance;
+            Mock.Get(defender).SetupGet(d => d.Position).Returns(TestObjectsFactory.MockPosition);
+
+            //act
+            var instructions = attack.StartAttackCycle();
+            instructions.Defender = defender;
+            instructions.AttackHit = true;
+            instructions.Attacker = attack.Attacker;
+            instructions.Impacts.Add(AttackEffects.Stunned);
+            instructions.Impacts.Add(AttackEffects.Unconscious);
+            instructions.Impacts.Add(AttackEffects.Dead);
+            instructions.Impacts.Add(AttackEffects.Dying);
+            instructions.KnockbackDistance = 3;
+            attack.CompleteTheAttackCycle(instructions);
+
+            //assert
+            Mock.Get<Movement.MovableCharacter>(attacker)
+                .Verify(mc => mc.ExecuteKnockback(It.Is<List<Movement.MovableCharacter>>(x => x.Contains(defender)), instructions.KnockbackDistance), Times.Once);
+
+            Mock.Get(defender.Abilities[DefaultAbilities.STUNNED])
+                .Verify(x => x.Play(defender), Times.Never);
+            Mock.Get(defender.Abilities[DefaultAbilities.UNCONSCIOUS])
+                .Verify(x => x.Play(defender), Times.Never);
+            Mock.Get(defender.Abilities[DefaultAbilities.DYING])
+                .Verify(x => x.Play(defender), Times.Never);
+            Mock.Get(defender.Abilities[DefaultAbilities.DEAD])
+                .Verify(x => x.Play(defender), Times.Never);
         }
     }
 
@@ -485,9 +612,39 @@ namespace HeroVirtualTabletop.Attack
                     typeof(AnimatedAttackImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
+                    typeof(MultiAttack),
+                    typeof(MultiAttackImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(GangAttack),
+                    typeof(GangAttackImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(GangAreaAttack),
+                    typeof(GangAreaAttackImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
                     typeof(AttackInstructions),
                     typeof(AttackInstructionsImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(MultiAttackInstructions),
+                    typeof(MultiAttackInstructionsImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(GangAttackInstructions),
+                    typeof(GangAttackInstructionsImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
+                    typeof(GangAreaAttackInstructions),
+                    typeof(GangAreaAttackInstructionsImpl)));
             StandardizedFixture.Customize<AttackInstructionsImpl>(ai => ai
+            .Without(x => x.Defender));
+            StandardizedFixture.Customize<MultiAttackInstructionsImpl>(ai => ai
+            .Without(x => x.Defender));
+            StandardizedFixture.Customize<GangAttackInstructionsImpl>(ai => ai
+            .Without(x => x.Defender));
+            StandardizedFixture.Customize<GangAreaAttackInstructionsImpl>(ai => ai
             .Without(x => x.Defender));
             DefaultAbilities.DefaultCharacter = DefenderUnderTestWithMockDefaultAbilities;
         }
@@ -515,6 +672,46 @@ namespace HeroVirtualTabletop.Attack
                     .With(x => x.Attacker, attacker)
                     .Without(x => x.Target)
                     .Create();
+                return attack;
+            }
+        }
+
+        public MultiAttack MultiAttackUnderTest
+        {
+            get
+            {
+                MultiAttack attack = StandardizedFixture.Build<MultiAttackImpl>()
+                    .With(x => x.Attacker, MockAnimatedCharacter)
+                    .Without(x => x.Target)
+                    .Create();
+                attack.OnHitAnimation = MockAnimatedAbility;
+                return attack;
+            }
+        }
+
+        public GangAttack GangAttackUnderTest
+        {
+            get
+            {
+                GangAttack attack = StandardizedFixture.Build<GangAttackImpl>()
+                    .With(x => x.Attacker, MockAnimatedCharacter)
+                    .Without(x => x.Target)
+                    .Create();
+                attack.OnHitAnimation = MockAnimatedAbility;
+                return attack;
+            }
+        }
+
+        public GangAreaAttack GangAreaAttackUnderTest
+        {
+            get
+            {
+                GangAreaAttack attack = StandardizedFixture.Build<GangAreaAttackImpl>()
+                    .With(x => x.Attacker, MockAnimatedCharacter)
+                    .Without(x => x.Target)
+                    .Create();
+                attack.OnHitAnimation = MockAnimatedAbility;
+                Mock.Get(attack.OnHitAnimation).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
                 return attack;
             }
         }
@@ -575,13 +772,7 @@ namespace HeroVirtualTabletop.Attack
             get
             {
                 var character = AnimatedCharacterUnderTest;
-                addMockAbilityToCharacter(character, DefaultAbilities.MISS);
-                addMockAbilityToCharacter(character, DefaultAbilities.HIT);
-                addMockAbilityToCharacter(character, DefaultAbilities.STUNNED);
-                addMockAbilityToCharacter(character, DefaultAbilities.UNCONSCIOUS);
-                addMockAbilityToCharacter(character, DefaultAbilities.DYING);
-                addMockAbilityToCharacter(character, DefaultAbilities.DEAD);
-                addMockAbilityToCharacter(character, DefaultAbilities.UNDERATTACK);
+                addDefaultMockAbilitiesToCharacter(character);
                 return character;
             }
         }
@@ -599,6 +790,29 @@ namespace HeroVirtualTabletop.Attack
                     defender.Repository = repo;
 
                 return defenders;
+            }
+        }
+
+        public List<AnimatedCharacter> MockGangMembers
+        {
+            get
+            {
+                var gangMembers = MockAnimatedCharacterList;
+                for(int i = 0; i < gangMembers.Count; i++)
+                {
+                    gangMembers[i].IsActive = true;
+                    gangMembers[i].IsGangLeader = false;
+                    gangMembers[i].IsSpawned = true;
+                    gangMembers[i].MemoryInstance = MockMemoryInstance;
+                    Mock.Get(gangMembers[i]).SetupGet(x => x.Position).Returns(MockPosition);
+                    gangMembers[i].CharacterActionGroups = GetStandardCharacterActionGroup(gangMembers[i]);
+                    Mock.Get(gangMembers[i]).SetupGet(x => x.Identities).Returns(gangMembers[i].CharacterActionGroups[0] as ManagedCharacter.CharacterActionList<ManagedCharacter.Identity>);
+                    Mock.Get(gangMembers[i]).SetupGet(x => x.Abilities).Returns(gangMembers[i].CharacterActionGroups[1] as ManagedCharacter.CharacterActionList<AnimatedAbility.AnimatedAbility>);
+                    addDefaultMockAbilitiesToCharacter(gangMembers[i]);
+                }
+                gangMembers[0].IsGangLeader = true;
+
+                return gangMembers;
             }
         }
 
@@ -637,6 +851,17 @@ namespace HeroVirtualTabletop.Attack
                 attack.OnHitAnimation.InsertMany(list);
                 return attack;
             }
+        }
+
+        private void addDefaultMockAbilitiesToCharacter(AnimatedCharacter character)
+        {
+            addMockAbilityToCharacter(character, DefaultAbilities.MISS);
+            addMockAbilityToCharacter(character, DefaultAbilities.HIT);
+            addMockAbilityToCharacter(character, DefaultAbilities.STUNNED);
+            addMockAbilityToCharacter(character, DefaultAbilities.UNCONSCIOUS);
+            addMockAbilityToCharacter(character, DefaultAbilities.DYING);
+            addMockAbilityToCharacter(character, DefaultAbilities.DEAD);
+            addMockAbilityToCharacter(character, DefaultAbilities.UNDERATTACK);
         }
 
         private void addMockAbilityToCharacter(AnimatedCharacter character, string name)

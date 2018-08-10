@@ -45,7 +45,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //act
             element.Play(character);
             //assert
-            Mock.Get(character).Verify(x => x.Target(false));
+            Mock.Get(character).Verify(x => x.Target(true));
 
             //arrange
             character = TestObjectsFactory.MockAnimatedCharacter;
@@ -53,7 +53,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //act
             element.Play(character);
             //assert
-            Mock.Get(character).Verify(x => x.Target(false), Times.Never);
+            Mock.Get(character).Verify(x => x.Target(true), Times.Never);
         }
 
         public void Flattened_AddsElementToEndOfList()
@@ -120,7 +120,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //assert
             foreach (var character in characters)
             {
-                Mock.Get(character).Verify(x => x.Target(false));
+                Mock.Get(character).Verify(x => x.Target(true));
                 string[] para2 = {element.Mov.FullResourcePath};
                 Mock.Get(character.Generator)
                     .Verify(x => x.GenerateDesktopCommandText(DesktopCommand.Move, para2));
@@ -296,7 +296,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //assert
             foreach (var character in characters)
             {
-                Mock.Get(character).Verify(x => x.Target(false));
+                Mock.Get(character).Verify(x => x.Target(true));
                 element.Target = character;
                 string[] para2 = { Path.GetFileNameWithoutExtension(element.ModifiedCostumeFilePath) };
                 Mock.Get(character.Generator)

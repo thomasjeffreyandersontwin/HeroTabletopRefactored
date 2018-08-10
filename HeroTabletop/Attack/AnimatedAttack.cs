@@ -76,8 +76,10 @@ namespace HeroVirtualTabletop.Attack
             playDefenderAnimation(instructions);
             if (instructions.AttackHit)
             {
-                PlayKnockback(instructions);
-                PlayAttackEffectsOnDefender(instructions);
+                if(instructions.KnockbackDistance > 0)
+                    PlayKnockback(instructions);
+                else
+                    PlayAttackEffectsOnDefender(instructions);
             }
         }
         protected void RemoveImpacts(AttackInstructions instructions)
