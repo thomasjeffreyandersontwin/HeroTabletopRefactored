@@ -78,7 +78,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //act
             element.Play();
             //assert
-            Mock.Get(character).Verify(x => x.Target(false));
+            Mock.Get(character).Verify(x => x.Target(true));
             string[] para2 = {element.Mov.FullResourcePath};
             Mock.Get(character.Generator).Verify(x => x.GenerateDesktopCommandText(DesktopCommand.Move, para2));
         }

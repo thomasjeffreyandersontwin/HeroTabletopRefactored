@@ -244,8 +244,16 @@ namespace HeroVirtualTabletop.Attack
             await playDefenderAnimationOnAllTargets(instructions);
             if (instructions.AttackHit)
             {
-                PlayKnockback(instructions);
-                playAttackEffectsOnDefenders(instructions);
+                System.Action knockbackAction = delegate ()
+                {
+                    PlayKnockback(instructions);
+                };
+                System.Action effectsAction = delegate ()
+                {
+                    playAttackEffectsOnDefenders(instructions);
+                };
+                Task.Run(knockbackAction);
+                await Task.Run(effectsAction);
             }
             //else
             //{
@@ -287,11 +295,11 @@ namespace HeroVirtualTabletop.Attack
         }
         private void PlayKnockback(AreaAttackInstructions instructions)
         {
-            foreach(var ins in instructions.IndividualTargetInstructions)
+            foreach (var ins in instructions.IndividualTargetInstructions)
             {
                 if (ins.KnockbackDistance > 0)
                 {
-                    (ins.Attacker as MovableCharacter).ExecuteKnockback(new List<MovableCharacter> { ins.Defender as MovableCharacter}, ins.KnockbackDistance);
+                    (ins.Attacker as MovableCharacter).ExecuteKnockback(new List<MovableCharacter> { ins.Defender as MovableCharacter }, ins.KnockbackDistance);
                 }
             }
         }
@@ -682,23 +690,27 @@ namespace HeroVirtualTabletop.Attack
             switch (impactName)
             {
                 case DefaultAbilities.STUNNED:
-                    var stunned = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING
+                    var stunned = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.KNOCKEDBACK
+                                                                || s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING
                                                                 || s.StateName == DefaultAbilities.UNCONSCIOUS)
                                                             && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.STUNNED));
                     defenders = stunned.ToList();
                     break;
                 case DefaultAbilities.UNCONSCIOUS:
-                    var unconscious = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING)
+                    var unconscious = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.KNOCKEDBACK
+                                                                || s.StateName == DefaultAbilities.DEAD || s.StateName == DefaultAbilities.DYING)
                                                             && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.UNCONSCIOUS));
                     defenders = unconscious.ToList();
                     break;
                 case DefaultAbilities.DYING:
-                    var dying = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD)
+                    var dying = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.KNOCKEDBACK
+                                                                || s.StateName == DefaultAbilities.DEAD)
                                                             && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DYING));
                     defenders = dying.ToList();
                     break;
                 case DefaultAbilities.DEAD:
-                    var dead = this.Defenders.Where(d => d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD));
+                    var dead = this.Defenders.Where(d => !d.ActiveStates.Any(s => s.StateName == DefaultAbilities.KNOCKEDBACK) 
+                                                            && d.ActiveStates.Any(s => s.StateName == DefaultAbilities.DEAD));
                     defenders = dead.ToList();
                     break;
             }
