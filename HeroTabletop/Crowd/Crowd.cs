@@ -32,7 +32,7 @@ namespace HeroVirtualTabletop.Crowd
         NumberedFlatenCopy,
         CloneMemberships
     }
-    
+
     public class CrowdRepositoryImpl : AnimatedCharacterRepositoryImpl, CrowdRepository
     {
         Crowd allMembersCrowd;
@@ -46,7 +46,7 @@ namespace HeroVirtualTabletop.Crowd
         {
             get;
             set;
-        } 
+        }
 
         public CharacterCrowdMember NewCharacterCrowdMemberInstance
         {
@@ -89,7 +89,7 @@ namespace HeroVirtualTabletop.Crowd
                 return memDict;
             }
         }
-        
+
         public override List<AnimatedCharacter> Characters
         {
             get
@@ -234,11 +234,11 @@ namespace HeroVirtualTabletop.Crowd
         public void AddDefaultCharacter()
         {
             var systemCrowd = this.Crowds.FirstOrDefault(m => m.Name == DefaultAbilities.CROWDNAME);
-            if(systemCrowd == null || systemCrowd.Members == null || systemCrowd.Members.Count == 0)
+            if (systemCrowd == null || systemCrowd.Members == null || systemCrowd.Members.Count == 0)
             {
                 List<Crowd> crowds = LoadSystemCrowdWithDefaultCharacter();
                 systemCrowd = crowds.FirstOrDefault(c => c.Name == DefaultAbilities.CROWDNAME);
-                if(systemCrowd != null)
+                if (systemCrowd != null)
                 {
                     systemCrowd.CrowdRepository = this;
                     this.AddCrowd(systemCrowd);
@@ -258,7 +258,7 @@ namespace HeroVirtualTabletop.Crowd
 
         private void AddStopAbilitiesForAttackEffectAbilities()
         {
-            if(DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].StopAbility == null)
+            if (DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].StopAbility == null)
             {
                 var stopAbilityForStunned = new AnimatedAbilityImpl();
                 stopAbilityForStunned.Name = "None";
@@ -267,8 +267,18 @@ namespace HeroVirtualTabletop.Crowd
                 stopAbilityForStunned.InsertElement(noneMov);
                 DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.STUNNED].StopAbility = stopAbilityForStunned;
             }
-            
-            if(DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].StopAbility == null ||
+
+            if (DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS] == null)
+            {
+                if (DefaultAbilities.DefaultCharacter.Abilities.Any(a => a.Name.ToLower().StartsWith("uncon")))
+                {
+                    var ability = DefaultAbilities.DefaultCharacter.Abilities.First(a => a.Name.ToLower().StartsWith("uncon"));
+                    ability.Name = DefaultAbilities.UNCONSCIOUS;
+                    DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS] = ability;
+                }
+            }
+
+            if (DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.UNCONSCIOUS].StopAbility == null ||
                 DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].StopAbility == null ||
                 DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].StopAbility == null)
             {
@@ -285,7 +295,8 @@ namespace HeroVirtualTabletop.Crowd
                 DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DYING].StopAbility = stopAbilityForSevereImpact;
                 DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.DEAD].StopAbility = stopAbilityForSevereImpact;
             }
-            
+
+
         }
         public async Task LoadCrowds()
         {
@@ -640,7 +651,7 @@ namespace HeroVirtualTabletop.Crowd
             return clonedCrowd;
         }
 
-        public bool MatchesFilter  
+        public bool MatchesFilter
         {
             get { return _matchedFilter; }
             set
@@ -860,14 +871,14 @@ namespace HeroVirtualTabletop.Crowd
                 this.Camera = new CameraImpl(this.Generator);
                 this.CrowdRepository = new CrowdRepositoryImpl();
             }
-            
+
             this.MatchesFilter = true;
         }
 
         [OnDeserialized]
         private void AfterDeserialized(StreamingContext stream)
         {
-            foreach(var group in this.CharacterActionGroups)
+            foreach (var group in this.CharacterActionGroups)
             {
                 group.Generator = this.Generator;
             }
@@ -1006,7 +1017,7 @@ namespace HeroVirtualTabletop.Crowd
             CreateGhostMovements();
             SetGhostIdentity();
         }
-        
+
         public override string DesktopLabel
         {
             get
@@ -1104,7 +1115,7 @@ namespace HeroVirtualTabletop.Crowd
 
         public void CopyActionsTo(CrowdMember targetMember)
         {
-            if(targetMember is CharacterCrowdMember)
+            if (targetMember is CharacterCrowdMember)
             {
                 CharacterCrowdMember targetCharacter = targetMember as CharacterCrowdMember;
                 this.CopyIdentitiesTo(targetCharacter);
@@ -1376,9 +1387,9 @@ namespace HeroVirtualTabletop.Crowd
 
             List<CrowdMember> flattenedMembers = _repository.GetFlattenedMemberList(memberToCopy.Members.ToList()).Distinct().ToList();
             int currentNumberToSkip = this.skipNumber;
-            for(int i = 0; i < flattenedMembers.Count; i++)
+            for (int i = 0; i < flattenedMembers.Count; i++)
             {
-                if(currentNumberToSkip > 0)
+                if (currentNumberToSkip > 0)
                 {
                     if (i > 0 && i < currentNumberToSkip)
                         continue;
