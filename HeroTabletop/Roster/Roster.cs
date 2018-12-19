@@ -1339,8 +1339,17 @@ namespace HeroVirtualTabletop.Roster
         }
         public void SpawnToDesktop(bool completeEvent = true)
         {
-            Position position = Participants.First().Camera.AdjustedPosition;
-            SpawnToPosition(position);
+            if (Participants.Count > 1)
+            {
+                Position position = Participants.First().Camera.AdjustedPosition;
+                SpawnToPosition(position);
+            }
+            else
+            {
+                Participants.First().SpawnToDesktop();
+                if (this.Roster.DistanceCountingCharacter == null)
+                    this.Roster.RestartDistanceCounting();
+            }
         }
 
         public void SpawnToPosition(Position position)

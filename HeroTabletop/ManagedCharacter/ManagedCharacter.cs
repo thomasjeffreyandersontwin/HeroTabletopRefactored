@@ -530,6 +530,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
             Vector3 distantPointInSameDirection = character.Position.Vector + leaderFacingVector * 500;
             (this.Position as Position).Face(distantPointInSameDirection);
         }
+
         public void ScanAndFixMemoryTargeter()
         {
             if (IsSpawned)
