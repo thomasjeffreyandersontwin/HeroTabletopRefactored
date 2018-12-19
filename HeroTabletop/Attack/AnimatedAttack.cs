@@ -12,6 +12,7 @@ using System.Windows;
 using HeroVirtualTabletop.Movement;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using HeroVirtualTabletop.Common;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -33,6 +34,7 @@ namespace HeroVirtualTabletop.Attack
         }
         public bool IsActive { get;
             set; }
+        public double TimeToHitTarget { get; set; }
         [JsonProperty]
         public AnimatedAbility.AnimatedAbility OnHitAnimation { get;
             set; }
@@ -73,15 +75,43 @@ namespace HeroVirtualTabletop.Attack
                     instructions.Defender.Position.JustMissedPosition);
             TurnAttackerTowardsDefender(instructions);
             Play(instructions.Attacker);
-            playDefenderAnimation(instructions);
-            if (instructions.AttackHit)
+            PlayDefenderAnimations(instructions);
+        }
+
+        protected void PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(AttackInstructions instructions)
+        {
+            foreach(var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Hit))
             {
-                if(instructions.KnockbackDistance > 0)
-                    PlayKnockback(instructions);
-                else
-                    PlayAttackEffectsOnDefender(instructions);
+                var obstacleInstructions = obstacle.ObstacleInstructions;
+                var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.Target.Position);
+                var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
+                int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance);
+                System.Action d = delegate ()
+                {
+                    PlayDefenderAnimations(obstacleInstructions);
+                };
+                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, obstacleDelay);
+                adex.ExecuteAsyncDelegate();
             }
         }
+
+        protected void PlayObstacleAnimationForSecondaryTargetsAfterKnockback(AttackInstructions instructions)
+        {
+            foreach (var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Knockback))
+            {
+                var obstacleInstructions = obstacle.ObstacleInstructions;
+                var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.Target.Position);
+                var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
+                int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance);
+                System.Action d = delegate ()
+                {
+                    PlayDefenderAnimations(obstacleInstructions);
+                };
+                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, obstacleDelay);
+                adex.ExecuteAsyncDelegate();
+            }
+        }
+
         protected void RemoveImpacts(AttackInstructions instructions)
         {
             foreach (var impact in instructions.Impacts.ToList())
@@ -114,7 +144,11 @@ namespace HeroVirtualTabletop.Attack
                 {
                     var distance = Attacker.Position.DistanceFrom(position);
                     var pauseElement = e as PauseElement;
-                    if (pauseElement != null) pauseElement.DistanceDelayManager.Distance = distance;
+                    if (pauseElement != null)
+                    {
+                        pauseElement.DistanceDelayManager.Distance = distance;
+                        this.TimeToHitTarget = pauseElement.DistanceDelayManager.Duration;
+                    }
                 }
         }
         protected void TurnAttackerTowardsDefender(AttackInstructions instructions)
@@ -133,9 +167,9 @@ namespace HeroVirtualTabletop.Attack
             else if (instructions.Impacts.Contains(AttackEffects.Stunned))
                 instructions.Defender.Abilities[DefaultAbilities.STUNNED].Play(instructions.Defender);
         }
-        private void playDefenderAnimation(AttackInstructions instructions)
+        private void PlayDefenderAnimations(AttackInstructions instructions)
         {
-            if (instructions.AttackHit == false)
+            if (!instructions.AttackHit)
             {
                 instructions.Defender.Abilities[DefaultAbilities.MISS].Play(instructions.Defender);
             }
@@ -145,6 +179,11 @@ namespace HeroVirtualTabletop.Attack
                     instructions.Defender.Abilities[DefaultAbilities.HIT].Play(instructions.Defender);
                 else
                     OnHitAnimation.Play(instructions.Defender);
+            
+                if (instructions.KnockbackDistance > 0)
+                    PlayKnockback(instructions);
+                else
+                    PlayAttackEffectsOnDefender(instructions);
             }
         }
 
@@ -510,14 +549,6 @@ namespace HeroVirtualTabletop.Attack
             }
         }
 
-        public bool HasMultipleAttackers
-        {
-            get
-            {
-                return this is GangAttackInstructions;
-            }
-        }
-
         public AnimatedCharacter Defender
         {
             get { return _defender; }
@@ -567,6 +598,12 @@ namespace HeroVirtualTabletop.Attack
                 NotifyOfPropertyChange(() => IsCenterOfAreaEffectAttack);
             }
         }
+
+        public List<Obstacle> Obstacles
+        {
+            get;set;
+        }
+
         public void AddImpact(string impactName)
         {
             if (!this.Impacts.Contains(impactName))
@@ -906,6 +943,21 @@ namespace HeroVirtualTabletop.Attack
             throw new NotImplementedException();
         }
     }
+
+    public class ObstructionInfoImpl : Obstacle
+    {
+        public ObstacleType ObstacleType
+        {
+            get;set;
+        }
+
+        public AnimatedCharacter Target
+        {
+            get;set;
+        }
+        public AttackInstructions ObstacleInstructions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    }
+
     public class AttackInstructionsDefenderWithTargetCharacterComparer : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

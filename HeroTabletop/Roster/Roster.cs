@@ -1073,8 +1073,7 @@ namespace HeroVirtualTabletop.Roster
                 // Multi Attack / Attack to Gang
                 CreateMultiInstructions(attackingCharacter);
             }
-
-            //this.Selected.AddAsAttackTarget(this.CurrentAttackInstructions);
+            // Calculate obstructions here
             if (this.CurrentAttackInstructions is MultiAttackInstructions)
             {
                 foreach (var attacker in this.AttackingCharacters)
@@ -1089,8 +1088,6 @@ namespace HeroVirtualTabletop.Roster
             {
                 this.CurrentAttackInstructions.Defender = this.Selected.Participants.First();
             }
-            //var map = (this.CurrentAttackInstructions as GangAttackInstructions).AttackersMap;
-            //NotifyOfPropertyChange(() => this.CurrentAttackInstructions);
         }
 
         public void CancelActiveAttack()

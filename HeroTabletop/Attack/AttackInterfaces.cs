@@ -20,6 +20,19 @@ namespace HeroVirtualTabletop.Attack
 
         public static string Dying => "Dying";
     }
+
+    public enum ObstacleType
+    {
+        Hit,
+        Knockback
+    }
+
+    public interface Obstacle
+    {
+        AnimatedCharacter Target { get; set; }
+        ObstacleType ObstacleType { get; set; }
+        AttackInstructions ObstacleInstructions { get; set; }
+    }
     public interface AttackInstructions: INotifyPropertyChanged
     {
         AnimatedCharacter Attacker { get; set; }
@@ -28,11 +41,11 @@ namespace HeroVirtualTabletop.Attack
         int KnockbackDistance { get; set; }
         bool AttackHit { get; set; }
         bool IsCenterOfAreaEffectAttack { get; set; }
+        List<Obstacle> Obstacles { get; set; }
         void AddImpact(string impactName);
         void SetImpactToDefender(string impactName);
         void RemoveImpact(string impactName);
         void RemoveImpactFromDefender(string impactName);
-        bool HasMultipleAttackers { get; }
     }
 
     public interface MultiAttackInstructions : AttackInstructions

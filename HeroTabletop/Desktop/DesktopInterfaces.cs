@@ -91,8 +91,9 @@ namespace HeroVirtualTabletop.Desktop
         void MoveTo(Position destination);
         void MoveTo(Vector3 destination);
         bool IsAtLocation(Vector3 location);
+        Position GetAdjacentPosition(Vector3 facingVector, bool left);
         Vector3 CalculateDirectionVector(Direction direction);
-        Vector3 CalculateDirectionVector(Vector3 directionVector);
+        Vector3 CalculateDirectionVector(Vector3 directionVector, double rotationAngle = 0);
         Vector3 CalculateDestinationVector(Vector3 directionVector);
         void AlignFacingWith(Position position);
         void Face(Position target);
@@ -102,6 +103,8 @@ namespace HeroVirtualTabletop.Desktop
         Dictionary<Position, Position> GetOptimalDestinationMapForPositions(List<Position> positions);
         void PlacePositionsOptimallyAroundMe(List<Position> positionsToPlaceAround);
         Dictionary<PositionBodyLocation, PositionLocationPart> BodyLocations { get; }
+        List<Obstruction> GetObstructionsTowardsAnotherPosition(Position toPosition, List<Position> potentialObstructions);
+        List<Obstruction> GetObstructionsAlongDirection(Vector3 directionVector, List<Position> potentialObstructions);
         void UpdateDistanceCount();
         void UpdateDistanceCount(Position position);
         void ResetDistanceCount();
@@ -124,7 +127,6 @@ namespace HeroVirtualTabletop.Desktop
     public interface MemoryManager // Former MemoryInstance
     {
         uint Pointer { get; set; }
-
         void InitFromCurrentTarget();
         string GetAttributeAsString(int offset);
         string GetAttributeAsString(int offset, Encoding encoding);
@@ -136,14 +138,13 @@ namespace HeroVirtualTabletop.Desktop
         void WriteCurrentTargetToGameMemory();
     }
 
-    public class Collision
+    public interface Obstruction
     {
-        public Vector3 BodyCollisionOffsetVector { get; set; }
-        public PositionBodyLocation CollisionPositionBodyLocation { get; set; }
-        public float CollisionDistance { get; set; }
-        public Vector3 CollisionPoint { get; set; }
+        Position Position { get; set; }
+        float Distance { get; set; }
+        object ObstructingObject { get; set; }
     }
-  
+    
     public interface DesktopNavigator
     {
         event EventHandler NavigationCompleted;

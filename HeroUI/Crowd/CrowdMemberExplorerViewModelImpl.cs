@@ -13,6 +13,7 @@ using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Desktop;
 using System.Windows.Input;
+using System.Windows;
 
 namespace HeroVirtualTabletop.Crowd
 {
@@ -749,6 +750,10 @@ namespace HeroVirtualTabletop.Crowd
         public void EnterFlattenNumber()
         {
             OnFlattenNumberRequired(this, null);
+            if(this.FlattenNumber > 0)
+            {
+                this.NumberedFlattenCopyCrowd();
+            }
         }
         public void NumberedFlattenCopyCrowd()
         {
@@ -785,6 +790,7 @@ namespace HeroVirtualTabletop.Crowd
         }
         public void PasteCrowdMember()
         {
+            Clipboard.Clear();
             // Lock character crowd Tree from updating;
             this.LockTreeUpdate(true);
             if (this.CrowdClipboard.CurrentClipboardAction == ClipboardAction.NumberedFlatenCopy)

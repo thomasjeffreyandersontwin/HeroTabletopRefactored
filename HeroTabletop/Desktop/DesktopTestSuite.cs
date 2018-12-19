@@ -1,6 +1,5 @@
 ﻿using System;
 using HeroVirtualTabletop.ManagedCharacter;
-using Microsoft.VisualStudio.ApplicationInsights.Extensibility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xna.Framework;
 using Moq;

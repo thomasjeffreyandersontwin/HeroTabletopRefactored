@@ -488,6 +488,19 @@ namespace HeroVirtualTabletop.Desktop
             dest = GetRoundedVector(dest, 2);
             return dest;
         }
+
+        private Vector3 CalculateDestinationVector(Vector3 directionVector, float unit)
+        {
+
+            Vector3 vCurrent = Vector;
+            directionVector.Normalize();
+            var destX = vCurrent.X + directionVector.X * unit;
+            var destY = vCurrent.Y + directionVector.Y * unit;
+            var destZ = vCurrent.Z + directionVector.Z * unit;
+            Vector3 dest = new Vector3(destX, destY, destZ);
+            dest = GetRoundedVector(dest, 2);
+            return dest;
+        }
         public Vector3 CalculateDirectionVector(Direction direction)
         {
            Vector3 directionVector = new Vector3();
@@ -517,9 +530,8 @@ namespace HeroVirtualTabletop.Desktop
             }
             return directionVector;
         }
-        public Vector3 CalculateDirectionVector(Vector3 facingVector)
+        public Vector3 CalculateDirectionVector(Vector3 facingVector, double rotationAngle = 0)
         {
-            double rotationAngle = 0;
             float vY;
             float vZ;
             double rotationAxisX = 0, rotationAxisY = 1, rotationAxisZ = 0;
@@ -800,6 +812,94 @@ namespace HeroVirtualTabletop.Desktop
             return closestCharacter;
         }
 
+        public List<Obstruction> GetObstructionsTowardsAnotherPosition(Position toPosition, List<Position> potentialObstructions)
+        {
+            return FindObstructingObjects(toPosition, potentialObstructions);
+        }
+        public List<Obstruction> GetObstructionsAlongDirection(Vector3 directionVector, List<Position> potentialObstructions)
+        {
+            var destinationVector = CalculateDestinationVector(directionVector, 400f); // 50 units * 8f
+            Position toPosition = GetPositionFromVector(destinationVector);
+            return FindObstructingObjects(toPosition, potentialObstructions);
+        }
+
+        private List<Obstruction> FindObstructingObjects(Position toPosition, List<Position> potentialObstructions)
+        {
+            //List<CollisionInfo> collisions = new List<CollisionInfo>();
+            List<Obstruction> obstructions = new List<Obstruction>();
+            Vector3 sourceFacingTargetVector = toPosition.Vector - this.Vector;
+            Vector3 targetFacingSourceVector = this.Vector - toPosition.Vector;
+            if (sourceFacingTargetVector == targetFacingSourceVector)
+                return null;
+            if (sourceFacingTargetVector != Vector3.Zero)
+                sourceFacingTargetVector.Normalize();
+            if (targetFacingSourceVector != Vector3.Zero)
+                targetFacingSourceVector.Normalize();
+            // Calculate points A and B to the left and right of source
+            Position positionA = this.GetAdjacentPosition(sourceFacingTargetVector, true);
+            Vector3 pointA = positionA.Vector;
+            Position positionB = this.GetAdjacentPosition(sourceFacingTargetVector, false);
+            Vector3 pointB = positionB.Vector;
+            // Calculate points C and D to left and right of target
+            Position positionC = toPosition.GetAdjacentPosition(targetFacingSourceVector, false);
+            Vector3 pointC = positionC.Vector;
+            Position positionD = toPosition.GetAdjacentPosition(targetFacingSourceVector, true);
+            Vector3 pointD = positionD.Vector;
+            // Now we have four co-ordinates of rectangle ABCD.  Need to check if any of the other characters falls within this rectangular region
+            try
+            {
+                foreach (Position pos in potentialObstructions)
+                {
+                    if (IsPointWithinQuadraticRegion(pointA, pointB, pointC, pointD, pos.Vector))
+                    {
+                        Obstruction obstruction = new ObstructionImpl { Position = pos, Distance = Vector3.Distance(this.Vector, pos.Vector) };
+                        obstructions.Add(obstruction);
+                    }
+                }
+            }
+            catch
+            {
+                HeroVirtualTabletop.Logging.LogManagerImpl.ForceLog("Boundary case found for obstacle collision. Source vector {0}, Target vector {1}, other vectors {2}", this.Vector, toPosition.Vector, string.Join(", ", potentialObstructions.Select(c => c.Vector)));
+            }
+
+            DesktopNavigator desktopNavigator = new DesktopNavigatorImpl(new IconInteractionUtilityImpl());
+            desktopNavigator.PositionBeingNavigated = this;
+            desktopNavigator.IsNavigatingToDestination = true;
+            desktopNavigator.Destination = toPosition;
+            var collisionMap = desktopNavigator.GetCollisionMapForEachPositionBodyLocation(Vector3.Distance(this.Vector, toPosition.Vector));
+            bool hasCollision = false;
+            float minCollisionDistance = 10000f;
+            Vector3 currentObstructionVector = Vector3.Zero;
+            foreach (var key in collisionMap.Keys.Where(k => k != PositionBodyLocation.None && k != PositionBodyLocation.Bottom && k != PositionBodyLocation.BottomSemiMiddle))
+            {
+                if(collisionMap[key] != null)
+                {
+                    hasCollision = true;
+                    if (collisionMap[key].Item2 < minCollisionDistance)
+                    {
+                        currentObstructionVector = collisionMap[key].Item1;
+                        minCollisionDistance = collisionMap[key].Item2;
+                    }
+                }
+            }
+            if (hasCollision && minCollisionDistance < 10000f)
+            {
+                Position obsPosition = GetPositionFromVector(currentObstructionVector);
+                obstructions.Add(new ObstructionImpl { ObstructingObject = "WALL", Position = obsPosition, Distance = minCollisionDistance });
+            }
+
+            return obstructions;
+        }
+        public Position GetAdjacentPosition(Vector3 facingVector, bool left)
+        {
+            Double rotationAngle = left ? -90 : 90;
+            Direction direction = left ? Direction.Left : Direction.Right;
+            float unitsToAdjacent = 2.5f;
+            Vector3 directionVector = CalculateDirectionVector(facingVector, rotationAngle);
+            Vector3 destinationVector = CalculateDestinationVector(directionVector, unitsToAdjacent);
+            Position destinationPosition = GetPositionFromVector(destinationVector);
+            return destinationPosition;
+        }
         private Position GetPositionFromVector(Vector3 positionVector)
         {
             MemoryManager memManager = new MemoryManagerImpl(false);
@@ -809,6 +909,25 @@ namespace HeroVirtualTabletop.Desktop
             destinationPosition.Vector = positionVector;
 
             return destinationPosition;
+        }
+        public static bool IsPointWithinQuadraticRegion(Vector3 pointA, Vector3 pointB, Vector3 pointC, Vector3 pointD, Vector3 pointX)
+        {
+            // Following considers 3d
+            Vector3 lineAB = pointB - pointA;
+            Vector3 lineAC = pointC - pointA;
+            Vector3 lineAX = pointX - pointA;
+            float AXdotAB = Vector3.Dot(lineAX, lineAB);
+            float ABdotAB = Vector3.Dot(lineAB, lineAB);
+            float AXdotAC = Vector3.Dot(lineAX, lineAC);
+            float ACdotAC = Vector3.Dot(lineAC, lineAC);
+
+#if DEBUG
+            if (AXdotAB == 0f || AXdotAC == 0f)
+            {
+                throw new Exception("Boundary case found for obstacle calculation!");
+            }
+#endif
+            return (0 < AXdotAB && AXdotAB < ABdotAB) && (0 < AXdotAC && AXdotAC < ACdotAC);
         }
         public void AlignFacingWith(Position position)
         {
@@ -967,5 +1086,22 @@ namespace HeroVirtualTabletop.Desktop
         public Vector3 Vector 
             => new Vector3(ParentPosition.X + OffsetVector.X, ParentPosition.Y + OffsetVector.Y, ParentPosition.Z + OffsetVector.Z);
 
+    }
+
+    public class ObstructionImpl : Obstruction
+    {
+        public float Distance
+        {
+            get;set;
+        }
+
+        public object ObstructingObject
+        {
+            get;set;
+        }
+        public Position Position
+        {
+            get;set;
+        }
     }
 }
