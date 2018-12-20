@@ -446,7 +446,7 @@ namespace HeroVirtualTabletop.Movement
             }
         }
 
-        private double _speed = 0.5f;
+        private double _speed = 1f;
         [JsonProperty]
         public double Speed
         {
@@ -804,7 +804,7 @@ namespace HeroVirtualTabletop.Movement
                 character.AlignFacingWith(mainCharacterToMove);
             if (speed == 0f)
             {
-                speed = 0.5f;
+                speed = 1f;
             }
             this.Speed = speed;
             if (destination != null)

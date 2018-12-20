@@ -209,7 +209,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             completeEvent = false;
             foreach (var target in targets)
             {
-                target.Target();
+                target.Target(false);
                 PlayResource(target);
             }
             completeEvent = true;
