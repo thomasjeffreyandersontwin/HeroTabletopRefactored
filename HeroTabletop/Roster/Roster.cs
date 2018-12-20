@@ -350,7 +350,10 @@ namespace HeroVirtualTabletop.Roster
             }
         }
 
-        public RosterSelection Selected { get; set; }
+        public RosterSelection Selected {
+            get;
+            set;
+        }
 
         #region Roster Selections
         public void SelectParticipant(CharacterCrowdMember participant)
@@ -1237,7 +1240,9 @@ namespace HeroVirtualTabletop.Roster
             }
             return actionPropertyName;
         }
-        public List<CharacterCrowdMember> Participants { get; set; }
+        public List<CharacterCrowdMember> Participants {
+            get;
+            set; }
 
         public Dictionary<string, Identity> IdentitiesList
         {
@@ -1344,7 +1349,7 @@ namespace HeroVirtualTabletop.Roster
                 Position position = Participants.First().Camera.AdjustedPosition;
                 SpawnToPosition(position);
             }
-            else
+            else if(Participants.Count > 0)
             {
                 Participants.First().SpawnToDesktop();
                 if (this.Roster.DistanceCountingCharacter == null)

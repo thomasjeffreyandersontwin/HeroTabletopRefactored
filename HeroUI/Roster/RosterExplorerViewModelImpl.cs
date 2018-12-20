@@ -516,6 +516,10 @@ namespace HeroVirtualTabletop.Roster
                     // Fire deactivation event
                     this.FireDeactivationEvent();
                     this.Roster.Deactivate();
+                    if(this.SelectedParticipants.Count != this.Roster.Selected.Participants.Count)
+                    {
+                        this.UpdateRosterSelection();
+                    }
                 }
             }
             else
