@@ -1374,7 +1374,7 @@ namespace HeroVirtualTabletop.Roster
                     part.UpdateDistanceCount();
                 }
             }
-            else
+            else if(Participants.Count > 0)
             {
                 Participants.First()?.SpawnToPosition(position);
             }

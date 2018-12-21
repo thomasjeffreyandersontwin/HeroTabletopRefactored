@@ -246,7 +246,7 @@ namespace HeroVirtualTabletop.Roster
                 if (characterName == null && this.Roster.LastSelectedCharacter != null && this.Roster.LastSelectedCharacter.IsManueveringWithCamera)
                     return;
                 CharacterCrowdMember currentTarget = this.Roster.Participants.FirstOrDefault(p => p.Name == characterName);
-                if (!this.StopSyncingWithDesktop)
+                if (!this.StopSyncingWithDesktop && currentTarget != null)
                     this.SelectCharacter(currentTarget);
                 else
                     this.StopSyncingWithDesktop = false;
@@ -278,6 +278,12 @@ namespace HeroVirtualTabletop.Roster
                 charactersToStop = new List<MovableCharacter> { characterMovement.Owner as MovableCharacter};
             }
             this.EventAggregator.Publish(new StopMovementEvent(characterMovement, charactersToStop), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        }
+
+        private void StopActiveMovement()
+        {
+            if(IsMovementOngoing)
+                this.EventAggregator.Publish(new DeactivateMovementEvent(DefaultMovements.CurrentActiveMovementForMovingCharacters), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
         }
 
         #endregion
@@ -516,6 +522,7 @@ namespace HeroVirtualTabletop.Roster
                     // Fire deactivation event
                     this.FireDeactivationEvent();
                     this.Roster.Deactivate();
+                    this.StopActiveMovement();
                     if(this.SelectedParticipants.Count != this.Roster.Selected.Participants.Count)
                     {
                         this.UpdateRosterSelection();
@@ -1163,6 +1170,23 @@ namespace HeroVirtualTabletop.Roster
 
         #endregion
 
+        #region Abort
+
+        public bool CanAbort
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public void Abort()
+        {
+
+        }
+
+        #endregion
+
         #region Reset Distance Counting
 
         public void ResetDistanceCount()
@@ -1523,7 +1547,7 @@ namespace HeroVirtualTabletop.Roster
                 }
                 else if (IsMovementOngoing)
                 {
-                    this.EventAggregator.Publish(new DeactivateMovementEvent(DefaultMovements.CurrentActiveMovementForMovingCharacters), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+                    this.StopActiveMovement();
                 }
                 else if (this.Roster.ActiveCharacter != null)
                 {

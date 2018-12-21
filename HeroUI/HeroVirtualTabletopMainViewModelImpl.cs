@@ -474,13 +474,14 @@ namespace HeroUI
                 Directory.CreateDirectory(dataDir);
 
             string filePath = Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_KEYBINDS_FILENAME);
-            if (!File.Exists(filePath))
+            string altFilePath = Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_KEYBINDS_ALT_FILENAME);
+            if (!File.Exists(filePath) || !File.Exists(altFilePath))
             {
-                ExtractRequiredKeybindsFile();
+                ExtractRequiredKeybindsFiles();
             }
         }
 
-        private void ExtractRequiredKeybindsFile()
+        private void ExtractRequiredKeybindsFiles()
         {
             File.AppendAllText(
                 Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_KEYBINDS_FILENAME),

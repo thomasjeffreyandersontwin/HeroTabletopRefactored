@@ -191,7 +191,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <Button x:Name="SequenceView" Content="&#xf28a;" ToolTip="Toggle Sequence View(Ctrl+>)">
+                <Button x:Name="SequenceView" Content="&#xf28a;" ToolTip="Toggle Sequence View(Ctrl+>)" IsEnabled="False">
                     <Button.Style >
                         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButton}">
                             <Style.Triggers>
