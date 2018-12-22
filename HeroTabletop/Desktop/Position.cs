@@ -178,7 +178,7 @@ namespace HeroVirtualTabletop.Desktop
 
         public void SetRotationMatrix(Matrix matrix)
         {
-            rotationMatrix = matrix;
+            //rotationMatrix = matrix;
             if (this.desktopMemoryCharacter.IsReal)
             {
                 this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(56, matrix.M11);
@@ -454,9 +454,15 @@ namespace HeroVirtualTabletop.Desktop
                         (float)GetRadianAngle(rotationAngle));
                     break;
             }
-
-            RotationMatrix *= rotatedMatrix; // Apply rotation
-            Vector = currentPositionVector; // Keep position intact;
+            var oldMatrix = RotationMatrix;
+            // Apply rotation
+            var newMatrix = oldMatrix * rotatedMatrix; 
+            // now set position
+            newMatrix.M41 = currentPositionVector.X;
+            newMatrix.M42 = currentPositionVector.Y;
+            newMatrix.M43 = currentPositionVector.Z;
+            // finally overwrite
+            RotationMatrix = newMatrix;
         }
         public void Face(Position target)
         {
