@@ -1280,6 +1280,16 @@ namespace HeroVirtualTabletop.Roster
                             this.SpawnToPosition(mousePosition);
                         }
                     }
+                    else if(this.SelectedParticipants.Count == 1 && (this.SelectedParticipants[0] as CharacterCrowdMember).IsSpawned && (this.SelectedParticipants[0] as CharacterCrowdMember).IsTargeted && this.Roster.ActiveCharacter == null)
+                    {
+                        System.Action d1 = delegate ()
+                        {
+                            MovableCharacter movableCharacter = this.Roster.TargetedCharacter as MovableCharacter;
+                            movableCharacter?.MoveForwardTo(mousePosition);
+                        };
+                        AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d1, 500);
+                        adex.ExecuteAsyncDelegate();
+                    }
                 }
                 else
                 {

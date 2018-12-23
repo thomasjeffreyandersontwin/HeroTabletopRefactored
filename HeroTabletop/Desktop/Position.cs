@@ -361,7 +361,7 @@ namespace HeroVirtualTabletop.Desktop
             Vector3 currentPositionVector = Vector;
             Vector3 destinationVector = lookingAt.Vector;
             Matrix newRotationMatrix = Matrix.CreateLookAt(currentPositionVector, destinationVector, RotationMatrix.Up);
-            if (newRotationMatrix.M11 == float.NaN || newRotationMatrix.M13 == float.NaN || newRotationMatrix.M31 == float.NaN || newRotationMatrix.M33 == float.NaN)
+            if (float.IsNaN(newRotationMatrix.M11) || float.IsNaN(newRotationMatrix.M13) || float.IsNaN(newRotationMatrix.M31) || float.IsNaN(newRotationMatrix.M33))
                 return;
             newRotationMatrix.M11 *= -1;
             newRotationMatrix.M33 *= -1;
@@ -384,7 +384,6 @@ namespace HeroVirtualTabletop.Desktop
                 M43 = RotationMatrix.M43,
                 M44 = RotationMatrix.M44
             };
-            //RotationMatrix = newModelMatrix;
             // Turn to destination, figure out angle
             Vector3 targetForwardVector = newModelMatrix.Forward;
             Vector3 currentForwardVector = RotationMatrix.Forward;

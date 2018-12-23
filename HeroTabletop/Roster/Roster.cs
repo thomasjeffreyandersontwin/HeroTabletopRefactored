@@ -1782,7 +1782,7 @@ namespace HeroVirtualTabletop.Roster
                     part.MoveForwardTo(pos);
                 }
             }
-            else
+            else if(Participants.Count > 0)
             {
                 Participants.First()?.MoveForwardTo(destination);
             }
