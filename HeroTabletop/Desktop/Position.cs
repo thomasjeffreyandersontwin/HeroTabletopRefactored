@@ -178,7 +178,7 @@ namespace HeroVirtualTabletop.Desktop
 
         public void SetRotationMatrix(Matrix matrix)
         {
-            //rotationMatrix = matrix;
+            rotationMatrix = matrix;
             if (this.desktopMemoryCharacter.IsReal)
             {
                 this.desktopMemoryCharacter.MemoryManager.SetTargetAttribute(56, matrix.M11);

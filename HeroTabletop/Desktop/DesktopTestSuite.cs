@@ -91,9 +91,8 @@ namespace HeroVirtualTabletop.Desktop
         
         [TestMethod]
         [TestCategory("Position")]
-        void MovingPositionWith0DegreeFacing_UpdatesXYZProperlyForAllDirections()
+        public void MovingPositionWith0DegreeFacing_UpdatesXYZProperlyForAllDirections()
         {
-
             Position position = TestObjectsFactory.PositionUnderTest;
             position.Yaw = 0;
             position.Pitch = 0;

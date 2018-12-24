@@ -120,7 +120,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             //assert
             foreach (var character in characters)
             {
-                Mock.Get(character).Verify(x => x.Target(true));
+                Mock.Get(character).Verify(x => x.Target(false));
                 string[] para2 = {element.Mov.FullResourcePath};
                 Mock.Get(character.Generator)
                     .Verify(x => x.GenerateDesktopCommandText(DesktopCommand.Move, para2));

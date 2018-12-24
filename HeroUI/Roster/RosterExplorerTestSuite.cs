@@ -46,6 +46,13 @@ namespace HeroVirtualTabletop.Roster
             TestObjectsFactory = new RosterTestObjectsFactory();
         }
 
+        [TestCleanup]
+        public void MyTestCleaup()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
         private void SelectTwoMockParticipants(RosterExplorerViewModel rosterVM)
         {
             var selectedMemList = new List<CharacterCrowdMember>();

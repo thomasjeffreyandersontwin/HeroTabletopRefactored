@@ -190,6 +190,7 @@
     <EmbeddedResource Include="Desktop\areaattack.mnu" />
     <EmbeddedResource Include="Desktop\character.mnu" />
     <EmbeddedResource Include="ManagedCharacter\costumes.zip" />
+    <None Include="HeroVirtualTabletopTestScript.bat" />
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
