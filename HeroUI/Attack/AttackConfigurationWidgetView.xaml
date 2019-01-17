@@ -261,7 +261,7 @@
                     </ListView.ItemTemplate>
                 </ListView>
                 <StackPanel Grid.Row="2" Orientation="Horizontal">
-                    <CheckBox IsChecked="{Binding MoveAttackersToDefender}" Content="Move to target before attacking" Foreground="White"  HorizontalAlignment="Left" 
+                    <CheckBox IsChecked="{Binding MoveAttackersToDefender}" Content="Move to target before attacking" Foreground="White"  HorizontalAlignment="Left" IsEnabled="False"
                                                           ToolTip="Move to target before attacking (T)"/>
                 </StackPanel>
                 <!--<StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="2">

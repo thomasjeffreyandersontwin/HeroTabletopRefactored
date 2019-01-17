@@ -669,8 +669,8 @@ namespace HeroVirtualTabletop.Movement
         public async Task ExecuteKnockback(MovableCharacter characterAttacking, List<MovableCharacter> charactersBeingKnockedBack, double distance, double speed = 0)
         {
             var knockbackDistance = distance * 8;
-            if (speed < 2.5)
-                speed = 2.5;
+            if (speed < 2)
+                speed = 2;
             this.Speed = speed;
             foreach (var characterBeingKnockedBack in charactersBeingKnockedBack)
             {

@@ -216,7 +216,7 @@ namespace HeroVirtualTabletop.Desktop
                 distanceTravelled = Vector3.Distance(initialPositinVector, this.PositionBeingNavigated.Vector);
                 navigationCompleted = distanceTravelled >= this.DistanceToTravel || this.IsInCollision;
             }
-            if (this.IsKnockbackNavigation && this.UsingGravity)
+            if (this.IsKnockbackNavigation) //&& this.UsingGravity)
                 this.ApplyGravity(this.PositionBeingNavigated.Vector);      
             if(!this.IsKnockbackNavigation)                                                                                                                                                                                                                        
                 await Task.Delay(2);
@@ -471,7 +471,7 @@ namespace HeroVirtualTabletop.Desktop
         }
         public Vector3 ApplyGravity(Vector3 currentPositionVector)
         {
-            if (currentPositionVector.Y > 0 && AdjustmentVector == Vector3.Zero && this.Direction != Direction.Upward && this.Direction != Direction.Downward)
+            if (/*currentPositionVector.Y > 0 && */ AdjustmentVector == Vector3.Zero && this.Direction != Direction.Upward && this.Direction != Direction.Downward)
             {
                 Vector3 collisionGroundUp = new Vector3(currentPositionVector.X, currentPositionVector.Y + 2f, currentPositionVector.Z);
                 Vector3 collisionGroundDown = new Vector3(currentPositionVector.X, -100f, currentPositionVector.Z);
