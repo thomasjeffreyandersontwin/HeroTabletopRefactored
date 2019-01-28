@@ -195,8 +195,24 @@ namespace HeroVirtualTabletop.Attack
             }
         }
 
-        
-     
+        private void AddSelfAsPersistentState()
+        {
+            AnimatableCharacterState newstate = new AnimatableCharacterStateImpl(this, this.Attacker);
+            newstate.AbilityAlreadyPlayed = true;
+            this.Attacker.AddState(newstate);
+            this.ToggleSelfPersistence(true);
+        }
+        private void ToggleSelfPersistence(bool persistent)
+        {
+            this.Persistent = persistent;
+        }
+        public override void Stop(bool completedEvent = true)
+        {
+            //AddSelfAsPersistentState();
+            base.Stop(completedEvent);
+            //this.ToggleSelfPersistence(false);
+        }
+
         public void FireAtDesktop(Position desktopPosition)
         {
             Attacker.TurnTowards(desktopPosition);

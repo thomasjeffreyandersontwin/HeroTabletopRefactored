@@ -257,6 +257,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             FX = resource;
             this.AnimationElementType = AnimationElementType.FX;
+            System.Windows.Media.Color black = System.Windows.Media.Color.FromRgb(0, 0, 0);
+            this.Color1 = black;
+            this.Color2 = black;
+            this.Color3 = black;
+            this.Color4 = black;
         }
 
         public FXElementImpl() : this(null, null)
@@ -1301,8 +1306,14 @@ namespace HeroVirtualTabletop.AnimatedAbility
         }
         public override void StopResource(AnimatedCharacter target)
         {
-            // to do CHECK FOR PERSISTENT SHIT
-            foreach (var e in from e in AnimationElements orderby e.Order select e)
+            // check for persistent fx
+            // need to check active states and their ability. also need to override Stop for attacks
+            bool persistentAbilityActive = (target.ActiveStates != null && target.ActiveStates.Any(state => state.Ability != null 
+                                                                    && (state.Ability is AnimatedAttack || (state.Ability.Persistent && state.Ability.Sequencer != this))));
+            var elementsToStop = AnimationElements.ToList();
+            if (persistentAbilityActive)
+                elementsToStop = elementsToStop.Where(e => !(e is FXElement)).ToList();
+            foreach (var e in from e in elementsToStop orderby e.Order select e)
                 e.Stop(target);
         }
 
