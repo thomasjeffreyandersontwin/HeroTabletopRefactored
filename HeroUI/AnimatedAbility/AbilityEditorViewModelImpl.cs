@@ -405,7 +405,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             {
                 isShowingAbilityEditor = value;
                 if (value)
-                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
+                    Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
                 else
                     this.EventAggregator?.Publish(new WindowClosedEvent { ClosedWindow = ActiveWindow.ABILITIES}, action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 NotifyOfPropertyChange(() => IsShowingAbilityEditor);
@@ -993,8 +993,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             System.Action d = delegate ()
             {
-                IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
-                WindowsUtilities.SetForegroundWindow(winHandle);
+                DesktopManager.SetFocusToDesktop();
                 //Cursor cursor = new Cursor(Assembly.GetExecutingAssembly().GetManifestResourceStream("HeroUI.Attack.Bullseye.cur"));
                 if (ability is AreaEffectAttack)
                 {
@@ -1013,8 +1012,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     ability?.Play();
                 }
             };
-            //AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
-            //adex.ExecuteAsyncDelegate();
             await Task.Run(d);
         }
 
@@ -1022,14 +1019,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             System.Action d = delegate ()
             {
-                IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
-                WindowsUtilities.SetForegroundWindow(winHandle);
                 AnimatedCharacter currentTarget = GetCurrentTarget();
                 if (this.SelectedAnimationElement != null)
                     this.SelectedAnimationElement.Play(currentTarget);
             };
-            //AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5);
-            //adex.ExecuteAsyncDelegate();
             await Task.Run(d);
         }
 
@@ -1485,7 +1478,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         internal EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ABILITIES)
+            if (Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.ABILITIES)
             {
                 if (inputKey == Key.M && Keyboard.Modifiers == ModifierKeys.Control)
                 {

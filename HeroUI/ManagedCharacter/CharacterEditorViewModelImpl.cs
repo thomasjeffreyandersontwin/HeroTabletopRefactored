@@ -222,7 +222,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (this.EditedCharacter != null && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            if (this.EditedCharacter != null && Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
             {
                 if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == ModifierKeys.Control)
                 {

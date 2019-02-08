@@ -785,42 +785,42 @@ namespace HeroUI
         }
         public void ActivateWindow(ActiveWindow window)
         {
-            DesktopFocusManager.CurrentActiveWindow = window;
+            HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = window;
         }
 
         private void ActivateAnotherWindowAfterCollapsingCurrentOne(ActiveWindow collapsingWIndow)
         {
             if (popupService.IsOpen("AttackConfigurationWidgetView"))
             {
-                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ATTACK;
+                HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.ATTACK;
             }
             else if (popupService.IsOpen("ActiveCharacterWidgetView"))
             {
-                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ACTIVE_CHARACTER;
+                HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.ACTIVE_CHARACTER;
             }
             else if (IsRosterExplorerExpanded)
             {
-                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ROSTER;
+                HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.ROSTER;
             }
             else if (IsCharacterEditorExpanded)
             {
-                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.CHARACTER_ACTION_GROUPS;
+                HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.CHARACTER_ACTION_GROUPS;
             }
             else if (IsCharacterExplorerExpanded)
             {
-                DesktopFocusManager.CurrentActiveWindow = ActiveWindow.CHARACTERS_AND_CROWDS;
+                HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.CHARACTERS_AND_CROWDS;
             }
             else if (IsAbilityEditorExpanded)
             {
                 var abilityEditorVM = IoC.Get<AbilityEditorViewModel>();
                 if (abilityEditorVM.IsShowingAbilityEditor)
-                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
+                    HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.ABILITIES;
             }
             else if (IsMovementEditorExpanded)
             {
                 var movementEditorVM = IoC.Get<MovementEditorViewModel>();
                 if (movementEditorVM.IsShowingMovementEditor)
-                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
+                    HeroVirtualTabletop.Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
             }
         }
 

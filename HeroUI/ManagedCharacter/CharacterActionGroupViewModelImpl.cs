@@ -551,7 +551,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (!this.IsReadOnly && Keyboard.Modifiers == ModifierKeys.Control && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            if (!this.IsReadOnly && Keyboard.Modifiers == ModifierKeys.Control && Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
             {
                 if (inputKey == Key.I && this.ActionGroup.Type == CharacterActionType.Identity)
                     method = this.AddAction;
@@ -560,7 +560,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 else if (inputKey == Key.P && this.ActionGroup.Type == CharacterActionType.Ability)
                     method = this.AddAction;
             }
-            else if (!this.IsReadOnly && Keyboard.Modifiers == (ModifierKeys.Control|ModifierKeys.Shift) && DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
+            else if (!this.IsReadOnly && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.CHARACTER_ACTION_GROUPS)
             {
                 if (inputKey == Key.I && this.ActionGroup.Type == CharacterActionType.Identity && this.CanRemoveAction)
                     method = this.RemoveAction;

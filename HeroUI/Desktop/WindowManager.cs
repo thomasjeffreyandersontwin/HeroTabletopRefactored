@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Desktop
 {
-    public class DesktopFocusManager
+    public class WindowManager
     {
         public static ActiveWindow CurrentActiveWindow { get; set; }
     }

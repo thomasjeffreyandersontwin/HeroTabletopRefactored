@@ -46,7 +46,7 @@ namespace HeroUI
         protected override void Configure()
         {
             container = new SimpleContainer();
-            container.Singleton<IWindowManager, WindowManager>();
+            container.Singleton<IWindowManager, Caliburn.Micro.WindowManager>();
             container.Singleton<IEventAggregator, EventAggregator>();
             container.PerRequest<IShell, HeroSystemsShellViewModelImpl>();
             container.Singleton<CrowdRepository, CrowdRepositoryImpl>();

@@ -137,8 +137,7 @@ namespace HeroVirtualTabletop.Desktop
                         System.Windows.Input.Key inputKey = InputKey;
                         if ((inputKey == Key.Left || inputKey == Key.Right) && Keyboard.Modifiers == ModifierKeys.Control)
                         {
-                            IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
-                            WindowsUtilities.SetForegroundWindow(winHandle);
+                            DesktopManager.SetFocusToDesktop();
                         }
                         else
                         {

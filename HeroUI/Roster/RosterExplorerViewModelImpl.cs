@@ -333,6 +333,7 @@ namespace HeroVirtualTabletop.Roster
             RefreshRosterCommandsEligibility();
             this.EventAggregator.Publish(new CrowdCollectionModifiedEvent(), action => System.Windows.Application.Current.Dispatcher.Invoke(action)); // save needed due to possible identity change
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         public void CloneAndSpawn(Position position)
@@ -346,6 +347,7 @@ namespace HeroVirtualTabletop.Roster
             }
             this.UpdateRosterSelection();
             NotifyOfPropertyChange(() => SelectedParticipants);
+            DesktopManager.SetFocusToDesktop();
         }
 
         public void SpawnToPosition(Position position)
@@ -389,6 +391,7 @@ namespace HeroVirtualTabletop.Roster
         {
             this.Roster.Selected?.MoveCharacterToCamera();
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -424,6 +427,7 @@ namespace HeroVirtualTabletop.Roster
             this.Roster.Selected?.PlaceOnTableTop();
             SelectNextCharacterInCrowdCycle();
             RefreshRosterCommandsEligibility();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -442,6 +446,7 @@ namespace HeroVirtualTabletop.Roster
             CharacterCrowdMember selected = this.SelectedParticipants[0] as CharacterCrowdMember;
             selected?.ToggleTargeted();
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -460,6 +465,7 @@ namespace HeroVirtualTabletop.Roster
             CharacterCrowdMember selected = this.SelectedParticipants[0] as CharacterCrowdMember;
             selected?.ToggleManeuveringWithCamera();
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -476,6 +482,7 @@ namespace HeroVirtualTabletop.Roster
         {
             this.Roster.Selected?.TargetAndMoveCameraToCharacter();
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -540,6 +547,7 @@ namespace HeroVirtualTabletop.Roster
             OnRosterUpdated(this, null);
             SelectNextCharacterInCrowdCycle();
             NotifyActivationEligibilityChange();
+            DesktopManager.SetFocusToDesktop();
         }
 
         private void FireDeactivationEvent()
@@ -570,6 +578,7 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new ActivateCharacterEvent(character, selectedOptionGroupName, selectedOptionName), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             OnRosterUpdated(this, null);
             NotifyActivationEligibilityChange();
+            DesktopManager.SetFocusToDesktop();
         }
 
         public bool CanActivateCharacter
@@ -623,6 +632,7 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new ActivateGangEvent(this.Roster.Selected.Participants.Cast<ManagedCharacter.ManagedCharacter>().ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             OnRosterUpdated(this, null);
             NotifyActivationEligibilityChange();
+            DesktopManager.SetFocusToDesktop();
         }
 
         public void ActivateGang(List<CharacterCrowdMember> gangMembers)
@@ -631,6 +641,7 @@ namespace HeroVirtualTabletop.Roster
             this.EventAggregator.Publish(new ActivateGangEvent(gangMembers.Cast<ManagedCharacter.ManagedCharacter>().ToList()), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
             OnRosterUpdated(this, null);
             NotifyActivationEligibilityChange();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -1116,6 +1127,7 @@ namespace HeroVirtualTabletop.Roster
         {
             this.Roster.Selected.Teleport();
             SelectNextCharacterInCrowdCycle();
+            DesktopManager.SetFocusToDesktop();
         }
 
         #endregion
@@ -1378,7 +1390,7 @@ namespace HeroVirtualTabletop.Roster
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ROSTER || DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ACTIVE_CHARACTER)
+            if (Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.ROSTER || Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.ACTIVE_CHARACTER)
             {
                 if (inputKey == Key.P && Keyboard.Modifiers == ModifierKeys.Control)
                 {

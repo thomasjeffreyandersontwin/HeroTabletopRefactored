@@ -938,7 +938,7 @@ namespace HeroVirtualTabletop.Crowd
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.CHARACTERS_AND_CROWDS)
+            if (Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.CHARACTERS_AND_CROWDS)
             {
                 if (inputKey == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
                 {

@@ -320,7 +320,7 @@ namespace HeroVirtualTabletop.Attack
         public EventMethod HandleDesktopKeyEvent(System.Windows.Forms.Keys vkCode, System.Windows.Input.Key inputKey)
         {
             EventMethod method = null;
-            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.ATTACK)
+            if (Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.ATTACK)
             {
                 if (inputKey == Key.Enter)
                 {

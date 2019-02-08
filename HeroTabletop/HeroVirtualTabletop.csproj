@@ -148,6 +148,7 @@
     <Compile Include="Common\HeroVirtualTabletopGame.cs" />
     <Compile Include="Desktop\DesktopContextMenu.cs" />
     <Compile Include="Desktop\DesktopKeyEventHandler.cs" />
+    <Compile Include="Desktop\DesktopManager.cs" />
     <Compile Include="Desktop\DesktopMouseEventHandler.cs" />
     <Compile Include="Desktop\DesktopMouseHoverElement.cs" />
     <Compile Include="Desktop\DesktopTargetObserver.cs" />

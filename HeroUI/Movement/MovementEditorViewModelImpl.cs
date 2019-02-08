@@ -125,7 +125,7 @@ namespace HeroVirtualTabletop.Movement
             {
                 isShowingMovementEditor = value;
                 if (value)
-                    DesktopFocusManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
+                    Desktop.WindowManager.CurrentActiveWindow = ActiveWindow.MOVEMENTS;
                 else
                     this.EventAggregator?.Publish(new WindowClosedEvent { ClosedWindow = ActiveWindow.MOVEMENTS }, action => System.Windows.Application.Current.Dispatcher.Invoke(action));
                 NotifyOfPropertyChange(() => IsShowingMovementEditor);
@@ -454,8 +454,7 @@ namespace HeroVirtualTabletop.Movement
             {
                 Camera.DisableMovement();
             }
-            IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
-            WindowsUtilities.SetForegroundWindow(winHandle);
+            DesktopManager.SetFocusToDesktop();
         }
 
         public async Task MoveByKey()
@@ -532,7 +531,7 @@ namespace HeroVirtualTabletop.Movement
                     CurrentInputKey = inputKey;
                 }
             }
-            if (DesktopFocusManager.CurrentActiveWindow == ActiveWindow.MOVEMENTS)
+            if (Desktop.WindowManager.CurrentActiveWindow == ActiveWindow.MOVEMENTS)
             {
                 if ((inputKey == Key.OemPlus || inputKey == Key.Add) && Keyboard.Modifiers == ModifierKeys.Control)
                 {
