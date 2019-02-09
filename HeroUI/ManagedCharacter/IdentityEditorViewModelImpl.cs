@@ -14,7 +14,7 @@ using System.Windows.Data;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
-    public class IdentityEditorViewModelImpl : PropertyChangedBase, IdentityEditorViewModel, IHandle<EditIdentityEvent>
+    public class IdentityEditorViewModelImpl : PropertyChangedBase, IdentityEditorViewModel, IHandle<EditIdentityEvent>, IHandle<AddActionEvent>, IHandle<RemoveActionEvent>
     {
         #region Private Fields
 
@@ -396,6 +396,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
         #endregion
 
         #region Load Abilities
+
+        public void Handle(AddActionEvent message)
+        {
+            if (this.EditedIdentity != null && message.AddedActionType == CharacterActionType.Ability)
+                this.LoadAbilities();
+        }
+
+        public void Handle(RemoveActionEvent message)
+        {
+            if (this.EditedIdentity != null && (message.RemovedAction is AnimatedAbility.AnimatedAbility))
+            {
+                this.LoadAbilities();
+            }
+        }
 
         private void LoadAbilities()
         {

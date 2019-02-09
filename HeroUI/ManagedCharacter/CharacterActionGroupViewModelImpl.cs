@@ -270,6 +270,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             T newAction = this.CharacterActionList.GetNewAction();
             this.CharacterActionList.AddNew(newAction);
+            this.FireAddActionEvent();
             this.SaveActionGroup();
         }
 
@@ -285,17 +286,31 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             CharacterAction removedAction = this.SelectedAction;
             this.CharacterActionList.RemoveAction((T)removedAction);
-            if (this.ActionGroup.IsStandardActionGroup)
-            {
-                this.EventAggregator.Publish(new RemoveActionEvent(removedAction), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
-            }
+            this.FireRemoveActionEvent(removedAction);
             this.SaveActionGroup();
         }
 
         public void InsertAction(CharacterAction action, int index)
         {
             CharacterActionList.InsertAction((T)action, index);
+            this.FireAddActionEvent();
             this.SaveActionGroup();
+        }
+
+        private void FireAddActionEvent()
+        {
+            if (this.ActionGroup.IsStandardActionGroup)
+            {
+                this.EventAggregator.Publish(new AddActionEvent(this.ActionGroup.Type), x => System.Windows.Application.Current.Dispatcher.Invoke(x));
+            }
+        }
+
+        private void FireRemoveActionEvent(CharacterAction removedAction)
+        {
+            if (this.ActionGroup.IsStandardActionGroup)
+            {
+                this.EventAggregator.Publish(new RemoveActionEvent(removedAction), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            }
         }
 
         public void RemoveAction(int index)

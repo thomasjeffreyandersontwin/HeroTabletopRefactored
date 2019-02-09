@@ -89,7 +89,14 @@ namespace HeroVirtualTabletop.ManagedCharacter
             this.EditedIdentity = editedIdentity;
         }
     }
-
+    public class AddActionEvent
+    {
+        public CharacterActionType AddedActionType { get; set; }
+        public AddActionEvent(CharacterActionType type)
+        {
+            this.AddedActionType = type;
+        }
+    }
     public class RemoveActionEvent
     {
         public CharacterAction RemovedAction { get; set; }

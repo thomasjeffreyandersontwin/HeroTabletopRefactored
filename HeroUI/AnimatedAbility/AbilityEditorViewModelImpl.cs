@@ -18,11 +18,12 @@ using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Desktop;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.AnimatedAbility
 {
     public class AbilityEditorViewModelImpl : PropertyChangedBase, AbilityEditorViewModel, IHandle<EditAnimatedAbilityEvent>, IHandle<PlayAnimatedAbilityEvent>,
-        IHandle<LaunchAttackEvent>
+        IHandle<LaunchAttackEvent>, IHandle<AddActionEvent>, IHandle<RemoveActionEvent>
     {
         #region Fields
 
@@ -960,6 +961,22 @@ namespace HeroVirtualTabletop.AnimatedAbility
         #endregion
 
         #region Load Resources
+
+        public void Handle(AddActionEvent message)
+        {
+            if(this.CurrentAbility != null && (message.AddedActionType == CharacterActionType.Identity || message.AddedActionType == CharacterActionType.Ability))
+            {
+                this.LoadResources();
+            }
+        }
+
+        public void Handle(RemoveActionEvent message)
+        {
+            if (this.CurrentAbility != null && (message.RemovedAction is AnimatedAbility || message.RemovedAction is Identity))
+            {
+                this.LoadResources();
+            }
+        }
 
         public void LoadResources()
         {

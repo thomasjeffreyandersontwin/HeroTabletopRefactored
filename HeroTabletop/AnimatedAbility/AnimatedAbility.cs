@@ -173,7 +173,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public void Stop(List<AnimatedCharacter> targets)
         {
         }
-        public ObservableCollection<AnimationElement> AnimationElements => _sequencer?.AnimationElements;
+        public ObservableCollection<AnimationElement> AnimationElements => Sequencer?.AnimationElements;
         [JsonProperty]
         public SequenceType Type
         {
