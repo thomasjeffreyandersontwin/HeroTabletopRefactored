@@ -993,7 +993,10 @@ namespace HeroVirtualTabletop.Crowd
 
         public void SaveCurrentTableTopPosition()
         {
-            _loadedParentMembership.SavedPosition = Position.Duplicate();
+            if(Position != null && this.IsSpawned)
+            {
+                _loadedParentMembership.SavedPosition = Position.Duplicate();
+            }
         }
 
         public void PlaceOnTableTop(Position position = null)

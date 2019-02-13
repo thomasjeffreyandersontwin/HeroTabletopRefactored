@@ -501,7 +501,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     return;
             }
             Target.Target();
-            if (!File.Exists(CostumeFilePath))
+            if (!File.Exists(CostumeFilePath) || FX == null)
                 return;
             if (File.Exists(ModifiedCostumeFilePath) && (Target.LoadedFXs == null || Target.LoadedFXs.Count == 0))
                 File.Delete(ModifiedCostumeFilePath);
@@ -742,6 +742,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public override void PlayResource(AnimatedCharacter target)
         {
+            if (Sound == null)
+                return;
             var soundFileName = SoundFileName;
             if (soundFileName == null)
                 return;
