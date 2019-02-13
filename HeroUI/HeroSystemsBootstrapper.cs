@@ -70,12 +70,12 @@ namespace HeroUI
             container.Singleton<DesktopMouseHoverElement, DesktopMouseHoverElementImpl>();
             container.Singleton<DesktopContextMenu, DesktopContextMenuImpl>();
             container.Singleton<DesktopTargetObserver, DesktopTargetObserverImpl>();
-            container.Singleton<AnimatedResourceManager, AnimatedResourceManagerImpl>();
             container.Singleton<AbilityClipboard, AbilityClipboardImpl>();
             container.Singleton<ActiveCharacterWidgetViewModel, ActiveCharacterWidgetViewModelImpl>();
             container.Singleton<AttackConfigurationWidgetViewModel, AttackConfigurationWidgetViewModelImpl>();
 
             container.PerRequest<DesktopNavigator, DesktopNavigatorImpl>();
+            container.PerRequest<AnimatedResourceManager, AnimatedResourceManagerImpl>();
             container.PerRequest<CharacterActionGroupViewModelImpl<Identity>, CharacterActionGroupViewModelImpl<Identity>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<AnimatedAbility>, CharacterActionGroupViewModelImpl<AnimatedAbility>>();
             container.PerRequest<CharacterActionGroupViewModelImpl<CharacterMovement>, CharacterActionGroupViewModelImpl<CharacterMovement>>();

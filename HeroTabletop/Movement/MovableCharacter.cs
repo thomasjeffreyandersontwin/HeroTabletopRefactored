@@ -133,6 +133,12 @@ namespace HeroVirtualTabletop.Movement
             MovableCharacter defaultCharacter = this.Repository.CharacterByName[HeroVirtualTabletop.AnimatedAbility.DefaultAbilities.CHARACTERNAME] as MovableCharacter;
             string validMovementName = GetNewValidMovementName(defaultCharacter);
             Movement movement = new MovementImpl(validMovementName);
+            foreach(var member in movement.MovementMembers)
+            {
+                defaultCharacter.Abilities.AddNew(member.Ability);
+                ReferenceResource refResource = new ReferenceResourceImpl { Ability = member.Ability, Character = defaultCharacter };
+                member.AbilityReference = refResource;
+            }
             return movement;
         }
         public CharacterMovement AddMovement(Movement movement = null)
@@ -557,6 +563,11 @@ namespace HeroVirtualTabletop.Movement
             MovementMember member = new MovementMemberImpl();
             member.Direction = direction;
             member.Name = direction.ToString();
+            if(ability == null)
+            {
+                ability = new AnimatedAbilityImpl();
+                ability.Name = GetDefaultMemberAbilityName(direction);
+            }
             member.Ability = ability;
             MovementMembers.Add(member);
         }
@@ -593,6 +604,37 @@ namespace HeroVirtualTabletop.Movement
         public void Rename(string updatedName)
         {
             this.Name = updatedName;
+        }
+
+        private string GetDefaultMemberAbilityName(Direction direction)
+        {
+            string name = this.Name;
+            switch (direction)
+            {
+                case Direction.Left:
+                    name += " Left";
+                    break;
+                case Direction.Right:
+                    name += " Right";
+                    break;
+                case Direction.Forward:
+                    name += " Forward";
+                    break;
+                case Direction.Backward:
+                    name += " Back";
+                    break;
+                case Direction.Upward:
+                    name += " Up";
+                    break;
+                case Direction.Downward:
+                    name += " Down";
+                    break;
+                case Direction.Still:
+                    name += " Still";
+                    break;
+            }
+
+            return name;
         }
 
         public Movement Clone()

@@ -2416,7 +2416,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 }
                 referenceResources.Add(new ReferenceResourceImpl { Ability = attack.OnHitAnimation, Character = attack.OnHitAnimation.Owner as AnimatedCharacter });
             }
-            referenceResources = referenceResources.Where(x => !(x.Ability != null && (x.Ability.AnimationElements.Count == 0 || (x.Ability.AnimationElements.Count == 1 && x.Ability.AnimationElements[0] is ReferenceElement)))).ToList();
+            referenceResources = referenceResources.Where(x => !(x.Ability != null && (/*x.Ability.AnimationElements.Count == 0 || */(x.Ability.AnimationElements.Count == 1 && x.Ability.AnimationElements[0] is ReferenceElement)))).ToList();
 
             referenceResources = referenceResources.OrderBy(x => x, new ReferenceResourceComparer()).ToList();
             var referenceResourceCollection = new ObservableCollection<ReferenceResource>(referenceResources);

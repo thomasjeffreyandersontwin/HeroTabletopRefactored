@@ -207,9 +207,8 @@ namespace HeroVirtualTabletop.Movement
             this.CurrentCharacterMovement = message.EditedCharacterMovement;
             this.SelectedMovement = message.EditedCharacterMovement.Movement; 
             this.OpenEditor();
-            LoadAvailableMovements();
-            this.AnimatedResourceMananger.CurrentAnimationElement = new ReferenceElementImpl();
-            this.AnimatedResourceMananger.LoadReferenceResource();
+            this.LoadAvailableMovements();
+            this.RefreshAbilityReferences();
         }
 
         public void Handle(StartMovementEvent message)
@@ -220,6 +219,16 @@ namespace HeroVirtualTabletop.Movement
         public void Handle(StopMovementEvent message)
         {
             this.DeactivateMovement(message.CharactersToStop, message.ActiveCharacterMovement);
+        }
+
+        #endregion
+
+        #region Refresh Ability References
+
+        private void RefreshAbilityReferences()
+        {
+            this.AnimatedResourceMananger.CurrentAnimationElement = new ReferenceElementImpl();
+            this.AnimatedResourceMananger.LoadReferenceResource();
         }
 
         #endregion
@@ -335,6 +344,7 @@ namespace HeroVirtualTabletop.Movement
 
             OnMovementAdded(characterMovement.Movement, null);
 
+            this.RefreshAbilityReferences();
             this.SaveMovement();
         }
 

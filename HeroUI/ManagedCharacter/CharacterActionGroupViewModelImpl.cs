@@ -321,7 +321,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         public void Handle(RemoveActionEvent message)
         {
-            if (!this.ActionGroup.IsStandardActionGroup)
+            if (!this.ActionGroup.IsStandardActionGroup && (message.RemovedAction is T))
             {
                 this.CharacterActionList.RemoveAction((T)message.RemovedAction);
                 this.SaveActionGroup();
