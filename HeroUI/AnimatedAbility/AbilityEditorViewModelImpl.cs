@@ -586,7 +586,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             AnimationSequencer sequenceToAddTo = null;
             if (!this.IsSequenceAbilitySelected)
-                sequenceToAddTo = this.CurrentAbility;
+            {
+                if(SelectedAnimationParent != null && SelectedAnimationParent is SequenceElement)
+                    sequenceToAddTo = this.SelectedAnimationParent as SequenceElement;
+                else
+                    sequenceToAddTo = this.CurrentAbility;
+            }
             else
             {
                 if (this.SelectedAnimationElement is SequenceElement)
