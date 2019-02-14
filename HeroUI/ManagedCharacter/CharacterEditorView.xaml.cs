@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HeroVirtualTabletop.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
     /// </summary>
     public partial class CharacterEditorView : UserControl
     {
-        private CharacterEditorViewModel viewModel;
+        private CharacterEditorViewModelImpl viewModel;
 
         private const string OPTION_GROUP_DRAG_KEY = "CharacterOptionGroupDrag";
         private const string OPTION_DRAG_KEY = "CharacterOptionDrag";
@@ -35,7 +36,20 @@ namespace HeroVirtualTabletop.ManagedCharacter
 
         private void CharacterEditorView_Loaded(object sender, RoutedEventArgs e)
         {
-            this.viewModel = this.DataContext as CharacterEditorViewModel;
+            this.viewModel = this.DataContext as CharacterEditorViewModelImpl;
+            this.viewModel.CharacterNameUpdated -= viewModel_CharacterNameUpdated;
+            this.viewModel.CharacterNameUpdated += viewModel_CharacterNameUpdated;
+        }
+
+        private void viewModel_CharacterNameUpdated(object sender, CustomEventArgs<string> e)
+        {
+            if (e != null && !string.IsNullOrEmpty(e.Value))
+                txtboxName.Text = e.Value;
+            BindingExpression expression = txtboxName.GetBindingExpression(TextBox.TextProperty);
+            expression.UpdateSource();
+            //txtboxName.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
+            Keyboard.ClearFocus();
+            listViewOptionGroup.Focus();
         }
 
         #region Drag Drop Option Group

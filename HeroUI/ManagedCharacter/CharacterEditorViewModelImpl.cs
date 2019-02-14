@@ -9,15 +9,24 @@ using Caliburn.Micro;
 using HeroVirtualTabletop.Movement;
 using HeroVirtualTabletop.Desktop;
 using System.Windows.Input;
+using HeroVirtualTabletop.Common;
+using HeroUI;
 
 namespace HeroVirtualTabletop.ManagedCharacter
 {
     public class CharacterEditorViewModelImpl : PropertyChangedBase, CharacterEditorViewModel,
-        IHandle<EditCharacterEvent>
+        IHandle<EditCharacterEvent>, IHandle<RenameCrowdMemberEvent>
     {
         private const string ABILITY_OPTION_GROUP_NAME = "Powers";
         private const string IDENTITY_OPTION_GROUP_NAME = "Identities";
         private const string MOVEMENT_OPTION_GROUP_NAME = "Movements";
+
+        public event EventHandler<CustomEventArgs<string>> CharacterNameUpdated;
+        public void OnCharacterNameUpdated(object sender, CustomEventArgs<string> e)
+        {
+            if (CharacterNameUpdated != null)
+                CharacterNameUpdated(sender, e);
+        }
 
         public IEventAggregator EventAggregator { get; set; }
 
@@ -54,6 +63,21 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 NotifyOfPropertyChange(() => CanRemoveActionGroup);
             }
         }
+
+        private string editedCharacterName;
+        public string EditedCharacterName
+        {
+            get
+            {
+                return editedCharacterName;
+            }
+            set
+            {
+                editedCharacterName = value;
+                NotifyOfPropertyChange(() => EditedCharacterName);
+            }
+        }
+
         private CharacterActionGroup selectedCharacterActionGroup;
         public CharacterActionGroup SelectedCharacterActionGroup
         {
@@ -84,6 +108,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             if (message.EditedCharacter != null)
             {
+                this.EditedCharacterName = message.EditedCharacter.Name;
                 message.EditedCharacter.LoadDefaultAbilities();
                 if(this.CharacterActionGroups != null)
                 {
@@ -144,6 +169,40 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.EditedCharacter = message.EditedCharacter;
             }
         }
+
+        #region Update Character Name
+
+        public void UpdateCharacterName(object state)
+        {
+            string updatedName = ControlUtilities.GetTextFromControlObject(state);
+            bool isDuplicate = this.EditedCharacter.CheckIfNameIsDuplicate(updatedName, null);
+            if (!isDuplicate)
+            {
+                this.EditedCharacter.Rename(updatedName);
+                OnCharacterNameUpdated(this, new CustomEventArgs<string> { Value = updatedName});
+                this.EventAggregator.PublishOnUIThread(new RenameCrowdMemberEvent(this.EditedCharacter, this));
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("The name already exists. Please choose another name!");
+                this.CancelCharacterRename();
+            }
+        }
+
+        public void CancelCharacterRename()
+        {
+            OnCharacterNameUpdated(this, new CustomEventArgs<string> { Value = this.EditedCharacter.Name });
+        }
+
+        public void Handle(RenameCrowdMemberEvent message)
+        {
+            if (message.Source != this && message.RenamedMember == this.EditedCharacter)
+            {
+                OnCharacterNameUpdated(this, new CustomEventArgs<string> { Value = this.EditedCharacter.Name });
+            }
+        }
+
+        #endregion
 
         #region Add/Remove OptionGroups
 

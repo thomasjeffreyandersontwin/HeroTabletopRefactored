@@ -24,10 +24,12 @@ namespace HeroVirtualTabletop.Crowd
     public class RenameCrowdMemberEvent
     {
         public CrowdMember RenamedMember { get; set; }
+        public object Source { get; set; }
 
-        public RenameCrowdMemberEvent(CrowdMember member)
+        public RenameCrowdMemberEvent(CrowdMember member, object source)
         {
             this.RenamedMember = member;
+            this.Source = source;
         }
     }
 

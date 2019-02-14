@@ -8,6 +8,7 @@
              xmlns:behaviors="clr-namespace:Framework.WPF.Behaviors;assembly=Framework.WPF"
              xmlns:extensions="clr-namespace:Framework.WPF.Extensions;assembly=Framework.WPF"
              xmlns:local="clr-namespace:HeroUI"
+             xmlns:cal="http://www.caliburnproject.org"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              mc:Ignorable="d" Loaded="CharacterEditorView_Loaded">
     <UserControl.Resources>
@@ -28,7 +29,26 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <TextBox Grid.Row="0" Text="{Binding Path=EditedCharacter.Name, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"></TextBox>
+            <!--<cal:Message.Attach="[Event LostFocus] = [Action UpdateCharacterName($source)]">-->
+            <TextBox x:Name="txtboxName" Grid.Row="0" Text="{Binding Path=EditedCharacterName, UpdateSourceTrigger=Explicit}">
+                <i:Interaction.Triggers>
+                    <local:InputBindingTrigger>
+                        <local:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Return"/>
+                        </local:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="UpdateCharacterName">
+                            <cal:Parameter Value="{Binding ElementName=txtboxName}" />
+                        </cal:ActionMessage>
+                    </local:InputBindingTrigger>
+                    <local:InputBindingTrigger>
+                        <local:InputBindingTrigger.InputBinding>
+                            <KeyBinding Key="Esc"/>
+                        </local:InputBindingTrigger.InputBinding>
+                        <cal:ActionMessage MethodName="CancelCharacterRename">
+                        </cal:ActionMessage>
+                    </local:InputBindingTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
         </Grid>
         <GridSplitter Grid.Row="1"></GridSplitter>
 

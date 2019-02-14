@@ -26,7 +26,7 @@ namespace HeroVirtualTabletop.Crowd
     }
 
     public class CrowdMemberExplorerViewModelImpl : PropertyChangedBase, CrowdMemberExplorerViewModel, IShell, 
-        IHandle<GameLaunchedEvent>, IHandle<CrowdCollectionModifiedEvent>, IHandle<ImportRosterCrowdMemberEvent>
+        IHandle<GameLaunchedEvent>, IHandle<CrowdCollectionModifiedEvent>, IHandle<ImportRosterCrowdMemberEvent>, IHandle<RenameCrowdMemberEvent>
     {
         #region Private Fields
 
@@ -86,6 +86,14 @@ namespace HeroVirtualTabletop.Crowd
             if (RefreshViewRequired != null)
                 RefreshViewRequired(sender, e);
         }
+
+        public event EventHandler UpdateViewRequired;
+        public void OnUpdateViewRequired(object sender, EventArgs e)
+        {
+            if (UpdateViewRequired != null)
+                UpdateViewRequired(sender, e);
+        }
+
         public event EventHandler FlattenNumberRequired;
         public void OnFlattenNumberRequired(object sender, EventArgs e)
         {
@@ -644,8 +652,17 @@ namespace HeroVirtualTabletop.Crowd
                 this.CrowdRepository.SortCrowds();
                 this.OriginalName = null;
             }
-            this.EventAggregator.PublishOnUIThread(new RenameCrowdMemberEvent(renamedMember));
+            this.EventAggregator.PublishOnUIThread(new RenameCrowdMemberEvent(renamedMember, this));
         }
+
+        public void Handle(RenameCrowdMemberEvent message)
+        {
+            if(message.Source != this)
+            {
+                OnUpdateViewRequired(this, null);
+            }
+        }
+
         #endregion
 
         #region Clone Character/Crowd

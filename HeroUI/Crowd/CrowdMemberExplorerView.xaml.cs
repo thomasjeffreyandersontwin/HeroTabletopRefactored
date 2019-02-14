@@ -41,6 +41,7 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.FlattenNumberRequired -= viewModel_FlattenNumberRequired;
             this.viewModel.FlattenNumberEntryFinished -= viewModel_FlattenNumberEntryFinished;
             this.viewModel.RefreshViewRequired -= viewModel_RefreshViewRequired;
+            this.viewModel.UpdateViewRequired -= viewModel_UpdateViewRequired;
             this.viewModel.EditModeEnter += viewModel_EditModeEnter;
             this.viewModel.EditModeLeave += viewModel_EditModeLeave;
             this.viewModel.EditNeeded += viewModel_EditNeeded;
@@ -48,6 +49,7 @@ namespace HeroVirtualTabletop.Crowd
             this.viewModel.FlattenNumberRequired += viewModel_FlattenNumberRequired;
             this.viewModel.FlattenNumberEntryFinished += viewModel_FlattenNumberEntryFinished;
             this.viewModel.RefreshViewRequired += viewModel_RefreshViewRequired;
+            this.viewModel.UpdateViewRequired += viewModel_UpdateViewRequired;
             await this.viewModel.LoadCrowdCollection();
         }
 
@@ -200,6 +202,7 @@ namespace HeroVirtualTabletop.Crowd
             TextBox txtBox = sender as TextBox;
             Grid grid = txtBox.Parent as Grid;
             TextBox textBox = grid.Children[1] as TextBox;
+            textBox.Text = txtBox.Text;
             textBox.Visibility = Visibility.Visible;
             textBox.Focus();
             textBox.SelectAll();
@@ -218,12 +221,23 @@ namespace HeroVirtualTabletop.Crowd
             expression.UpdateSource();
             otherTextBox.GetBindingExpression(TextBox.TextProperty).UpdateTarget();
             // Now recursively update tree because for some reason the character nodes don't update themselves!!!
-            foreach(var item in treeViewCrowd.Items)
+            UpdateTreeviewRecursively();
+        }
+
+        private void UpdateTreeviewRecursively()
+        {
+            foreach (var item in treeViewCrowd.Items)
             {
                 var tvi = treeViewCrowd.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
                 UpdateItemsRecursivelyToUpdateNodeText(tvi, item);
             }
         }
+
+        private void viewModel_UpdateViewRequired(object sender, EventArgs e)
+        {
+            UpdateTreeviewRecursively();
+        }
+
         private void viewModel_FlattenNumberRequired(object sender, EventArgs e)
         {
             gridFlattenNumber.Visibility = Visibility.Visible;
