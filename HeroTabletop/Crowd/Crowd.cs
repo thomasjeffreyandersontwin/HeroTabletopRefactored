@@ -917,7 +917,7 @@ namespace HeroVirtualTabletop.Crowd
             get
             {
                 //return parent;
-                return _loadedParentMembership.ParentCrowd;
+                return _loadedParentMembership?.ParentCrowd;
             }
             set
             {
@@ -1327,7 +1327,7 @@ namespace HeroVirtualTabletop.Crowd
             var destCrowd = GetDestinationCrowdForPaste(member);
             var cloningMember = currentClipboardObject as CrowdMember;
             var clonedMember = cloningMember?.Clone();
-            destCrowd.AddCrowdMember(clonedMember);
+            this.PasteToDestinationCrowd(destCrowd, clonedMember);
             return clonedMember;
         }
 
@@ -1377,7 +1377,7 @@ namespace HeroVirtualTabletop.Crowd
             var destCrowd = GetDestinationCrowdForPaste(member);
             Crowd memberToClone = currentClipboardObject as Crowd;
             Crowd clonedCrowd = memberToClone.CloneMemberships();
-            destCrowd.AddCrowdMember(clonedCrowd);
+            this.PasteToDestinationCrowd(destCrowd, clonedCrowd);
 
             return clonedCrowd;
         }
@@ -1387,8 +1387,10 @@ namespace HeroVirtualTabletop.Crowd
             var destCrowd = GetDestinationCrowdForPaste(member);
             Crowd memberToCopy = currentClipboardObject as Crowd;
             var newCrowd = _repository.NewCrowd(destCrowd, memberToCopy.Name + " Flattened");
+            if (destCrowd == null)
+                this._repository.AddCrowd(newCrowd);
 
-            List<CrowdMember> flattenedMembers = _repository.GetFlattenedMemberList(memberToCopy.Members.ToList()).Distinct().ToList();
+            List<CrowdMember> flattenedMembers = _repository.GetFlattenedMemberList(memberToCopy.Members.ToList()).Where(m => m is CharacterCrowdMember).Distinct().ToList();
             int currentNumberToSkip = this.skipNumber;
             for (int i = 0; i < flattenedMembers.Count; i++)
             {
@@ -1414,6 +1416,16 @@ namespace HeroVirtualTabletop.Crowd
             if (member is CharacterCrowdMember)
                 return (member as CharacterCrowdMember).Parent;
             else return member as Crowd;
+        }
+
+        private void PasteToDestinationCrowd(Crowd destinationCrowd, CrowdMember memberToPaste)
+        {
+            if (destinationCrowd != null && memberToPaste != null)
+                destinationCrowd.AddCrowdMember(memberToPaste);
+            else if (destinationCrowd == null && memberToPaste is Crowd)
+            {
+                this._repository.AddCrowd(memberToPaste as Crowd);
+            }
         }
     }
 
