@@ -283,6 +283,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
         string Filter { get; set; }
         void LoadResources();
         void LoadReferenceResource();
+        void LoadIdentityResource();
     }
 
     public interface AnimatedResource

@@ -87,6 +87,8 @@ namespace HeroVirtualTabletop.Attack
         void FireAtDesktop(Position desktopPosition);
         void Cancel(AttackInstructions instructions);
         AreaEffectAttack TransformToAreaEffectAttack();
+        MultiAttack TransformToMultiAttack();
+        GangAttack TransformToGangAttack();
         AnimatedAbility.AnimatedAbility TransformToAbility();
         void InitiateFrom(AnimatedAttack attackToCopy);
     }
@@ -97,6 +99,7 @@ namespace HeroVirtualTabletop.Attack
         AreaAttackInstructions DetermineTargetsFromPositionOfAttack(int radius, Position attackCenter);
         List<KnockbackCollisionInfo> PlayCompleteAttackCycle(AreaAttackInstructions instructions);
         List<KnockbackCollisionInfo> CompleteTheAttackCycle(AreaAttackInstructions instructions);
+        GangAreaAttack TransformToGangAreaAttack();
         void Cancel(AreaAttackInstructions instructions);
     }
 

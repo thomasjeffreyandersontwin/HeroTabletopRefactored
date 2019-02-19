@@ -2050,6 +2050,16 @@ namespace HeroVirtualTabletop.Roster
         {
             throw new NotImplementedException();
         }
+
+        public MultiAttack TransformToMultiAttack()
+        {
+            throw new NotImplementedException();
+        }
+
+        public GangAttack TransformToGangAttack()
+        {
+            throw new NotImplementedException();
+        }
     }
     public class RosterSelectionAttackInstructionsImpl : AttackInstructionsImpl, RosterSelectionAttackInstructions
     {

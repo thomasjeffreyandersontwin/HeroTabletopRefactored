@@ -29,6 +29,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         private bool isUpdatingCollection = false;
         private object lastAnimationElementsStateToUpdate = null;
+        private bool stopAnimationResourceSync = false;
         
 
         public static bool IS_ATTACK_EXECUTING;
@@ -817,8 +818,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
             if (e.PropertyName == "Mov")
             {
                 MovElement element = sender as MovElement;
-                element.Name = element.Mov.Name;
-                MovElementImpl.LastMov = element.Mov;
+                if (element.Mov != null)
+                {
+                    element.Name = element.Mov.Name;
+                    MovElementImpl.LastMov = element.Mov;
+                }
             }
             else if (e.PropertyName == "FX")
             {
@@ -834,17 +838,20 @@ namespace HeroVirtualTabletop.AnimatedAbility
             }
             else if (e.PropertyName == "Reference")
             {
-                if(sender is ReferenceElement)
+                if (!stopAnimationResourceSync)
                 {
-                    ReferenceElement element = sender as ReferenceElement;
-                    element.Name = element.Reference.Ability.Name;
-                    ReferenceElementImpl.LastReference = element.Reference;
-                }
-                else if(sender is LoadIdentityElement)
-                {
-                    LoadIdentityElement element = sender as LoadIdentityElement;
-                    element.Name = element.Reference.Identity.Name;
-                    LoadIdentityElementImpl.LastIdentityReference = element.Reference;
+                    if (sender is ReferenceElement)
+                    {
+                        ReferenceElement element = sender as ReferenceElement;
+                        element.Name = element.Reference.Ability.Name;
+                        ReferenceElementImpl.LastReference = element.Reference;
+                    }
+                    else if (sender is LoadIdentityElement)
+                    {
+                        LoadIdentityElement element = sender as LoadIdentityElement;
+                        element.Name = element.Reference.Identity.Name;
+                        LoadIdentityElementImpl.LastIdentityReference = element.Reference;
+                    }
                 }
             }
             else
@@ -860,7 +867,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 //SaveUISettingsForResouce(element, element.Resource);
                 //this.UpdateReferenceTypeCommand.RaiseCanExecuteChanged();
             }
-
         }
 
         public bool CanEnterAbilityEditMode
@@ -971,7 +977,11 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             if(this.CurrentAbility != null && (message.AddedActionType == CharacterActionType.Identity || message.AddedActionType == CharacterActionType.Ability))
             {
-                this.LoadResources();
+                this.stopAnimationResourceSync = true;
+                this.AnimatedResourceMananger.LoadReferenceResource();
+                this.AnimatedResourceMananger.LoadIdentityResource();
+                this.RestoreReferences();
+                this.stopAnimationResourceSync = false;
             }
         }
 
@@ -979,7 +989,23 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             if (this.CurrentAbility != null && (message.RemovedAction is AnimatedAbility || message.RemovedAction is Identity))
             {
-                this.LoadResources();
+                this.stopAnimationResourceSync = true;
+                this.AnimatedResourceMananger.LoadReferenceResource();
+                this.AnimatedResourceMananger.LoadIdentityResource();
+                this.RestoreReferences();
+                this.stopAnimationResourceSync = false;
+            }
+        }
+
+        private void RestoreReferences()
+        {
+            if (this.SelectedAnimationElement is ReferenceElement)
+            {
+                (SelectedAnimationElement as ReferenceElement).Reference = ReferenceElementImpl.LastReference;
+            }
+            else if (this.SelectedAnimationElement is LoadIdentityElement)
+            {
+                (SelectedAnimationElement as LoadIdentityElement).Reference = LoadIdentityElementImpl.LastIdentityReference;
             }
         }
 

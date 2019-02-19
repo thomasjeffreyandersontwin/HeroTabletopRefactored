@@ -13,6 +13,7 @@ using HeroVirtualTabletop.Movement;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using HeroVirtualTabletop.Common;
+using HeroVirtualTabletop.ManagedCharacter;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -246,6 +247,40 @@ namespace HeroVirtualTabletop.Attack
             return areaAttack;
         }
 
+        public MultiAttack TransformToMultiAttack()
+        {
+            MultiAttackImpl multiAttack = new MultiAttackImpl();
+            multiAttack.Name = this.Name;
+            multiAttack.Order = this.Order;
+            multiAttack.Owner = this.Owner;
+            multiAttack.Sequencer = this.Sequencer;
+            multiAttack.OnHitAnimation = this.OnHitAnimation;
+            multiAttack.Persistent = this.Persistent;
+            multiAttack.Generator = this.Generator;
+            multiAttack.KeyboardShortcut = this.KeyboardShortcut;
+            multiAttack.Target = this.Target;
+            multiAttack.Type = this.Type;
+
+            return multiAttack;
+        }
+
+        public GangAttack TransformToGangAttack()
+        {
+            GangAttackImpl gangAttack = new GangAttackImpl();
+            gangAttack.Name = this.Name;
+            gangAttack.Order = this.Order;
+            gangAttack.Owner = this.Owner;
+            gangAttack.Sequencer = this.Sequencer;
+            gangAttack.OnHitAnimation = this.OnHitAnimation;
+            gangAttack.Persistent = this.Persistent;
+            gangAttack.Generator = this.Generator;
+            gangAttack.KeyboardShortcut = this.KeyboardShortcut;
+            gangAttack.Target = this.Target;
+            gangAttack.Type = this.Type;
+
+            return gangAttack;
+        }
+
         public AnimatedAbility.AnimatedAbility TransformToAbility()
         {
             AnimatedAbilityImpl ability = new AnimatedAbilityImpl();
@@ -270,6 +305,15 @@ namespace HeroVirtualTabletop.Attack
             this.OnHitAnimation = attackToCopy.OnHitAnimation;
             this.Persistent = attackToCopy.Persistent;
             this.Type = attackToCopy.Type;
+        }
+
+        public override CharacterAction Clone()
+        {
+            var clonedAbility = base.Clone() as AnimatedAbility.AnimatedAbility;
+            AnimatedAttack clonedAttack = clonedAbility.TransformToAttack();
+            clonedAttack.OnHitAnimation = this.OnHitAnimation.Clone() as AnimatedAbility.AnimatedAbility;
+
+            return clonedAttack;
         }
     }
 
@@ -377,6 +421,31 @@ namespace HeroVirtualTabletop.Attack
             }
             this.Attacker.ResetActiveAttack();
         }
+
+        public GangAreaAttack TransformToGangAreaAttack()
+        {
+            GangAreaAttackImpl gangAreaAttack = new GangAreaAttackImpl();
+            gangAreaAttack.Name = this.Name;
+            gangAreaAttack.Order = this.Order;
+            gangAreaAttack.Owner = this.Owner;
+            gangAreaAttack.Sequencer = this.Sequencer;
+            gangAreaAttack.OnHitAnimation = this.OnHitAnimation;
+            gangAreaAttack.Persistent = this.Persistent;
+            gangAreaAttack.Generator = this.Generator;
+            gangAreaAttack.KeyboardShortcut = this.KeyboardShortcut;
+            gangAreaAttack.Target = this.Target;
+            gangAreaAttack.Type = this.Type;
+
+            return gangAreaAttack;
+        }
+
+        public override CharacterAction Clone()
+        {
+            var clonedAttack = base.Clone() as AnimatedAttack;
+            AreaEffectAttack clonedAreaAttack = clonedAttack.TransformToAreaEffectAttack();
+
+            return clonedAreaAttack;
+        }
     }
 
     public class MultiAttackImpl : AnimatedAttackImpl, MultiAttack
@@ -412,6 +481,13 @@ namespace HeroVirtualTabletop.Attack
                 ins.KnockbackDistance = 0;
             }
             this.Attacker.ResetActiveAttack();
+        }
+
+        public override CharacterAction Clone()
+        {
+            AnimatedAttack clonedAttack = base.Clone() as AnimatedAttack;
+            MultiAttack clonedMultiAttack = clonedAttack.TransformToMultiAttack();
+            return clonedMultiAttack;
         }
     }
 
@@ -492,6 +568,13 @@ namespace HeroVirtualTabletop.Attack
             instructions.Defenders.ForEach(d => d.ResetAllAbiltitiesAndState());
             instructions.Clear();
         }
+
+        public override CharacterAction Clone()
+        {
+            AnimatedAttack clonedAttack = base.Clone() as AnimatedAttack;
+            GangAttack clonedGangAttack = clonedAttack.TransformToGangAttack();
+            return clonedGangAttack;
+        }
     }
 
     public class GangAreaAttackImpl : AreaEffectAttackImpl, GangAreaAttack
@@ -540,6 +623,13 @@ namespace HeroVirtualTabletop.Attack
         {
             instructions.Clear();
             base.Cancel(instructions);
+        }
+
+        public override CharacterAction Clone()
+        {
+            AreaEffectAttack clonedAreaAttack = base.Clone() as AreaEffectAttack;
+            GangAreaAttack clonedGangAreaAttack = clonedAreaAttack.TransformToGangAreaAttack();
+            return clonedGangAreaAttack;
         }
     }
 

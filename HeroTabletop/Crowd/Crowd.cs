@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Runtime.Serialization;
+using HeroVirtualTabletop.Attack;
 //using Module.HeroVirtualTabletop.Library.Utility;
 
 namespace HeroVirtualTabletop.Crowd
@@ -1074,19 +1075,94 @@ namespace HeroVirtualTabletop.Crowd
         public CrowdMember Clone()
         {
             var clone = (CharacterCrowdMemberImpl)CrowdRepository.NewCharacterCrowdMember();
-
             clone.Name = CrowdRepository.CreateUniqueName(Name, CrowdRepository.AllMembersCrowd.Members);
-            foreach (var id in Identities)
-                clone.Identities.InsertAction((Identity)id.Clone());
-            foreach (var ab in Abilities)
-                clone.Abilities.InsertAction((AnimatedAbility.AnimatedAbility)ab.Clone());
-            foreach (var cm in Movements)
-                clone.Movements.InsertAction((CharacterMovement)cm.Clone());
-
             clone.Generator = Generator;
             clone.Targeter = Targeter;
             clone.Camera = Camera;
 
+            foreach (var ab in Abilities)
+            {
+                var clonedAbility = ab.Clone() as AnimatedAbility.AnimatedAbility;
+                clonedAbility.Owner = clone;
+                clonedAbility.Target = clone;
+                if(clonedAbility is AnimatedAttack)
+                {
+                    (clonedAbility as AnimatedAttack).OnHitAnimation.Owner = clone;
+                    (clonedAbility as AnimatedAttack).OnHitAnimation.Target = clone;
+                }
+                clone.Abilities.InsertAction(clonedAbility);
+            }
+
+            clone.Identities.ClearAll();
+            foreach (var id in Identities)
+            {
+                var clonedIdenttity = id.Clone() as Identity;
+                if (id.Name == this.Name)
+                    clonedIdenttity.Name = clone.Name;
+                clonedIdenttity.Owner = clone;
+                if(id.AnimationOnLoad != null)
+                {
+                    AnimatedAbility.AnimatedAbility animationOnLoad = clone.Abilities.FirstOrDefault(a => a.Name == id.AnimationOnLoad.Name);
+                    clonedIdenttity.AnimationOnLoad = animationOnLoad;
+                }
+                clone.Identities.InsertAction(clonedIdenttity);
+            }
+
+            if(this.DefaultIdentity != null)
+            {
+                string defaultIdentityName = this.DefaultIdentity.Name == this.Name ? clone.Name : this.DefaultIdentity.Name;
+                Identity defaultIdentity = clone.Identities.FirstOrDefault(i => i.Name == defaultIdentityName);
+                clone.Identities.Default = defaultIdentity;
+            }
+
+            if(this.ActiveIdentity != null)
+            {
+                string activeIdentityName = this.ActiveIdentity.Name == this.Name ? clone.Name : this.ActiveIdentity.Name;
+                Identity activeIdentity = clone.Identities.FirstOrDefault(i => i.Name == activeIdentityName);
+                clone.Identities.Active = activeIdentity;
+            }
+
+            foreach (var cm in Movements)
+            {
+                var clonedMovement = cm.Clone() as CharacterMovement;
+                clonedMovement.Owner = clone;
+                clone.Movements.InsertAction(clonedMovement);
+            }
+
+            if(this.DefaultMovement != null)
+            {
+                CharacterMovement defaultMovement = clone.Movements.FirstOrDefault(m => m.Name == this.DefaultMovement.Name);
+                clone.Movements.Default = defaultMovement;
+            }
+
+            foreach(var actionGroup in this.CharacterActionGroups.Where(g => !g.IsStandardActionGroup && (g is CharacterActionList<CharacterAction>)))
+            {
+                CharacterActionList<CharacterAction> actGroup = new CharacterActionListImpl<CharacterAction>(CharacterActionType.Mixed, clone.Generator, clone);
+                actGroup.Name = actionGroup.Name;
+                clone.AddActionGroup(actGroup);
+
+                foreach(var action in (actionGroup as CharacterActionList<CharacterAction>))
+                {
+                    if(action is Identity)
+                    {
+                        Identity identity = clone.Identities.FirstOrDefault(i => i.Name == action.Name);
+                        if (identity != null)
+                            actGroup.InsertAction(identity);
+                    }
+                    else if(action is AnimatedAbility.AnimatedAbility)
+                    {
+                        AnimatedAbility.AnimatedAbility ability = clone.Abilities.FirstOrDefault(a => a.Name == action.Name);
+                        if (ability != null)
+                            actGroup.InsertAction(ability);
+                    }
+                    else if(action is CharacterMovement)
+                    {
+                        CharacterMovement movement = clone.Movements.FirstOrDefault(m => m.Name == action.Name);
+                        if (movement != null)
+                            actGroup.InsertAction(movement);
+                    }
+                }
+            }
 
             return clone;
         }
