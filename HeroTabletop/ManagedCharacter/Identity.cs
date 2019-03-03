@@ -1,5 +1,6 @@
 ﻿using HeroVirtualTabletop.Desktop;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HeroVirtualTabletop.ManagedCharacter
@@ -61,6 +62,9 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 NotifyOfPropertyChange(() => AnimationOnLoad);
             }
         }
+
+        public static List<string> Models { get; set; }
+        public static List<string> Costumes { get; set; }
 
         public override void Play(bool completeEvent = true)
         {

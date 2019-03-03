@@ -386,6 +386,26 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 var identity = obj as Identity;
                 if (identity.Surface == null)
                     identity.Surface = newName;
+                else if(identity.Surface == oldName)
+                {
+                    identity.Surface = newName;
+                    if(identity.Type == SurfaceType.Costume)
+                    {
+                        //look for the new name in costumes, otherwise change surface type to model
+                        if(IdentityImpl.Costumes != null && !IdentityImpl.Costumes.Any(c => c == newName))
+                        {
+                            identity.Type = SurfaceType.Model;
+                        }
+                    }
+                    else
+                    {
+                        //look for the new name in costumes, if exists change surface type to costume
+                        if (IdentityImpl.Costumes != null && IdentityImpl.Costumes.Any(c => c == newName))
+                        {
+                            identity.Type = SurfaceType.Costume;
+                        }
+                    }
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using Caliburn.Micro;
 using HeroVirtualTabletop.AnimatedAbility;
 using HeroVirtualTabletop.Attack;
+using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.Crowd;
 using HeroVirtualTabletop.Desktop;
 using HeroVirtualTabletop.ManagedCharacter;
@@ -569,6 +570,7 @@ namespace HeroUI
                 filePath, Properties.Resources.Models
                 );
             }
+            IdentityImpl.Models = new List<string>(File.ReadAllLines(Path.Combine(Properties.Settings.Default.GameDirectory, GAME_DATA_FOLDERNAME, GAME_MODELS_FILENAME)).OrderBy(m => m, new StringValueComparer()));
         }
 
         private void LoadSoundFiles()
@@ -585,7 +587,12 @@ namespace HeroUI
             string folderPath = Path.Combine(Properties.Settings.Default.GameDirectory, GAME_COSTUMES_FOLDERNAME);
             if (Directory.Exists(folderPath))
             {
-                return;
+                IdentityImpl.Costumes = new List<string>(
+                Directory.EnumerateFiles
+                    (Path.Combine(
+                        HeroUI.Properties.Settings.Default.GameDirectory,
+                        GAME_COSTUMES_FOLDERNAME),
+                    "*.costume").Select((file) => { return Path.GetFileNameWithoutExtension(file); }).OrderBy(c => c, new StringValueComparer()));
             }
             else
             {

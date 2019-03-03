@@ -359,12 +359,12 @@ namespace HeroVirtualTabletop.ManagedCharacter
         #region Distance Counter
         public void UpdateDistanceCount()
         {
-            this.Position.UpdateDistanceCount();
+            this.Position?.UpdateDistanceCount();
         }
 
         public void UpdateDistanceCount(Position position)
         {
-            this.Position.UpdateDistanceCount(position);
+            this.Position?.UpdateDistanceCount(position);
         }
 
         public void ResetDistanceCount()
@@ -444,7 +444,10 @@ namespace HeroVirtualTabletop.ManagedCharacter
             string model = "model_statesman";
             if (active.Type == SurfaceType.Model)
             {
-                model = active.Surface;
+                if (IdentityImpl.Models != null && IdentityImpl.Models.Any(c => c == active.Surface))
+                {
+                    model = active.Surface;
+                }
             }
             Generator.GenerateDesktopCommandText(DesktopCommand.SpawnNpc, model, spawnText);
             Target(false);
