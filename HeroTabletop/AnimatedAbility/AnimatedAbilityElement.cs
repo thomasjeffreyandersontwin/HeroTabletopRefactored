@@ -815,6 +815,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
 
         public void Play3D(string soundFilename, float posX, float posY, float posZ, bool playLooped)
         {
+            engine.SoundVolume = 1;
             engine.Play3D(soundFilename, posX, posY, posZ, playLooped);
         }
     }
