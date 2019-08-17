@@ -133,7 +133,7 @@ namespace HeroVirtualTabletop.Desktop
                 {
                     parsedCmd = parsedCmd.Substring(0, parsedCmd.LastIndexOf("$$", 254));
                     executeCmd("/" + parsedCmd);
-                    Thread.Sleep(1); // Sleep a while after executing a command
+                    Thread.Sleep(20); // Sleep a while after executing a command
                     position += parsedCmd.Length + 2;
                     parsedCmd = command.Substring(position);
                 }

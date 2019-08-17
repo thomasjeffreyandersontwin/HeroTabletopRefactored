@@ -105,6 +105,7 @@ namespace HeroVirtualTabletop.Desktop
         Dictionary<PositionBodyLocation, PositionLocationPart> BodyLocations { get; }
         List<Obstruction> GetObstructionsTowardsAnotherPosition(Position toPosition, List<Position> potentialObstructions);
         List<Obstruction> GetObstructionsAlongDirection(Vector3 directionVector, List<Position> potentialObstructions);
+        List<Obstruction> GetObstructionsAwayFromAnotherPosition(Position toPosition, List<Position> potentialObstructions);
         void UpdateDistanceCount();
         void UpdateDistanceCount(Position position);
         void ResetDistanceCount();

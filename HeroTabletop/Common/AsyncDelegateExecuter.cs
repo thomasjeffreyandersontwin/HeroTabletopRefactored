@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HeroVirtualTabletop.Common
 {
@@ -31,7 +32,11 @@ namespace HeroVirtualTabletop.Common
 
         private void Timer_Callback(object state)
         {
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(delegateToExecute);
+            //System.Windows.Application.Current.Dispatcher.BeginInvoke(delegateToExecute);
+            //System.Windows.Application.Current.Dispatcher.Invoke(delegateToExecute);
+            //Task t = new Task(delegateToExecute);
+            //t.RunSynchronously();
+            Task.Factory.StartNew(delegateToExecute);
         }
     }
 }

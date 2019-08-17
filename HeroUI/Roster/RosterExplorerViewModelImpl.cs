@@ -93,7 +93,7 @@ namespace HeroVirtualTabletop.Roster
             get
             {
                 bool showAttackContextMenu = false;
-                if (this.Roster.CurrentAttackInstructions is AreaAttackInstructions)
+                if (this.Roster.ConfiguringAttack != null && this.SelectedParticipants != null && this.SelectedParticipants.Count > 0)
                 {
                     showAttackContextMenu = true;
                     foreach (var participant in this.SelectedParticipants)
@@ -508,7 +508,7 @@ namespace HeroVirtualTabletop.Roster
         {
             System.Action d = delegate ()
             {
-                ToggleActivate();
+                Application.Current.Dispatcher.Invoke(() => { ToggleActivate(); });
             };
             AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
             adex.ExecuteAsyncDelegate();
@@ -1065,8 +1065,9 @@ namespace HeroVirtualTabletop.Roster
 
         public void UpdateCharacterState(CharacterCrowdMember character, string stateName)
         {
-            AnimatableCharacterState state = character.ActiveStates.First(s => s.StateName == stateName);
-            character.RemoveState(state);
+            AnimatableCharacterState state = character.ActiveStates.FirstOrDefault(s => s.StateName == stateName);
+            if(state != null)
+                character.RemoveState(state);
         }
 
 
@@ -1222,31 +1223,34 @@ namespace HeroVirtualTabletop.Roster
 
         private void DisplayCharacterPopupMenu()
         {
-            bool areaAttack = this.Roster.ConfiguringAttack is AreaEffectAttack;
-            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, areaAttack);
+            bool attackActive = this.Roster.ConfiguringAttack != null;
+            desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, attackActive);
         }
         int numRetryPopupMenu = 3;
         private void DisplayCharacterPopupMenue()
         {
             System.Action d = delegate ()
             {
-                //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)  
-                if (this.Roster.AttackingCharacters.Contains(this.Roster.TargetedCharacter) && numRetryPopupMenu > 0)
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    numRetryPopupMenu--;
-                    DisplayCharacterPopupMenue();
-                }
-                else
-                {
-                    bool areaAttack = this.Roster.CurrentAttackInstructions.Attacker.ActiveAttack is AreaEffectAttack;
-                    desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, areaAttack);
-                    numRetryPopupMenu = 3;
-                }
-                if (this.Roster.DistanceCountingCharacter != null)
-                {
-                    var mousePosition = this.mouseHoverElement.Position;
-                    this.Roster.DistanceCountingCharacter.UpdateDistanceCount(mousePosition);
-                }
+                    //if (AttackingCharacters.Contains(character) && numRetryPopupMenu > 0)  
+                    if (this.Roster.AttackingCharacters.Contains(this.Roster.TargetedCharacter) && numRetryPopupMenu > 0)
+                    {
+                        numRetryPopupMenu--;
+                        DisplayCharacterPopupMenue();
+                    }
+                    else
+                    {
+                        bool attackActive = this.Roster.ConfiguringAttack != null;
+                        desktopContextMenu.GenerateAndDisplay(Roster.TargetedCharacter, Roster.AttackingCharacters != null ? Roster.AttackingCharacters.Select(ac => ac.Name).ToList() : null, attackActive);
+                        numRetryPopupMenu = 3;
+                    }
+                    if (this.Roster.DistanceCountingCharacter != null)
+                    {
+                        var mousePosition = this.mouseHoverElement.Position;
+                        this.Roster.DistanceCountingCharacter.UpdateDistanceCount(mousePosition);
+                    }
+                });
             };
             AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 500);
             adex.ExecuteAsyncDelegate();
@@ -1263,7 +1267,7 @@ namespace HeroVirtualTabletop.Roster
                     {
                         System.Action d1 = delegate ()
                         {
-                            this.PlayDefaultAbility();
+                            Application.Current.Dispatcher.Invoke(() => this.PlayDefaultAbility());
                         };
                         AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d1, 500);
                         adex.ExecuteAsyncDelegate();
@@ -1272,7 +1276,7 @@ namespace HeroVirtualTabletop.Roster
                     {
                         System.Action d1 = delegate ()
                         {
-                            this.PlayDefaultMovement();
+                            Application.Current.Dispatcher.Invoke(() => this.PlayDefaultMovement());
                         };
                         AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d1, 500);
                         adex.ExecuteAsyncDelegate();
@@ -1324,7 +1328,7 @@ namespace HeroVirtualTabletop.Roster
                 numRetryHover--;
                 System.Action d = delegate ()
                 {
-                    PlayAttackCycle();
+                    Application.Current.Dispatcher.Invoke(() => { PlayAttackCycle(); });
                 };
                 AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 20);
                 adex.ExecuteAsyncDelegate();
@@ -1350,6 +1354,8 @@ namespace HeroVirtualTabletop.Roster
                         }
                         else
                         {
+                            this.SelectedParticipants.Clear();
+                            this.SelectedParticipants.Add(hoveredCharacter);
                             this.SelectCharacter(hoveredCharacter);
                             TargetAndExecuteAttack();
                         }

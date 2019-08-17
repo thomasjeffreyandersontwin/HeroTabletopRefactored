@@ -1076,12 +1076,12 @@ namespace HeroVirtualTabletop.Roster
                 // Multi Attack / Attack to Gang
                 CreateMultiInstructions(attackingCharacter);
             }
-            // Calculate obstructions here
+            
             if (this.CurrentAttackInstructions is MultiAttackInstructions)
             {
                 foreach (var attacker in this.AttackingCharacters)
                 {
-                    foreach (var defender in this.Selected.Participants)
+                    foreach (var defender in this.Selected.Participants.Where(p => !this.AttackingCharacters.Contains(p)))
                     {
                         (this.CurrentAttackInstructions as MultiAttackInstructions).AddTarget(attacker, defender);
                     }
@@ -1089,7 +1089,82 @@ namespace HeroVirtualTabletop.Roster
             }
             else
             {
-                this.CurrentAttackInstructions.Defender = this.Selected.Participants.First();
+                if(this.CurrentAttackInstructions.Defender != null && this.CurrentAttackInstructions.Defender != this.Selected.Participants.First())
+                {
+                    var currentDefender = this.CurrentAttackInstructions.Defender;
+                    var currentInstructions = this.CurrentAttackInstructions;
+                    CreateMultiInstructions(attackingCharacter);
+                    (this.CurrentAttackInstructions as MultiAttackInstructions).AddTarget(attackingCharacter, currentDefender);
+                    (this.CurrentAttackInstructions as MultiAttackInstructions).AddTarget(attackingCharacter, this.Selected.Participants.First());
+                    foreach (var obstacle in currentInstructions.Obstacles)
+                        this.CurrentAttackInstructions.AddObstacle(obstacle);
+                }
+                else
+                    this.CurrentAttackInstructions.Defender = this.Selected.Participants.First();
+            }
+            AddAttackObstacles();
+        }
+
+        public void AddAttackObstacles()
+        {
+            var rosterMembers = this.Participants.Where(p => p.IsSpawned
+                                    && !this.AttackingCharacters.Contains(p)
+                                    && (((this.CurrentAttackInstructions is MultiAttackInstructions) && !(this.CurrentAttackInstructions as MultiAttackInstructions).Defenders.Contains(p))
+                                        || (!(this.CurrentAttackInstructions is MultiAttackInstructions) && this.CurrentAttackInstructions.Defender != p))
+
+                                    ).ToList();
+
+            var potentialObstructionPositions = rosterMembers.Select(p => p.Position).ToList();
+            if (potentialObstructionPositions.Count == 0)
+                return;
+            foreach (var attacker in this.AttackingCharacters)
+            {
+                foreach (var defender in this.Selected.Participants)
+                {
+                    var inBetweenObstructions = attacker.Position.GetObstructionsTowardsAnotherPosition(defender.Position, potentialObstructionPositions);
+                    var knockbackObstructions = attacker.Position.GetObstructionsAwayFromAnotherPosition(defender.Position, potentialObstructionPositions);
+                    if(knockbackObstructions != null && knockbackObstructions.Count > 0)
+                    {
+                        var minDist = knockbackObstructions.Min(k => attacker.Position.DistanceFrom(k.Position));
+                        foreach (var kobs in knockbackObstructions)
+                        {
+                            if (kobs.ObstructingObject == null)
+                                kobs.ObstructingObject = this.Participants.FirstOrDefault(p => p.Position == kobs.Position);
+                            var obstacleDistance = attacker.Position.DistanceFrom(kobs.Position);
+                            if (obstacleDistance <= minDist) // add only one kb obstacle
+                            {
+                                var alreadyExistingObs = this.CurrentAttackInstructions.Obstacles.FirstOrDefault(o => o.Defender == defender && o.ObstacleType == ObstacleType.Knockback);
+                                if(alreadyExistingObs != null)
+                                {
+                                    var distExistingObs = alreadyExistingObs.Attacker.Position.DistanceFrom(alreadyExistingObs.ObstaclePosition);
+                                    if (distExistingObs > obstacleDistance)
+                                    {
+                                        // Remove existing obstacle, because this one is closer
+                                        this.CurrentAttackInstructions.RemoveFromObstacles(alreadyExistingObs.ObstacleTarget as AnimatedCharacter);
+                                    }
+                                    else // don't add this obstacle, it has already been added
+                                        continue;
+                                }
+                                Obstacle obstacle = new ObstacleImpl { Attacker = attacker, Defender = defender, ObstacleTarget = kobs.ObstructingObject, ObstacleType = ObstacleType.Knockback, ObstaclePosition = kobs.Position };
+                                obstacle.ObstacleInstructions = new AttackInstructionsImpl { Attacker = attacker, Defender = kobs.ObstructingObject as AnimatedCharacter };
+                                this.CurrentAttackInstructions.AddObstacle(obstacle);
+                                break;
+                            }
+                        }
+                    }
+                    if(inBetweenObstructions != null && inBetweenObstructions.Count > 0)
+                    {
+                        foreach (var obs in inBetweenObstructions)
+                        {
+                            if (obs.ObstructingObject == null)
+                                obs.ObstructingObject = this.Participants.FirstOrDefault(p => p.Position == obs.Position);
+                            Obstacle obstacle = new ObstacleImpl { Attacker = attacker, Defender = defender, ObstacleTarget = obs.ObstructingObject, ObstacleType = ObstacleType.Hit, ObstaclePosition = obs.Position };
+                            obstacle.ObstacleInstructions = new AttackInstructionsImpl { Attacker = attacker, Defender = obs.ObstructingObject as AnimatedCharacter };
+                            this.CurrentAttackInstructions.AddObstacle(obstacle);
+                        }
+                    }
+                    
+                }
             }
         }
 

@@ -90,6 +90,8 @@ namespace HeroVirtualTabletop.AnimatedAbility
         List<AnimatedAbility> ActivePersistentAbilities { get; }
         //ObservableCollection<AnimatableCharacterState> ActiveStates { get; }
         bool IsSelected { get; set; }
+        int? Body { get; set; }
+        int? Stun { get; set; }
         AnimatedAttack ActiveAttack { get; set; }
         bool CheckIfAbilityNameIsDuplicate(string updatedName);
         Position Facing { get; set; }

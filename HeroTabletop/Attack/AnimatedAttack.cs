@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using HeroVirtualTabletop.Common;
 using HeroVirtualTabletop.ManagedCharacter;
+using System.Threading;
 
 namespace HeroVirtualTabletop.Attack
 {
@@ -42,7 +43,20 @@ namespace HeroVirtualTabletop.Attack
 
         public KnockbackCollisionInfo AnimateKnockBack()
         {
-            throw new NotImplementedException();
+            return null;
+        }
+
+        public int GetAttackerDelayInAttackSequence()
+        {
+            int total = 0;
+            var elements = AnimationSequencerImpl.GetFlattenedAnimationListEligibleForPlay(this.AnimationElements);
+            foreach (var element in elements.Where(e => e is PauseElement))
+            {
+                if (!(element as PauseElement).IsUnitPause)
+                    total += (element as PauseElement).Duration;
+            }
+
+            return total;
         }
 
         public AttackInstructions StartAttackCycle()
@@ -51,9 +65,12 @@ namespace HeroVirtualTabletop.Attack
             IsActive = true;
             return new AttackInstructionsImpl();
         }
-        public KnockbackCollisionInfo CompleteTheAttackCycle(AttackInstructions instructions)
+        protected bool defenderAllKnockBacksFinished = false;
+        public async Task<KnockbackCollisionInfo> CompleteTheAttackCycle(AttackInstructions instructions)
         {
+            defenderAllKnockBacksFinished = false;
             PlayAttackCycleOnDefender(instructions);
+            while (!defenderAllKnockBacksFinished) { Thread.Sleep(10); }
             Stop();
             instructions.Defender.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK);
             if (!instructions.AttackHit)
@@ -64,7 +81,8 @@ namespace HeroVirtualTabletop.Attack
         public KnockbackCollisionInfo PlayCompleteAttackCycle(AttackInstructions instructions)
         {
             StartAttackCycle();
-            return CompleteTheAttackCycle(instructions);
+            CompleteTheAttackCycle(instructions);
+            return null;
         }
 
         protected void PlayAttackCycleOnDefender(AttackInstructions instructions)
@@ -75,42 +93,92 @@ namespace HeroVirtualTabletop.Attack
                 SetDestinationPositionForDirectionalFxElementsInAttacks(
                     instructions.Defender.Position.JustMissedPosition);
             TurnAttackerTowardsDefender(instructions);
-            Play(instructions.Attacker);
-            PlayDefenderAnimations(instructions);
-        }
-
-        protected void PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(AttackInstructions instructions)
-        {
-            foreach(var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Hit))
+            // If this attack contains unit pause then determine the total amount of delay prior to distance delay. Then play obstacle animation 
+            // before Playing attacker cycle, but delaying the obstacle animation play by prior delay + distance portion. This will make it look realistic
+            int priorDelay = GetAttackerDelayInAttackSequence();
+            if(this.TimeToHitTarget > 0)
             {
-                var obstacleInstructions = obstacle.ObstacleInstructions;
-                var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.Target.Position);
-                var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
-                int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance);
-                System.Action d = delegate ()
-                {
-                    PlayDefenderAnimations(obstacleInstructions);
-                };
-                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, obstacleDelay);
-                adex.ExecuteAsyncDelegate();
+                PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(instructions, priorDelay);
+
+                Play(instructions.Attacker);
+                PlayDefenderAnimations(instructions);
+            }
+            else
+            {
+                Play(instructions.Attacker);
+                PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(instructions, priorDelay);
+
+                PlayDefenderAnimations(instructions);
             }
         }
 
-        protected void PlayObstacleAnimationForSecondaryTargetsAfterKnockback(AttackInstructions instructions)
+        protected void PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(AttackInstructions instructions, int priorDelay = 0)
         {
-            foreach (var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Knockback))
+            if (instructions.Obstacles != null && instructions.Obstacles.Count > 0)
             {
-                var obstacleInstructions = obstacle.ObstacleInstructions;
-                var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.Target.Position);
-                var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
-                int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance);
-                System.Action d = delegate ()
+                foreach (var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Hit))
                 {
-                    PlayDefenderAnimations(obstacleInstructions);
-                };
-                AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, obstacleDelay);
-                adex.ExecuteAsyncDelegate();
+                    var obstacleInstructions = obstacle.ObstacleInstructions;
+                    if (priorDelay > 0 || this.TimeToHitTarget > 0)
+                    {
+                        var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.ObstaclePosition);
+                        var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
+                        int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance) + priorDelay;
+                        //if (obstacleDelay < 100)
+                        //    obstacleDelay = 100; // at least 100 ms
+                        Thread.Sleep(obstacleDelay);
+                        PlayDefenderAnimations(obstacleInstructions);
+                    }
+                    else
+                    {
+                        PlayDefenderAnimations(obstacleInstructions);
+                    }
+                }
             }
+        }
+
+        protected virtual void PlayObstacleAnimationForSecondaryTargetsAfterKnockback(AttackInstructions instructions, int priorDelay = 0)
+        {
+            if (instructions.Obstacles != null && instructions.Obstacles.Count > 0)
+            {
+                foreach (var obstacle in instructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Knockback))
+                {
+                    //PlayKnockbackObstacle(instructions, obstacle);
+                    PlayDefenderAnimations(obstacle.ObstacleInstructions);
+                }
+            }
+            this.defenderAllKnockBacksFinished = true;
+        }
+
+        protected void PlayKnockbackObstacle(AttackInstructions instructions, Obstacle obstacle)
+        {
+            var obstacleInstructions = obstacle.ObstacleInstructions;
+            var obstacleDistance = instructions.Attacker.Position.DistanceFrom(obstacle.ObstaclePosition);
+            var primaryTargetDistance = instructions.Attacker.Position.DistanceFrom(instructions.Defender.Position);
+            //int obstacleDelay = (int)(TimeToHitTarget * obstacleDistance / primaryTargetDistance);
+            //if (obstacleDelay < 100)
+            //    obstacleDelay = 100; // at least 100 ms
+            int obstacleHitPeriod = 0;
+            float knockbackDistance = instructions.KnockbackDistance;
+            float knockbackDistanceInVectorUnits = knockbackDistance * 8 + 5;
+            var distanceFromPrimaryToSecondary = obstacleDistance - primaryTargetDistance;
+            if (knockbackDistanceInVectorUnits < 50) // 1 to 5 blocks - 1 sec
+            {
+                obstacleHitPeriod = 800;
+            }
+            else if (knockbackDistanceInVectorUnits < 150) // 6 o 18 blocks - 2 sec
+            {
+                obstacleHitPeriod = (int)((distanceFromPrimaryToSecondary / knockbackDistanceInVectorUnits) * 1500);
+            }
+            else // >18 blocks - 3 sec
+            {
+                obstacleHitPeriod = (int)((distanceFromPrimaryToSecondary / knockbackDistanceInVectorUnits) * 2200);
+            }
+
+            if (obstacleHitPeriod < 400)
+                obstacleHitPeriod = 400;
+            Thread.Sleep(obstacleHitPeriod);
+            PlayDefenderAnimations(obstacleInstructions);
         }
 
         protected void RemoveImpacts(AttackInstructions instructions)
@@ -148,6 +216,7 @@ namespace HeroVirtualTabletop.Attack
                     if (pauseElement != null)
                     {
                         pauseElement.DistanceDelayManager.Distance = distance;
+                        pauseElement.TargetPosition = position;
                         this.TimeToHitTarget = pauseElement.DistanceDelayManager.Duration;
                     }
                 }
@@ -173,27 +242,41 @@ namespace HeroVirtualTabletop.Attack
             if (!instructions.AttackHit)
             {
                 instructions.Defender.Abilities[DefaultAbilities.MISS].Play(instructions.Defender);
+                defenderAllKnockBacksFinished = true;
             }
             else
             {
-                if (OnHitAnimation == null)
+                if (OnHitAnimation == null || OnHitAnimation.Sequencer == null || OnHitAnimation.Sequencer.AnimationElements.Count == 0)
                     instructions.Defender.Abilities[DefaultAbilities.HIT].Play(instructions.Defender);
                 else
                     OnHitAnimation.Play(instructions.Defender);
-            
+
                 if (instructions.KnockbackDistance > 0)
                     PlayKnockback(instructions);
                 else
+                {
                     PlayAttackEffectsOnDefender(instructions);
+                    defenderAllKnockBacksFinished = true;
+                }
             }
         }
 
         private void PlayKnockback(AttackInstructions instructions)
         {
-            if(instructions.KnockbackDistance > 0)
+            if(instructions.Obstacles.Any(o => o.ObstacleType == ObstacleType.Knockback && o.ObstacleInstructions.AttackHit))
             {
-                (this.Attacker as MovableCharacter).ExecuteKnockback(new List<MovableCharacter> { instructions.Defender as MovableCharacter}, instructions.KnockbackDistance);
+                var kobs = instructions.Obstacles.First(o => o.ObstacleType == ObstacleType.Knockback && o.ObstacleInstructions.AttackHit);
+                float obsDistance = instructions.Defender.Position.DistanceFrom(kobs.ObstaclePosition);
+                instructions.KnockbackDistance = (obsDistance / 8) - 0.5f;
             }
+            System.Action d = delegate () { PlayObstacleAnimationForSecondaryTargetsAfterKnockback(instructions); };
+            Task.Factory.StartNew(d);
+            
+            if (instructions.KnockbackDistance > 0)
+            {
+                (instructions.Attacker as MovableCharacter).ExecuteKnockback(new List<MovableCharacter> { instructions.Defender as MovableCharacter}, instructions.KnockbackDistance);
+            }
+            
         }
 
         private void AddSelfAsPersistentState()
@@ -315,6 +398,12 @@ namespace HeroVirtualTabletop.Attack
 
             return clonedAttack;
         }
+
+        KnockbackCollisionInfo AnimatedAttack.CompleteTheAttackCycle(AttackInstructions instructions)
+        {
+            CompleteTheAttackCycle(instructions);
+            return null;
+        }
     }
 
     public class AreaEffectAttackImpl : AnimatedAttackImpl, AreaEffectAttack
@@ -323,37 +412,40 @@ namespace HeroVirtualTabletop.Attack
         {
             throw new NotImplementedException();
         }
+
         public List<KnockbackCollisionInfo> CompleteTheAttackCycle(AreaAttackInstructions instructions)
         {
-            if(instructions.AttackCenter != null)
+            defenderAllKnockBacksFinished = false;
+            if (instructions.AttackCenter != null)
             {
                 TargetDestination = instructions.AttackCenter;
                 instructions.Attacker.TurnTowards(instructions.AttackCenter);
             }
            
             PlayAttackAnimations(instructions);
+            while (!defenderAllKnockBacksFinished)
+                Thread.Sleep(100);
             Stop();
             instructions.Defenders.ForEach(d => d.RemoveStateFromActiveStates(DefaultAbilities.UNDERATTACK));
             this.Attacker.ResetActiveAttack();
             return null;
         }
-        protected async Task PlayAttackAnimations(AreaAttackInstructions instructions)
+        protected void PlayAttackAnimations(AreaAttackInstructions instructions)
         {
             Play(instructions.Attacker ?? Attacker);
-            await playDefenderAnimationOnAllTargets(instructions);
+            playDefenderAnimationOnAllTargets(instructions);
             if (instructions.AttackHit)
             {
-                System.Action knockbackAction = delegate ()
+                System.Action effectsAndKnockbackAction = delegate ()
                 {
                     PlayKnockback(instructions);
-                };
-                System.Action effectsAction = delegate ()
-                {
                     playAttackEffectsOnDefenders(instructions);
+                    defenderAllKnockBacksFinished = true;
                 };
-                Task.Run(knockbackAction);
-                await Task.Run(effectsAction);
+                Task.Run(effectsAndKnockbackAction);
             }
+            else
+                defenderAllKnockBacksFinished = true;
             //else
             //{
             //    instructions.Impacts.Clear();
@@ -374,26 +466,45 @@ namespace HeroVirtualTabletop.Attack
         }
         private async Task playDefenderAnimationOnAllTargets(AreaAttackInstructions instructions)
         {
+            PlayObstacleAnimationForSecondaryTargetsBetweenAttackerAndDefender(instructions);
             System.Action missAction = delegate ()
             {
-                var miss = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
-                miss.Play(instructions.DefendersMissed);
+                
             };
 
             System.Action hitAction = delegate ()
             {
-                var defaultHit = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.HIT];
-                if (OnHitAnimation == null || OnHitAnimation.AnimationElements == null || OnHitAnimation.AnimationElements.Count == 0)
-                    defaultHit.Play(instructions.DefendersHit);
-                else
-                    OnHitAnimation.Play(instructions.DefendersHit);
+                
             };
+            var miss = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.MISS];
+            miss.Play(instructions.DefendersMissed);
+            Thread.Sleep(10);
+            var defaultHit = DefaultAbilities.DefaultCharacter.Abilities[DefaultAbilities.HIT];
+            if (OnHitAnimation == null || OnHitAnimation.AnimationElements == null || OnHitAnimation.AnimationElements.Count == 0)
+                defaultHit.Play(instructions.DefendersHit);
+            else
+                OnHitAnimation.Play(instructions.DefendersHit);
+            //Task.Run(missAction);
+            //await Task.Run(hitAction);
+        }
 
-            Task.Run(missAction);
-            await Task.Run(hitAction);
+        protected override void PlayObstacleAnimationForSecondaryTargetsAfterKnockback(AttackInstructions instructions, int priorDelay = 0)
+        {
+            if (instructions is AreaAttackInstructions && instructions.Obstacles != null && instructions.Obstacles.Count > 0)
+            {
+                AreaAttackInstructions areaInstructions = instructions as AreaAttackInstructions;
+                foreach (var obstacle in areaInstructions.Obstacles.Where(o => o.ObstacleType == ObstacleType.Knockback))
+                {
+                    var individualInstruction = areaInstructions.IndividualTargetInstructions.FirstOrDefault(i => i.Defender == obstacle.Defender);
+                    if (individualInstruction != null && individualInstruction.KnockbackDistance > 0)
+                        PlayKnockbackObstacle(individualInstruction, obstacle);
+                }
+            }
         }
         private void PlayKnockback(AreaAttackInstructions instructions)
         {
+            System.Action d = delegate () { PlayObstacleAnimationForSecondaryTargetsAfterKnockback(instructions); };
+            Task.Factory.StartNew(d);
             foreach (var ins in instructions.IndividualTargetInstructions)
             {
                 if (ins.KnockbackDistance > 0)
@@ -463,6 +574,13 @@ namespace HeroVirtualTabletop.Attack
         {
             foreach(var instruction in instructions.IndividualTargetInstructions)
             {
+                var obstacle = instructions.Obstacles.FirstOrDefault(o => o.Defender == instruction.Defender);
+                if (obstacle != null)
+                {
+                    if((obstacle.ObstacleType == ObstacleType.Knockback && instruction.KnockbackDistance > 0)|| obstacle.ObstacleType == ObstacleType.Hit)
+                        instruction.AddObstacle(obstacle);
+                }
+
                 PlayAttackCycleOnDefender(instruction);
             }
             this.Stop();
@@ -507,14 +625,33 @@ namespace HeroVirtualTabletop.Attack
         public List<KnockbackCollisionInfo> CompleteTheAttackCycle(GangAttackInstructions instructions)
         {
             AdjustImpacts(instructions);
-            foreach (var defender in instructions.AttackersMap.Keys) // exclude secondary targets in future
+            foreach (var defender in instructions.AttackersMap.Keys) 
             {
                 List<AnimatedCharacter> attackers = instructions.AttackersMap[defender];
-                foreach(var attacker in attackers)
+                var reorderedAttackers = new List<AnimatedCharacter>();
+                var koAttackers = attackers.Where(attacker => instructions.Obstacles.FirstOrDefault(o => o.Attacker == attacker
+                                                    && o.Defender == defender && o.ObstacleType == ObstacleType.Knockback) != null
+                                                    && instructions.AttackInstructionsMap[defender].FirstOrDefault(i => i.Attacker == attacker).KnockbackDistance > 0).ToList();
+                if(koAttackers.Count > 0)
+                {
+                    reorderedAttackers.AddRange(attackers.Where(a => !koAttackers.Contains(a)));
+                    reorderedAttackers.AddRange(koAttackers);
+                }
+                else
+                {
+                    reorderedAttackers.AddRange(attackers);
+                }
+                foreach (var attacker in reorderedAttackers)
                 {
                     AttackInstructions instructionsForThisAttacker = instructions.AttackInstructionsMap[defender].FirstOrDefault(i => i.Attacker == attacker);
                     if(instructionsForThisAttacker != null)
                     {
+                        var obstacle = instructions.Obstacles.FirstOrDefault(o => o.Attacker == attacker && o.Defender == defender);
+                        if(obstacle != null)// there is some sort of obstacle for this attacker-defender pair
+                        {
+                            if ((obstacle.ObstacleType == ObstacleType.Knockback && instructionsForThisAttacker.KnockbackDistance > 0) || obstacle.ObstacleType == ObstacleType.Hit)
+                                instructionsForThisAttacker.AddObstacle(obstacle);
+                        }
                         base.PlayAttackCycleOnDefender(instructionsForThisAttacker);
                     }
                 }
@@ -595,7 +732,11 @@ namespace HeroVirtualTabletop.Attack
                     TargetDestination = instructions.AttackCenter;
                     areaInstructions.Attacker.TurnTowards(instructions.AttackCenter);
                 }
-
+                var obstacles = instructions.Obstacles.Where(o => o.Attacker == attacker).ToList();
+                foreach (var obstacle in obstacles)
+                {
+                    areaInstructions.AddObstacle(obstacle);
+                }
                 PlayAttackAnimations(areaInstructions);
             }
             Stop();
@@ -640,6 +781,7 @@ namespace HeroVirtualTabletop.Attack
         public AttackInstructionsImpl()
         {
             Impacts = new ObservableCollection<string>();
+            Obstacles = new List<Obstacle>();
         }
         private bool _attackHit;
         public bool AttackHit
@@ -678,8 +820,8 @@ namespace HeroVirtualTabletop.Attack
             }
         }
         public ObservableCollection<string> Impacts { get; }
-        private int knockbackDistance;
-        public int KnockbackDistance
+        private float knockbackDistance;
+        public float KnockbackDistance
         {
             get
             {
@@ -786,7 +928,29 @@ namespace HeroVirtualTabletop.Attack
         {
             this.Defender.RemoveStateFromActiveStates(impactName);
         }
+        public virtual void AddObstacle(Obstacle obstacle)
+        {
+            this.RemoveFromObstacles(obstacle.ObstacleTarget as AnimatedCharacter);
+            var currentInstructionForObstacle = obstacle.ObstacleInstructions;
+            AttackInstructions obstacleInstructions = new AttackInstructionsImpl();
+            obstacleInstructions.Attacker = obstacle.Attacker;
+            obstacleInstructions.Defender = obstacle.ObstacleTarget as AnimatedCharacter;
+            obstacle.ObstacleInstructions = obstacleInstructions;
+            if (currentInstructionForObstacle != null)
+            {
+                obstacle.ObstacleInstructions.AttackHit = currentInstructionForObstacle.AttackHit;
+                foreach (var impact in currentInstructionForObstacle.Impacts)
+                    obstacle.ObstacleInstructions.AddImpact(impact);
+                obstacle.ObstacleInstructions.IsCenterOfAreaEffectAttack = currentInstructionForObstacle.IsCenterOfAreaEffectAttack;
+                obstacle.ObstacleInstructions.KnockbackDistance = currentInstructionForObstacle.KnockbackDistance;
+            }
+            this.Obstacles.Add(obstacle);
+        }
 
+        public virtual void RemoveFromObstacles(AnimatedCharacter obstacleCharacter)
+        {
+            this.Obstacles?.RemoveAll(o => o.ObstacleTarget == obstacleCharacter);
+        }
     }
 
     public class MultiAttackInstructionsImpl : AttackInstructionsImpl, MultiAttackInstructions
@@ -818,13 +982,19 @@ namespace HeroVirtualTabletop.Attack
         public MultiAttackInstructionsImpl()
         {
             IndividualTargetInstructions = new ObservableCollection<AttackInstructions>();
+            Obstacles = new List<Obstacle>();
         }
         public AttackInstructions AddTarget(AnimatedCharacter attacker, AnimatedCharacter defender)
         {
-            AttackInstructions instructions = new AttackInstructionsImpl();
-            instructions.Defender = defender;
-            instructions.Attacker = attacker;
-            IndividualTargetInstructions.Add(instructions);
+            AttackInstructions instructions = IndividualTargetInstructions.FirstOrDefault(i => i.Attacker == attacker && i.Defender == defender);
+            if(instructions == null)
+            {
+                instructions = new AttackInstructionsImpl();
+                instructions.Defender = defender;
+                instructions.Attacker = attacker;
+                IndividualTargetInstructions.Add(instructions);
+            }
+            
             return instructions;
         }
         public List<AnimatedCharacter> GetDefendersByImpactBasedOnSeverity(string impactName)
@@ -862,6 +1032,41 @@ namespace HeroVirtualTabletop.Attack
         public void Clear()
         {
             this.IndividualTargetInstructions.Clear();
+        }
+
+        public override void AddObstacle(Obstacle obstacle)
+        {
+            this.RemoveFromObstacles(obstacle.ObstacleTarget as AnimatedCharacter);
+            var currentInstructionForObstacle = obstacle.ObstacleInstructions;
+            AttackInstructions obstacleInstructions = new AttackInstructionsImpl();
+            obstacleInstructions.Attacker = obstacle.Attacker;
+            obstacleInstructions.Defender = obstacle.ObstacleTarget as AnimatedCharacter;
+            obstacle.ObstacleInstructions = obstacleInstructions;
+            if(currentInstructionForObstacle != null)
+            {
+                obstacle.ObstacleInstructions.AttackHit = currentInstructionForObstacle.AttackHit;
+                foreach (var impact in currentInstructionForObstacle.Impacts)
+                    obstacle.ObstacleInstructions.AddImpact(impact);
+                obstacle.ObstacleInstructions.IsCenterOfAreaEffectAttack = currentInstructionForObstacle.IsCenterOfAreaEffectAttack;
+                obstacle.ObstacleInstructions.KnockbackDistance = currentInstructionForObstacle.KnockbackDistance;
+            }
+            AttackInstructions instructions = this.IndividualTargetInstructions.FirstOrDefault(i => i.Attacker == obstacle.Attacker && i.Defender == obstacle.Defender);
+            instructions.AddObstacle(obstacle);
+            this.Obstacles.Add(obstacle);
+        }
+
+        public override void RemoveFromObstacles(AnimatedCharacter obstacleCharacter)
+        {
+            base.RemoveFromObstacles(obstacleCharacter);
+            foreach(var instructions in this.IndividualTargetInstructions)
+            {
+                instructions.RemoveFromObstacles(obstacleCharacter);
+            }
+        }
+
+        protected void RemoveFromKnockbackObstacles(AnimatedCharacter obstacleCharacter)
+        {
+            this.Obstacles.RemoveAll(o => o.ObstacleTarget == obstacleCharacter);
         }
     }
     public class AreaAttackInstructionsImpl : MultiAttackInstructionsImpl, AreaAttackInstructions
@@ -1050,18 +1255,21 @@ namespace HeroVirtualTabletop.Attack
         }
     }
 
-    public class ObstructionInfoImpl : Obstacle
+    public class ObstacleImpl : Obstacle
     {
         public ObstacleType ObstacleType
         {
             get;set;
         }
 
-        public AnimatedCharacter Target
+        public Object ObstacleTarget
         {
             get;set;
         }
-        public AttackInstructions ObstacleInstructions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public AttackInstructions ObstacleInstructions { get; set; }
+        public AnimatedCharacter Attacker { get; set; }
+        public AnimatedCharacter Defender { get; set; }
+        public Position ObstaclePosition { get; set; }
     }
 
     public class AttackInstructionsDefenderWithTargetCharacterComparer : IMultiValueConverter

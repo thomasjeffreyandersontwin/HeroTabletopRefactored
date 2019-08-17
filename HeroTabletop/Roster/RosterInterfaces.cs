@@ -71,6 +71,7 @@ namespace HeroVirtualTabletop.Roster
         void AddAttackTargets();
         void CancelActiveAttack();
         void ResetActiveAttack();
+        void AddAttackObstacles();
     }
 
     public interface RosterGroup: OrderedElement, OrderedCollection<CharacterCrowdMember>

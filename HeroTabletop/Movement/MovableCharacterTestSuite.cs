@@ -412,7 +412,7 @@ namespace HeroVirtualTabletop.Movement
             // act
             await movement.ExecuteKnockback(attacker, new List<MovableCharacter> { defender1, defender2 }, distance);
             // assert
-            Assert.AreEqual(movement.Speed, 2.5);
+            Assert.AreEqual(movement.Speed, 2);
         }
         [TestMethod]
         [TestCategory("Movement")]

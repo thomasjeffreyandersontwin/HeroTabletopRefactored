@@ -34,6 +34,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
             get
             {
                 double targetDelay;
+                constructDelayDictionary();
                 if (distanceDelayMappingDictionary.ContainsKey(Distance))
                 {
                     targetDelay = distanceDelayMappingDictionary[Distance];

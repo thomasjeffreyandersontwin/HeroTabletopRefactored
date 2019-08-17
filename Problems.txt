@@ -1,0 +1,36 @@
+1. Single Attack
+ - In between defender plays smoothly and in order DONE
+ - Knockback obstacle plays smoothly and in order DONE
+2. Multi Attack
+ - Both cases above DONE
+3. Area Attack
+ - Both cases above DONE
+
+4. Gang Attack to single person
+ - Potential obstabcles are added correctly DONE
+ - If there are knockback targets, the corresponding attacker needs to execute last DONE
+ - In case of hit obstactles in between, all should play properly DONE
+
+5. Gang to Gang
+ - All the cases above in target gang environment Not tested but should work
+
+6. Gang Area
+ - Same as above Not tested but should work
+
+7. Update Context menu for attacks DONE
+
+8. Can add self as attack target by doing ctrl + click FIXED
+
+9. Startup targetenemynear not working
+
+10. Wall hit knockback test DONE
+
+11. Bin/Booth crash test during obstacles DONE
+
+12. Attack Summary
+
+13. Include only the nearest knockback obstacle DONE
+
+...
+...
+99. Fix all the failing test cases

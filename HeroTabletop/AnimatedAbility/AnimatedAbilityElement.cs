@@ -124,7 +124,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             completeEvent = true;
             if (target.IsTargeted == false)
+            {
                 target.Target();
+            }
             PlayResource(target);
         }
 
@@ -237,7 +239,9 @@ namespace HeroVirtualTabletop.AnimatedAbility
             generator.GenerateDesktopCommandText(DesktopCommand.Move, para);
             if (completeEvent)
                 if (PlayWithNext == false)
+                {
                     generator.CompleteEvent();
+                }
         }
 
         public override bool Equals(object other)
@@ -1612,7 +1616,6 @@ namespace HeroVirtualTabletop.AnimatedAbility
             for (int i = 0; i < AnimationElements.Count; i++)
                 AnimationElements[i].Order = i + 1;
         }
-
     }
 
     public class ReferenceElementImpl : AnimationElementImpl, ReferenceElement, AnimationSequencer

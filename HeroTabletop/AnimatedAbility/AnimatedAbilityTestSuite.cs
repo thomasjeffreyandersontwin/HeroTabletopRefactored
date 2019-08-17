@@ -1380,6 +1380,10 @@ namespace HeroVirtualTabletop.AnimatedAbility
                     typeof(ReferenceResourceImpl)));
             StandardizedFixture.Customizations.Add(
                 new TypeRelay(
+                    typeof(IdentityResource),
+                    typeof(IdentityResourceImpl)));
+            StandardizedFixture.Customizations.Add(
+                new TypeRelay(
                     typeof(AnimatedResourceManager),
                     typeof(AnimatedResourceManagerImpl)));
             
@@ -1397,6 +1401,7 @@ namespace HeroVirtualTabletop.AnimatedAbility
                 .Without(x => x.FXResourcesCVS)
                 .Without(x => x.SoundResourcesCVS)
                 .Without(x => x.ReferenceElementsCVS)
+                .Without(x => x.IdentityElementsCVS)
             );
         }
 

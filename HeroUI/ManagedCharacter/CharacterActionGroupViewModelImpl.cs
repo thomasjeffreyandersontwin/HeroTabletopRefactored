@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace HeroVirtualTabletop.ManagedCharacter
@@ -233,7 +234,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
                 this.ShowActions = true;
                 System.Action d = delegate ()
                 {
-                    this.EnterEditMode(null);
+                    Application.Current.Dispatcher.Invoke(() => this.EnterEditMode(null));
                 };
                 AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 2000);
                 adex.ExecuteAsyncDelegate();
@@ -454,7 +455,7 @@ namespace HeroVirtualTabletop.ManagedCharacter
         {
             System.Action d = delegate ()
             {
-                this.CharacterActionList.Active = default(T);
+                Application.Current.Dispatcher.Invoke(() => this.CharacterActionList.Active = default(T));
             };
             AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 5000);
             adex.ExecuteAsyncDelegate();

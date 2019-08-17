@@ -2377,7 +2377,6 @@
             VerticalAlignment="Center"
             Focusable="False" />
     </DataTemplate>
-
     <DataTemplate x:Key="DecreaseGlyphDisabledKey">
         <Path	Width="7"
             Height="4"

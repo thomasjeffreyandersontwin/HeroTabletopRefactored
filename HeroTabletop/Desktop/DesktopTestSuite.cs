@@ -669,6 +669,7 @@ namespace HeroVirtualTabletop.Desktop
             navigator.IsNavigatingToDestination = false;
             navigator.Speed = 10f;
             navigator.UsingGravity = false;
+            navigator.IsKnockbackNavigation = false;
             navigator.SetNavigationDirectionVector();
             Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
 
@@ -967,6 +968,7 @@ namespace HeroVirtualTabletop.Desktop
             navigator.IsNavigatingToDestination = true;
             navigator.Speed = 2f;
             navigator.UsingGravity = false;
+            navigator.IsKnockbackNavigation = false;
 
             navigator.SetNavigationDirectionVector();
             Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;
@@ -1002,6 +1004,7 @@ namespace HeroVirtualTabletop.Desktop
         {
             DesktopNavigator navigator = TestObjectsFactory.DesktopNavigatorUnderTestWithImminentCollision;
             Position moving = navigator.PositionBeingNavigated;
+            moving.Y = 0.25f;
             Vector3 oldPositionVector = moving.Vector;
             // Make sure initially there are no adjustments
             Assert.IsTrue(navigator.AdjustmentVector == Vector3.Zero);
@@ -1010,6 +1013,7 @@ namespace HeroVirtualTabletop.Desktop
             navigator.Direction = Direction.Forward;
             navigator.IsNavigatingToDestination = true;
             navigator.UsingGravity = true;
+            navigator.IsKnockbackNavigation = false;
 
             navigator.SetNavigationDirectionVector();
             Vector3 nextTravelPoint = navigator.NearestIncrementalVectorTowardsDestination;

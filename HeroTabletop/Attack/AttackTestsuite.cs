@@ -82,7 +82,6 @@ namespace HeroVirtualTabletop.Attack
             // arrange
             var attack = TestObjectsFactory.AttackUnderTestWithMockOnHitAnimations;
             var defender = TestObjectsFactory.DefenderUnderTestWithMockDefaultAbilities;
-
             //act
             var instructions = attack.StartAttackCycle();
             instructions.Defender = defender;
@@ -685,6 +684,9 @@ namespace HeroVirtualTabletop.Attack
                     .Without(x => x.Target)
                     .Create();
                 attack.OnHitAnimation = MockAnimatedAbility;
+                var sequencerOnHit = MockAnimationSequencer;
+                Mock.Get(sequencerOnHit).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
+                Mock.Get(attack.OnHitAnimation).SetupGet(x => x.Sequencer).Returns(sequencerOnHit);
                 return attack;
             }
         }
@@ -698,6 +700,9 @@ namespace HeroVirtualTabletop.Attack
                     .Without(x => x.Target)
                     .Create();
                 attack.OnHitAnimation = MockAnimatedAbility;
+                var sequencerOnHit = MockAnimationSequencer;
+                Mock.Get(sequencerOnHit).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
+                Mock.Get(attack.OnHitAnimation).SetupGet(x => x.Sequencer).Returns(sequencerOnHit);
                 return attack;
             }
         }
@@ -711,6 +716,9 @@ namespace HeroVirtualTabletop.Attack
                     .Without(x => x.Target)
                     .Create();
                 attack.OnHitAnimation = MockAnimatedAbility;
+                var sequencerOnHit = MockAnimationSequencer;
+                Mock.Get(sequencerOnHit).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
+                Mock.Get(attack.OnHitAnimation).SetupGet(x => x.Sequencer).Returns(sequencerOnHit);
                 Mock.Get(attack.OnHitAnimation).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
                 return attack;
             }
@@ -734,6 +742,9 @@ namespace HeroVirtualTabletop.Attack
             {
                 var attack = AttackUnderTestWithMockCharacter;
                 attack.OnHitAnimation = MockAnimatedAbility;
+                var sequencerOnHit = MockAnimationSequencer;
+                Mock.Get(sequencerOnHit).SetupGet(x => x.AnimationElements).Returns(new System.Collections.ObjectModel.ObservableCollection<AnimationElement>(MockAnimationElementList));
+                Mock.Get(attack.OnHitAnimation).SetupGet(x => x.Sequencer).Returns(sequencerOnHit);
                 return attack;
             }
         }

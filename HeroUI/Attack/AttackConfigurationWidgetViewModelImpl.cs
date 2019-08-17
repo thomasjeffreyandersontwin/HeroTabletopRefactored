@@ -104,6 +104,20 @@ namespace HeroVirtualTabletop.Attack
             }
         }
 
+        private string attackSummaryText;
+        public string AttackSummaryText
+        {
+            get
+            {
+                return attackSummaryText;
+            }
+            set
+            {
+                attackSummaryText = value;
+                NotifyOfPropertyChange(() => AttackSummaryText);
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -146,6 +160,7 @@ namespace HeroVirtualTabletop.Attack
                 if(!defenderInstructions.AttackerHitInfo.Any(ah => ah != attackHitInfo && ah.AttackInstructionsForAttacker.AttackHit))
                     defenderInstructions.DefenderHitByAttack = attackHitInfo.AttackInstructionsForAttacker.AttackHit;
             }
+            this.SetAttackSummaryText();
         }
 
         private void UpdateAttackImpactsForAllInstructions(string impactName, bool isEffectEnabled)
@@ -169,6 +184,7 @@ namespace HeroVirtualTabletop.Attack
                         break;
                 }
             }
+            this.SetAttackSummaryText();
         }
 
         private void UpdateAttackHitForAllInstructions(bool hit)
@@ -181,6 +197,7 @@ namespace HeroVirtualTabletop.Attack
                     hitInfo.AttackInstructionsForAttacker.AttackHit = hit;
                 }
             }
+            this.SetAttackSummaryText();
         }
 
         public void UpdateAttackImpacts(DefenderAttackInstructions defenderInstructions, string impactName, bool isEffectEnabled)
@@ -188,13 +205,24 @@ namespace HeroVirtualTabletop.Attack
             if(this.CurrentAttackInstructions is MultiAttackInstructions)
             {
                 MultiAttackInstructions multiInstructions = this.CurrentAttackInstructions as MultiAttackInstructions;
-                foreach (var ins in multiInstructions.IndividualTargetInstructions.Where(i => i.Defender == defenderInstructions.Defender))
-                    ChangeImpact(ins, impactName, isEffectEnabled);
+                if (multiInstructions.Defenders.Contains(defenderInstructions.Defender))
+                {
+                    foreach (var ins in multiInstructions.IndividualTargetInstructions.Where(i => i.Defender == defenderInstructions.Defender))
+                        ChangeImpact(ins, impactName, isEffectEnabled);
+                }
+                else if(multiInstructions.Obstacles.Any(o => o.ObstacleTarget == defenderInstructions.Defender))
+                {
+                    var obstacle = multiInstructions.Obstacles.First(o => o.ObstacleTarget == defenderInstructions.Defender);
+                    ChangeImpact(obstacle.ObstacleInstructions, impactName, isEffectEnabled);
+                }
+
             }
             else
             {
-                ChangeImpact(this.CurrentAttackInstructions, impactName, isEffectEnabled);
+                var instructions = defenderInstructions.AttackerHitInfo.Where(ahi => ahi.AttackInstructionsForAttacker.Defender == defenderInstructions.Defender)?.Select(ahi => ahi.AttackInstructionsForAttacker)?.FirstOrDefault();
+                ChangeImpact(instructions, impactName, isEffectEnabled);
             }
+            this.SetAttackSummaryText();
         }
 
         private void ChangeImpact(AttackInstructions instructions, string impactName, bool isEffectEnabled)
@@ -203,6 +231,7 @@ namespace HeroVirtualTabletop.Attack
                 instructions.AddImpact(impactName);
             else
                 instructions.RemoveImpact(impactName);
+            this.SetAttackSummaryText();
         }
 
         public void Handle(ConfigureAttackEvent message)
@@ -211,6 +240,7 @@ namespace HeroVirtualTabletop.Attack
             this.Attackers = message.Attackers;
             this.CurrentAttackInstructions = message.AttackInstructions;
             this.SetDefenderInstructions();
+            this.SetAttackSummaryText();
         }
 
         private void SetDefenderInstructions()
@@ -239,7 +269,6 @@ namespace HeroVirtualTabletop.Attack
 
                     this.DefenderAttackInstructions.Add(defenderAttackInstructions);
                 }
-
             }
             else
             {
@@ -251,6 +280,23 @@ namespace HeroVirtualTabletop.Attack
 
                 this.DefenderAttackInstructions.Add(defenderAttackInstructions);
             }
+
+            foreach (var obst in CurrentAttackInstructions.Obstacles.Where(o => o.ObstacleTarget is AnimatedCharacter))
+            {
+                DefenderAttackInstructions defenderAttackInstructions = new DefenderAttackInstructions();
+                defenderAttackInstructions.Defender = obst.ObstacleTarget as AnimatedCharacter;
+                defenderAttackInstructions.AttackerHitInfo = new ObservableCollection<AttackerHitInfo>();
+                defenderAttackInstructions.AttackerHitInfo.Add(new AttackerHitInfo { AttackInstructionsForAttacker = obst.ObstacleInstructions });
+
+                this.DefenderAttackInstructions.Add(defenderAttackInstructions);
+            }
+            foreach(var dai in this.DefenderAttackInstructions)
+                dai.PropertyChanged += DefenderAttackInstructions_PropertyChanged;
+        }
+
+        private void DefenderAttackInstructions_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            this.SetAttackSummaryText();
         }
 
         public void LaunchAttack()
@@ -285,7 +331,14 @@ namespace HeroVirtualTabletop.Attack
                 
                 if (defenderInstructions.DefenderKnockbackDistance > 0)
                 {
-                    var instructionToSetKnockback = defenderInstructions.AttackerHitInfo.LastOrDefault(hi => hi.AttackInstructionsForAttacker.AttackHit);
+                    var obstacle = this.CurrentAttackInstructions.Obstacles.FirstOrDefault(o => o.Defender == defenderInstructions.Defender && o.ObstacleType == ObstacleType.Knockback);
+                    AttackerHitInfo instructionToSetKnockback = null;
+                    if (obstacle != null)
+                    {
+                        instructionToSetKnockback = defenderInstructions.AttackerHitInfo.LastOrDefault(hi => hi.AttackInstructionsForAttacker.AttackHit && hi.AttackInstructionsForAttacker.Attacker == obstacle.Attacker);
+                    }
+                    if(instructionToSetKnockback == null)
+                        instructionToSetKnockback = defenderInstructions.AttackerHitInfo.LastOrDefault(hi => hi.AttackInstructionsForAttacker.AttackHit);
                     if (instructionToSetKnockback != null)
                     {
                         instructionToSetKnockback.AttackInstructionsForAttacker.KnockbackDistance = defenderInstructions.DefenderKnockbackDistance;
@@ -307,6 +360,181 @@ namespace HeroVirtualTabletop.Attack
                     areaInstructions.AttackHit = this.DefenderAttackInstructions.Any(d => d.AttackerHitInfo.Any(h => h.Attacker == attacker && d.DefenderHitByAttack));
                 }
             }
+        }
+
+        #endregion
+
+        #region Attack Summary
+
+        private void SetAttackSummaryText()
+        {
+            this.AttackSummaryText = "";
+            List<AnimatedCharacter> hitCharacters = this.DefenderAttackInstructions.Where(d => d.DefenderHitByAttack).Select(d => d.Defender).ToList();
+            List<AnimatedCharacter> missCharacters = this.DefenderAttackInstructions.Where(d => !d.DefenderHitByAttack).Select(d => d.Defender).ToList();
+            StringBuilder summary = new StringBuilder("The attack hit ");
+            bool hitCharactersFound = hitCharacters.Count > 0;
+            bool missCharactersFound = missCharacters.Count > 0;
+            Dictionary<AnimatedCharacter, bool> summarizedCharacters = new Dictionary<AnimatedCharacter, bool>();
+            foreach (AnimatedCharacter c in hitCharacters)
+            {
+                if (!summarizedCharacters.ContainsKey(c))
+                    summarizedCharacters.Add(c, false);
+            }
+            if (hitCharactersFound)
+            {
+                for (int i = 0; i < hitCharacters.Count; i++)
+                {
+                    if (i == 0)
+                        summary.Append(hitCharacters[0].Name);
+                    else if (i == hitCharacters.Count - 1 && !missCharactersFound)
+                        summary.AppendFormat(" and {0}", hitCharacters[i].Name);
+                    else
+                        summary.AppendFormat(", {0}", hitCharacters[i].Name);
+                }
+            }
+            if (missCharactersFound)
+            {
+                if (!hitCharactersFound)
+                    summary = new StringBuilder("The attack missed ");
+                else
+                    summary.Append(" and missed ");
+                for (int i = 0; i < missCharacters.Count; i++)
+                {
+                    if (i == 0)
+                        summary.Append(missCharacters[0].Name);
+                    else if (i == missCharacters.Count - 1)
+                        summary.AppendFormat(" and {0}", missCharacters[i].Name);
+                    else
+                        summary.AppendFormat(", {0}", missCharacters[i].Name);
+                }
+            }
+
+            foreach (var character in hitCharacters)
+            {
+                if (summarizedCharacters[character])
+                    continue;
+                var defenderAttackInstruction = this.DefenderAttackInstructions.First(d => d.Defender == character);
+                if (defenderAttackInstruction.DefenderKnockbackDistance > 0)
+                {
+                    summary.AppendLine();
+                    summary.AppendFormat("{0} is knocked back {1} hexes", character.Name, defenderAttackInstruction.DefenderKnockbackDistance);
+                }
+                if (this.CurrentAttackInstructions.Obstacles.Any(o => o.Defender == character))
+                {
+                    foreach (var obstacle in this.CurrentAttackInstructions.Obstacles.Where(o => o.Defender == character && o.ObstacleTarget is AnimatedCharacter))
+                    {
+                        var obsCharacter = obstacle.ObstacleTarget as AnimatedCharacter;
+                        summary.AppendLine();
+                        if (obstacle.ObstacleType == ObstacleType.Knockback)
+                            summary.AppendFormat("{0} collided with {1}", character.Name, obsCharacter.Name);
+                        else
+                            summary.AppendFormat("Attack is intercepted by {0}", obsCharacter.Name);
+                        string obsEffect = GetEffectsStringWithBody(obsCharacter);
+                        summary.AppendLine();
+                        if (obsCharacter.Body != null && obsEffect != "")
+                        {
+                            summary.AppendFormat("{0} now has {1} BODY and is {2}", obsCharacter.Name, obsCharacter.Body, obsEffect);
+                        }
+                        else if (obsCharacter.Body != null)
+                        {
+                            summary.AppendFormat("{0} now has {1} BODY", obsCharacter.Name, obsCharacter.Body);
+                        }
+                        else
+                        {
+                            summary.AppendFormat("{0} is {1}", obsCharacter.Name, obsEffect);
+                        }
+                        summarizedCharacters[obsCharacter] = true;
+                    }
+                }
+                //else
+                {
+                    string effects = GetEffectsStringWithBody(character);
+                    if (character.Stun != null || character.Body != null)
+                    {
+                        summary.AppendLine();
+                    }
+                    if (character.Stun != null && character.Body != null)
+                    {
+                        summary.AppendFormat("{0} has {1} Stun and {2} BODY left", character.Name, character.Stun, character.Body);
+                    }
+                    else if (character.Stun != null)
+                    {
+                        summary.AppendFormat("{0} has {1} Stun left", character.Name, character.Stun);
+                    }
+                    else if (character.Body != null)
+                    {
+                        summary.AppendFormat("{0} has {1} BODY left", character.Name, character.Body);
+                    }
+
+                    
+                    if (!string.IsNullOrEmpty(effects))
+                    {
+                        if (character.Stun == null && character.Body == null)
+                        {
+                            summary.AppendLine();
+                            summary.AppendFormat("{0} is {1}", character.Name, effects);
+                        }
+                        else
+                        {
+                            summary.AppendFormat(" and is {0}", effects);
+                        }
+                    }
+
+                }
+                summarizedCharacters[character] = true;
+            }
+            this.AttackSummaryText = summary.ToString();
+        }
+
+        private string GetEffectsStringWithBody(AnimatedCharacter character)
+        {
+            Random rnd = new Random();
+            List<string> effectsStr = new List<string>();
+            string efstr = "";
+            var instructions = this.DefenderAttackInstructions.First(d => d.Defender == character);
+            if (instructions.DefenderHitByAttack)
+            {
+                character.Body = rnd.Next(81, 99);
+            }
+            else
+            {
+                character.Body = 100;
+            }
+            if (instructions.DefenderStunned)
+            {
+                effectsStr.Add("Stunned");
+                character.Body = rnd.Next(51, 80);
+            }
+            if (instructions.DefenderUnconscious)
+            {
+                effectsStr.Add("Unconscious");
+                character.Body = rnd.Next(31, 51);
+            }
+            if (instructions.DefenderDying)
+            {
+                effectsStr.Add("Dying");
+                character.Body = rnd.Next(1, 10);
+            }
+            if (instructions.DefenderDead)
+            {
+                effectsStr.Add("Dead");
+                character.Body = 0;
+            }
+            if(instructions.DefenderKnockbackDistance > 0 && !(instructions.DefenderDying || instructions.DefenderDead))
+            {
+                character.Body = rnd.Next(11, 50);
+            }
+
+            if (effectsStr.Count > 0)
+            {
+                efstr = String.Join(", ", effectsStr);
+                if (efstr.IndexOf(",") != efstr.LastIndexOf(","))
+                {
+                    efstr = efstr.Replace(efstr[efstr.LastIndexOf(", ")].ToString(), " and");
+                }
+                efstr += ".";
+            }
+            return efstr;
         }
 
         #endregion

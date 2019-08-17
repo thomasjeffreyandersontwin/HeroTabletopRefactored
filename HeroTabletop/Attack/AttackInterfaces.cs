@@ -29,16 +29,20 @@ namespace HeroVirtualTabletop.Attack
 
     public interface Obstacle
     {
-        AnimatedCharacter Target { get; set; }
+        AnimatedCharacter Attacker { get; set; }
+        AnimatedCharacter Defender { get; set; }
+        object ObstacleTarget { get; set; }
+        Position ObstaclePosition { get; set; }
         ObstacleType ObstacleType { get; set; }
         AttackInstructions ObstacleInstructions { get; set; }
     }
+
     public interface AttackInstructions: INotifyPropertyChanged
     {
         AnimatedCharacter Attacker { get; set; }
         AnimatedCharacter Defender { get; set; }
         ObservableCollection<string> Impacts { get; }
-        int KnockbackDistance { get; set; }
+        float KnockbackDistance { get; set; }
         bool AttackHit { get; set; }
         bool IsCenterOfAreaEffectAttack { get; set; }
         List<Obstacle> Obstacles { get; set; }
@@ -46,6 +50,8 @@ namespace HeroVirtualTabletop.Attack
         void SetImpactToDefender(string impactName);
         void RemoveImpact(string impactName);
         void RemoveImpactFromDefender(string impactName);
+        void AddObstacle(Obstacle obstacle);
+        void RemoveFromObstacles(AnimatedCharacter obstacleCharacter);
     }
 
     public interface MultiAttackInstructions : AttackInstructions
@@ -66,12 +72,12 @@ namespace HeroVirtualTabletop.Attack
 
     public interface GangAttackInstructions: MultiAttackInstructions
     {
-        Dictionary<AnimatedCharacter, List<AttackInstructions>> AttackInstructionsMap { get; }
-        Dictionary<AnimatedCharacter, List<AnimatedCharacter>> AttackersMap { get; }
+        Dictionary<AnimatedCharacter, List<AttackInstructions>> AttackInstructionsMap { get; } // Key = Defender, Value = Instructions for each attacker for this defender
+        Dictionary<AnimatedCharacter, List<AnimatedCharacter>> AttackersMap { get; } // Key = Defender, Value = Attackers for that Defender
     }
     public interface GangAreaAttackInstructions: AreaAttackInstructions
     {
-        Dictionary<AnimatedCharacter, AreaAttackInstructions> AttackInstructionsMap { get; }
+        Dictionary<AnimatedCharacter, AreaAttackInstructions> AttackInstructionsMap { get; } // Key = attacker, Value = Area Instructions for this attacker
     }
 
     public interface AnimatedAttack : AnimatedAbility.AnimatedAbility

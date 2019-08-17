@@ -403,7 +403,7 @@
             </Grid.RowDefinitions>
             <Grid x:Name="resourcesGrid" Grid.Row="0">
                 <DataGrid x:Name="dataGridMOVResources" 
-                          MaxWidth="400"
+                          MaxWidth="400" RowHeaderWidth="0"
                           Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
                           Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=Mov, FallbackValue=Collapsed}"
                           ItemsSource="{Binding AnimatedResourceMananger.MOVResourcesCVS.View}"
@@ -439,7 +439,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <DataGrid x:Name="dataGridFXResources"
-                          MaxWidth="400"
+                          MaxWidth="400" RowHeaderWidth="0"
                           Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
                           Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=FX, FallbackValue=Collapsed}"
                           ItemsSource="{Binding AnimatedResourceMananger.FXResourcesCVS.View}"
@@ -468,7 +468,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <DataGrid x:Name="dataGridSoundResources"
-                          MaxWidth="400"
+                          MaxWidth="400" RowHeaderWidth="0"
                           Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
                           Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=Sound, FallbackValue=Collapsed}"
                           ItemsSource="{Binding AnimatedResourceMananger.SoundResourcesCVS.View}"
@@ -497,7 +497,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <DataGrid x:Name="dataGridAbilityReferences"
-                          MaxWidth="400"
+                          MaxWidth="400" RowHeaderWidth="0"
                           Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
                           Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=Reference, FallbackValue=Collapsed}"
                           ItemsSource="{Binding AnimatedResourceMananger.ReferenceElementsCVS.View}"
@@ -525,7 +525,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <DataGrid x:Name="dataGridIdentityReferences"
-                          MaxWidth="400"
+                          MaxWidth="400" RowHeaderWidth="0"
                           Background="Transparent" RowBackground="Transparent" Margin="5" BorderBrush="#FF1144FF"
                           Visibility="{Binding Path=SelectedAnimationElement.AnimationElementType, Converter={StaticResource resourcesTypeConverter}, ConverterParameter=LoadIdentity, FallbackValue=Collapsed}"
                           ItemsSource="{Binding AnimatedResourceMananger.IdentityElementsCVS.View}"

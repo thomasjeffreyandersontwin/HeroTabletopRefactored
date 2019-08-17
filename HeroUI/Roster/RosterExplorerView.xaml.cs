@@ -82,11 +82,11 @@ namespace HeroVirtualTabletop.Roster
             {
                 if (!(Keyboard.Modifiers == ModifierKeys.Control || Keyboard.Modifiers == ModifierKeys.Shift || Keyboard.Modifiers == ModifierKeys.Alt))
                 {
-                    if (this.viewModel.Roster.AttackingCharacters != null && this.viewModel.Roster.AttackingCharacters.Count > 0) //&& !this.viewModel.IsPlayingAreaEffect)
+                    if (this.viewModel.Roster.AttackingCharacters != null && this.viewModel.Roster.AttackingCharacters.Count > 0 && e.ChangedButton != MouseButton.Right) //&& !this.viewModel.IsPlayingAreaEffect)
                     {
                         Action d = delegate ()
                         {
-                            this.viewModel.TargetAndExecuteAttack();
+                            Application.Current.Dispatcher.Invoke(() => this.viewModel.TargetAndExecuteAttack());
                         };
                         AsyncDelegateExecuter adex = new AsyncDelegateExecuter(d, 50);
                         adex.ExecuteAsyncDelegate();

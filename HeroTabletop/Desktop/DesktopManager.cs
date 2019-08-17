@@ -15,7 +15,7 @@ namespace HeroVirtualTabletop.Desktop
                 IntPtr winHandle = WindowsUtilities.FindWindow("CrypticWindow", null);
                 WindowsUtilities.SetForegroundWindow(winHandle);
             };
-            System.Windows.Application.Current.Dispatcher.Invoke(d);
+            System.Windows.Application.Current?.Dispatcher?.Invoke(d);
         }
     }
 }

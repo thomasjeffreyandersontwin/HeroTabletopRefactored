@@ -72,12 +72,12 @@ namespace HeroVirtualTabletop.AnimatedAbility
         public override void Target(bool completeEvent = true)
         { 
             base.Target(completeEvent);
-            NotifyPropertyChanged();
+            //NotifyPropertyChanged();
         }
         public override void UnTarget(bool completeEvent = true)
         {
             base.UnTarget(completeEvent);
-            NotifyPropertyChanged();
+            //NotifyPropertyChanged();
         }
 
         private AnimatedCharacterRepository _repo;
@@ -85,6 +85,15 @@ namespace HeroVirtualTabletop.AnimatedAbility
         {
             get { return _repo ?? null; }
             set { _repo = value; }
+        }
+
+        public int? Body
+        {
+            get;set;
+        }
+        public int? Stun
+        {
+            get;set;
         }
 
         public CharacterActionList<AnimatedAbility> Abilities

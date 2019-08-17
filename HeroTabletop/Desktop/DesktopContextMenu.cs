@@ -15,7 +15,7 @@ namespace HeroVirtualTabletop.Desktop
 {
     public enum ContextMenuEvent
     {
-        AttackContextMenuDisplayed,
+        AreaAttackContextMenuDisplayed,
         DefaultContextMenuDisplayed,
         AttackTargetMenuItemSelected,
         AttackTargetAndExecuteMenuItemSelected,
@@ -62,7 +62,7 @@ namespace HeroVirtualTabletop.Desktop
         event EventHandler<CustomEventArgs<Object>> ActivateCharacterOptionMenuItemSelected;
         event EventHandler<CustomEventArgs<Object>> SpreadNumberSelected;
 
-        void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterNames, bool showAreaAttackMenu);
+        void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterNames, bool showAttackMenu, bool isSequenceView = false, bool isSweepAttackInProgress = false, bool showAttackSpreadMenu = false);
         bool IsDisplayed { get; set; }
         void Configure();
     }
@@ -77,6 +77,7 @@ namespace HeroVirtualTabletop.Desktop
         private const string GAME_LANGUAGE_FOLDERNAME = "english";
         private const string GAME_MENUS_FOLDERNAME = "menus";
         private const string GAME_CHARACTER_MENU_FILENAME = "character.mnu";
+        private const string GAME_ATTACK_MENU_FILENAME = "attack.mnu";
         private const string DEFAULT_DELIMITING_CHARACTER = "¿";
         private const string DEFAULT_DELIMITING_CHARACTER_TRANSLATION = "Â¿";
         private const string SPACE_REPLACEMENT_CHARACTER = "§";
@@ -106,7 +107,11 @@ namespace HeroVirtualTabletop.Desktop
         public AnimatedCharacter Character = null;
         public bool IsDisplayed { get; set; }
 
-        public bool ShowAreaAttackMenu { get; set; }
+        public bool ShowAttackMenu { get; set; }
+
+        public bool IsSequenceViewActive { get; set; }
+        public bool IsSweepAttackInProgress { get; set; }
+        public bool ShowAttackSpreadMenu { get; set; }
         public List<string> AttackingCharacterNames { get; set; }
 
         public event EventHandler<CustomEventArgs<Object>> AttackContextMenuDisplayed;
@@ -134,7 +139,7 @@ namespace HeroVirtualTabletop.Desktop
         {
             switch (contextMenuEvent)
             {
-                case ContextMenuEvent.AttackContextMenuDisplayed:
+                case ContextMenuEvent.AreaAttackContextMenuDisplayed:
                     if (AttackContextMenuDisplayed != null)
                         AttackContextMenuDisplayed(sender, e);
                     break;
@@ -242,11 +247,14 @@ namespace HeroVirtualTabletop.Desktop
             ContextCommandFileWatcher.EnableRaisingEvents = true;
         }
 
-        public void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterName, bool showAreaAttackMenu)
+        public void GenerateAndDisplay(AnimatedCharacter character, List<string> attackingCharacterNames, bool showAttackMenu, bool isSequenceView = false, bool isSweepAttackInProgress = false, bool showAttackSpreadMenu = false)
         {
             Character = character;
-            AttackingCharacterNames = attackingCharacterName;
-            ShowAreaAttackMenu = showAreaAttackMenu;
+            AttackingCharacterNames = attackingCharacterNames;
+            ShowAttackMenu = showAttackMenu;
+            IsSequenceViewActive = isSequenceView;
+            IsSweepAttackInProgress = isSweepAttackInProgress;
+            ShowAttackSpreadMenu = showAttackSpreadMenu;
             GenerateAndDisplay();
             ContextCommandFileWatcher.EnableRaisingEvents = true;
         }
@@ -272,6 +280,10 @@ namespace HeroVirtualTabletop.Desktop
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < menuFileLines.Count - 1; i++)
                 {
+                    if (menuFileLines[i].StartsWith("Option \"Abort\"") && !IsSequenceViewActive)
+                        continue;
+                    if (menuFileLines[i].StartsWith("Option \"Execute Sweep\"") && !IsSweepAttackInProgress)
+                        continue;
                     sb.AppendLine(menuFileLines[i]);
                 }
                 if (character.CharacterActionGroups != null && character.CharacterActionGroups.Count > 0)
@@ -319,14 +331,15 @@ namespace HeroVirtualTabletop.Desktop
         {
             if (Character != null)
             {
-                if (ShowAreaAttackMenu)
+                if (ShowAttackMenu)
                 {
                     if (!AttackingCharacterNames.Contains(Character.Name))
                     {
                         System.Threading.Thread.Sleep(200); // Delay so that the file write completes before calling the pop menu
+                        GenerateAttackMenu();
                         DisplayAttackMenu();
                         IsDisplayed = true;
-                        FireContextMenuEvent(ContextMenuEvent.AttackContextMenuDisplayed, null, new CustomEventArgs<object> { Value = Character });
+                        FireContextMenuEvent(ContextMenuEvent.AreaAttackContextMenuDisplayed, null, new CustomEventArgs<object> { Value = Character });
                     }
                 }
                 else
@@ -336,6 +349,51 @@ namespace HeroVirtualTabletop.Desktop
                     IsDisplayed = true;
                     FireContextMenuEvent(ContextMenuEvent.DefaultContextMenuDisplayed, null, new CustomEventArgs<object> { Value = Character });
                 }
+            }
+        }
+
+        private void GenerateAttackMenu()
+        {
+            string fileAreaAtackMenu = Path.Combine(GameDirectoryPath, GAME_DATA_FOLDERNAME, GAME_TEXTS_FOLDERNAME, GAME_LANGUAGE_FOLDERNAME,
+                GAME_MENUS_FOLDERNAME, GAME_ATTACK_MENU_FILENAME);
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var resourceName = "HeroVirtualTabletop.Desktop.areaattack.mnu";
+            List<string> menuFileLines = new List<string>();
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    menuFileLines.Add(line);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < menuFileLines.Count - 1; i++)
+                {
+                    if (menuFileLines[i].StartsWith("Option \"Abort\"") && !IsSequenceViewActive)
+                        continue;
+                    else if (menuFileLines[i].StartsWith("Option \"Execute Sweep\"") && !IsSweepAttackInProgress)
+                        continue;
+                    sb.AppendLine(menuFileLines[i]);
+                }
+                if (ShowAttackSpreadMenu)
+                {
+                    sb.AppendLine(string.Format("Menu \"Spread to Improve Hitting Chance\""));
+                    sb.AppendLine("{");
+                    for (int i = 1; i < 11; i++)
+                    {
+                        sb.AppendLine(string.Format("Option \"{0}\" \"bind_save_file {1}{2}{3}.txt\"", i, SPREAD_NUMBER, DEFAULT_DELIMITING_CHARACTER, i));
+                    }
+                    sb.AppendLine("}");
+                }
+                sb.AppendLine(menuFileLines[menuFileLines.Count - 1]);
+
+                File.WriteAllText(
+                    fileAreaAtackMenu, sb.ToString()
+                    );
+                System.Threading.Thread.Sleep(200); // Delay so that the file write completes before calling the pop menu
             }
         }
 
