@@ -1121,8 +1121,13 @@ namespace HeroVirtualTabletop.Roster
             {
                 foreach (var defender in this.Selected.Participants)
                 {
-                    var inBetweenObstructions = attacker.Position.GetObstructionsTowardsAnotherPosition(defender.Position, potentialObstructionPositions);
-                    var knockbackObstructions = attacker.Position.GetObstructionsAwayFromAnotherPosition(defender.Position, potentialObstructionPositions);
+                    var attackerDefenderDist = attacker.Position.DistanceFrom(defender.Position);
+                    var maxDist = attackerDefenderDist > 80 ? attackerDefenderDist : 80;
+                    var positionsToConsider = potentialObstructionPositions.Where(p => p.DistanceFrom(attacker.Position) <= maxDist || p.DistanceFrom(defender.Position) <= maxDist).ToList();
+                    if (positionsToConsider.Count == 0)
+                        continue;
+                    var inBetweenObstructions = attacker.Position.GetObstructionsTowardsAnotherPosition(defender.Position, positionsToConsider);
+                    var knockbackObstructions = attacker.Position.GetObstructionsAwayFromAnotherPosition(defender.Position, positionsToConsider);
                     if(knockbackObstructions != null && knockbackObstructions.Count > 0)
                     {
                         var minDist = knockbackObstructions.Min(k => attacker.Position.DistanceFrom(k.Position));

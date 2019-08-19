@@ -829,7 +829,7 @@ namespace HeroVirtualTabletop.Desktop
         }
         public List<Obstruction> GetObstructionsAlongDirection(Vector3 directionVector, List<Position> potentialObstructions)
         {
-            var destinationVector = CalculateDestinationVector(directionVector, 400f); // 50 units * 8f
+            var destinationVector = CalculateDestinationVector(directionVector, 80f); // 10 units * 8f
             Position toPosition = GetPositionFromVector(destinationVector);
             return FindObstructingObjects(toPosition, potentialObstructions);
         }
